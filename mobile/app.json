@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Trekly",
+    "slug": "trekly",
+    "version": "1.0.0",
+    "sdkVersion": "54.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.trekly.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Tur fotoğraflarınızı yüklemek için fotoğraf kitaplığınıza erişim gerekiyor.",
+        "NSCameraUsageDescription": "Profil fotoğrafı çekmek için kameraya erişim gerekiyor."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.trekly.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "apiUrl": "https://trekly-api-835377577547.europe-west1.run.app"
+    }
+  }
+}
