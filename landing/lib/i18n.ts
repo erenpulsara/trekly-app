@@ -61,9 +61,9 @@ export const T = {
     principles: {
       title: 'İlkelerimiz',
       items: [
-        { icon: '🏆', title: 'Seçilmiş Deneyimler', desc: 'Sadece ticari kaygı güden değil, doğaya saygı duyan profesyonel kulüplerle çalışıyoruz.' },
-        { icon: '🧭', title: 'Algoritmadan Uzak', desc: 'Size popüler olanı değil, ihtiyacınız olanı sunuyoruz.' },
-        { icon: '🛡️', title: 'Organize ve Güvenli', desc: "Dağınık bilgi kirliliğini ortadan kaldırıyoruz. Türkiye'nin tüm doğa disiplinleri tek vitrin." },
+        { icon: 'curated', title: 'Seçilmiş Deneyimler', desc: 'Sadece ticari kaygı güden değil, doğaya saygı duyan profesyonel kulüplerle çalışıyoruz.' },
+        { icon: 'compass', title: 'Algoritmadan Uzak', desc: 'Size popüler olanı değil, ihtiyacınız olanı sunuyoruz.' },
+        { icon: 'shield', title: 'Organize ve Güvenli', desc: "Dağınık bilgi kirliliğini ortadan kaldırıyoruz. Türkiye'nin tüm doğa disiplinleri tek vitrin." },
       ],
     },
     footer: {
@@ -127,9 +127,9 @@ export const T = {
     principles: {
       title: 'Our Principles',
       items: [
-        { icon: '🏆', title: 'Curated Experiences', desc: 'We work only with professional clubs that respect nature, not just commercial interests.' },
-        { icon: '🧭', title: 'Beyond the Algorithm', desc: "We show you what you need, not what's popular." },
-        { icon: '🛡️', title: 'Organized & Safe', desc: "We eliminate information clutter. All of Turkey's nature disciplines in one showcase." },
+        { icon: 'curated', title: 'Curated Experiences', desc: 'We work only with professional clubs that respect nature, not just commercial interests.' },
+        { icon: 'compass', title: 'Beyond the Algorithm', desc: "We show you what you need, not what's popular." },
+        { icon: 'shield', title: 'Organized & Safe', desc: "We eliminate information clutter. All of Turkey's nature disciplines in one showcase." },
       ],
     },
     footer: {

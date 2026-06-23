@@ -318,7 +318,7 @@ export default async function TurlarPage({
                 padding: '32px 28px',
                 boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
               }}>
-                <span style={{ fontSize: '2.2rem', display: 'block', marginBottom: '16px' }}>{item.icon}</span>
+                <div style={{ marginBottom: '20px' }}>{PRINCIPLE_ICONS[item.icon]}</div>
                 <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1A1A1A', margin: '0 0 10px' }}>{item.title}</h3>
                 <p style={{ fontSize: '0.85rem', color: '#6A6A6A', margin: 0, lineHeight: 1.6 }}>{item.desc}</p>
               </div>
@@ -365,6 +365,34 @@ const footerLink: React.CSSProperties = {
   fontSize: '0.8rem',
   color: 'rgba(255,255,255,0.38)',
   textDecoration: 'none',
+};
+
+const PRINCIPLE_ICONS: Record<string, JSX.Element> = {
+  curated: (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#FF5533" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 4 L23.5 14.5 L35 14.5 L25.5 21 L29 31.5 L20 25 L11 31.5 L14.5 21 L5 14.5 L16.5 14.5 Z" />
+      <path d="M14 36 L26 36" strokeWidth="1.2" stroke="#FF5533" strokeOpacity="0.4" />
+      <line x1="20" y1="31.5" x2="20" y2="36" strokeWidth="1.2" stroke="#FF5533" strokeOpacity="0.4" />
+    </svg>
+  ),
+  compass: (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#FF5533" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="20" cy="20" r="15.5" />
+      <circle cx="20" cy="20" r="2" fill="#FF5533" stroke="none" />
+      <polygon points="20,8 22.5,20 20,18 17.5,20" fill="#FF5533" stroke="none" />
+      <polygon points="20,32 17.5,20 20,22 22.5,20" fill="#FF5533" fillOpacity="0.3" stroke="none" />
+      <line x1="20" y1="5" x2="20" y2="7" strokeWidth="1.2" />
+      <line x1="20" y1="33" x2="20" y2="35" strokeWidth="1.2" />
+      <line x1="5" y1="20" x2="7" y2="20" strokeWidth="1.2" />
+      <line x1="33" y1="20" x2="35" y2="20" strokeWidth="1.2" />
+    </svg>
+  ),
+  shield: (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#FF5533" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 4 L33 9 L33 20 C33 27.5 27 33.5 20 36 C13 33.5 7 27.5 7 20 L7 9 Z" />
+      <path d="M14 20 L18 24 L26 16" strokeWidth="2" />
+    </svg>
+  ),
 };
 
 function InfoRow({ icon, label, value, orange }: { icon: string; label: string; value: string; orange?: boolean }) {

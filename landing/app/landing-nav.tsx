@@ -35,8 +35,7 @@ export default function LandingNav() {
       justifyContent: 'space-between',
     }}>
       <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-        <Image src="/logo.png" alt="Trekly" width={44} height={44} style={{ objectFit: 'contain' }} />
-        <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FF5533', letterSpacing: '-0.04em' }}>Trekly</span>
+        <Image src="/logo.png" alt="Trekly" width={60} height={60} style={{ objectFit: 'contain' }} />
       </Link>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>

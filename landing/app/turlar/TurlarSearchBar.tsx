@@ -32,13 +32,25 @@ export default function TurlarSearchBar({ labels }: Props) {
     setCategory(params.get('category') ?? '');
   }, [params]);
 
+  function buildQuery(overrides: { date?: string; location?: string; category?: string }) {
+    const q = new URLSearchParams();
+    const d = overrides.date      !== undefined ? overrides.date      : date;
+    const l = overrides.location  !== undefined ? overrides.location  : location;
+    const c = overrides.category  !== undefined ? overrides.category  : category;
+    if (d) q.set('start_date', d);
+    if (l.trim()) q.set('location', l.trim());
+    if (c) q.set('category', c);
+    return `/turlar${q.toString() ? `?${q}` : ''}`;
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const q = new URLSearchParams();
-    if (date) q.set('start_date', date);
-    if (location.trim()) q.set('location', location.trim());
-    if (category) q.set('category', category);
-    router.push(`/turlar${q.toString() ? `?${q}` : ''}`);
+    router.push(buildQuery({}));
+  }
+
+  function handleCategoryChange(val: string) {
+    setCategory(val);
+    router.push(buildQuery({ category: val }));
   }
 
   return (
@@ -97,7 +109,7 @@ export default function TurlarSearchBar({ labels }: Props) {
           </label>
           <select
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(e) => handleCategoryChange(e.target.value)}
             style={{
               border: 'none', outline: 'none', fontSize: '0.88rem',
               color: category ? '#1A1A1A' : '#9A9A9A', background: 'transparent',
