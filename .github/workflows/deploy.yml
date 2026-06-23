@@ -44,22 +44,24 @@ jobs:
 
       - name: Deploy
         run: |
+          cat > /tmp/env.yaml << ENVEOF
+          NODE_ENV: production
+          GCP_PROJECT_ID: treklyapp
+          API_BASE_URL: https://trekly-api-835377577547.europe-west1.run.app
+          DATABASE_URL: "${{ secrets.DATABASE_URL }}"
+          JWT_SECRET: "${{ secrets.JWT_SECRET }}"
+          JWT_AGENCY_SECRET: "${{ secrets.JWT_AGENCY_SECRET }}"
+          GCP_STORAGE_BUCKET: "${{ secrets.GCP_STORAGE_BUCKET }}"
+          GMAIL_USER: "${{ secrets.GMAIL_USER }}"
+          GMAIL_APP_PASSWORD: "${{ secrets.GMAIL_APP_PASSWORD }}"
+          ENVEOF
           gcloud run deploy trekly-api \
             --image ${{ env.REGISTRY }}/trekly-api:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
             --add-cloudsql-instances treklyapp:europe-west1:trekly-db \
-            --set-env-vars "\
-          NODE_ENV=production,\
-          GCP_PROJECT_ID=${{ env.PROJECT_ID }},\
-          API_BASE_URL=https://trekly-api-835377577547.europe-west1.run.app,\
-          DATABASE_URL=${{ secrets.DATABASE_URL }},\
-          JWT_SECRET=${{ secrets.JWT_SECRET }},\
-          JWT_AGENCY_SECRET=${{ secrets.JWT_AGENCY_SECRET }},\
-          GCP_STORAGE_BUCKET=${{ secrets.GCP_STORAGE_BUCKET }},\
-          GMAIL_USER=${{ secrets.GMAIL_USER }},\
-          GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}"
+            --env-vars-file /tmp/env.yaml
 
   deploy-agency:
     name: Deploy Agency Panel (trekly-agency)
