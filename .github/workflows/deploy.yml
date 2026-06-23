@@ -1,0 +1,145 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+
+env:
+  PROJECT_ID: treklyapp
+  REGION: europe-west1
+  REGISTRY: europe-west1-docker.pkg.dev/treklyapp/trekly-backend
+  WIF_PROVIDER: projects/835377577547/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+  SERVICE_ACCOUNT: github-deploy@treklyapp.iam.gserviceaccount.com
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend (trekly-api)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build & Push
+        working-directory: ./backend
+        run: |
+          docker build --platform linux/amd64 \
+            -t ${{ env.REGISTRY }}/trekly-api:${{ github.sha }} \
+            -t ${{ env.REGISTRY }}/trekly-api:latest \
+            .
+          docker push ${{ env.REGISTRY }}/trekly-api:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/trekly-api:latest
+
+      - name: Deploy
+        run: |
+          gcloud run deploy trekly-api \
+            --image ${{ env.REGISTRY }}/trekly-api:${{ github.sha }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --add-cloudsql-instances treklyapp:europe-west1:trekly-db \
+            --set-env-vars "\
+          NODE_ENV=production,\
+          GCP_PROJECT_ID=${{ env.PROJECT_ID }},\
+          API_BASE_URL=https://trekly-api-835377577547.europe-west1.run.app,\
+          DATABASE_URL=${{ secrets.DATABASE_URL }},\
+          JWT_SECRET=${{ secrets.JWT_SECRET }},\
+          JWT_AGENCY_SECRET=${{ secrets.JWT_AGENCY_SECRET }},\
+          GCP_STORAGE_BUCKET=${{ secrets.GCP_STORAGE_BUCKET }},\
+          GMAIL_USER=${{ secrets.GMAIL_USER }},\
+          GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}"
+
+  deploy-agency:
+    name: Deploy Agency Panel (trekly-agency)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build & Push
+        working-directory: ./agency-panel
+        run: |
+          docker build --platform linux/amd64 \
+            --build-arg NEXT_PUBLIC_API_URL=https://trekly-api-835377577547.europe-west1.run.app \
+            -t ${{ env.REGISTRY }}/trekly-agency:${{ github.sha }} \
+            -t ${{ env.REGISTRY }}/trekly-agency:latest \
+            .
+          docker push ${{ env.REGISTRY }}/trekly-agency:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/trekly-agency:latest
+
+      - name: Deploy
+        run: |
+          gcloud run deploy trekly-agency \
+            --image ${{ env.REGISTRY }}/trekly-agency:${{ github.sha }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "NEXT_PUBLIC_API_URL=https://trekly-api-835377577547.europe-west1.run.app"
+
+  deploy-landing:
+    name: Deploy Landing (trekly-landing)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build & Push
+        working-directory: ./landing
+        run: |
+          docker build --platform linux/amd64 \
+            --build-arg NEXT_PUBLIC_API_URL=https://trekly-api-835377577547.europe-west1.run.app \
+            --build-arg NEXT_PUBLIC_AGENCY_URL=https://acenta.treklyapp.com \
+            -t ${{ env.REGISTRY }}/trekly-landing:${{ github.sha }} \
+            -t ${{ env.REGISTRY }}/trekly-landing:latest \
+            .
+          docker push ${{ env.REGISTRY }}/trekly-landing:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/trekly-landing:latest
+
+      - name: Deploy
+        run: |
+          gcloud run deploy trekly-landing \
+            --image ${{ env.REGISTRY }}/trekly-landing:${{ github.sha }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "\
+          API_URL=https://trekly-api-835377577547.europe-west1.run.app,\
+          NEXT_PUBLIC_AGENCY_URL=https://acenta.treklyapp.com"
