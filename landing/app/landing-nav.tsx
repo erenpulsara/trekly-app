@@ -36,6 +36,14 @@ export default function LandingNav() {
     }}>
       <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
         <Image src="/logo.png" alt="Trekly" width={60} height={60} style={{ objectFit: 'contain' }} />
+        <span style={{
+          fontFamily: '"Montserrat", sans-serif',
+          fontWeight: 900,
+          fontSize: '1.55rem',
+          color: '#ff751f',
+          letterSpacing: '-0.02em',
+          lineHeight: 1,
+        }}>Trekly</span>
       </Link>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
