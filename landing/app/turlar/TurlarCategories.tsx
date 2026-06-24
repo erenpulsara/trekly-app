@@ -79,8 +79,7 @@ const icons: Record<string, (active: boolean) => JSX.Element> = {
   ),
 };
 
-const CATEGORIES = [
-  { key: '',                label: 'Tümü',           iconKey: 'all' },
+const STATIC_CATEGORIES = [
   { key: 'trekking',        label: 'Trekking',        iconKey: 'trekking' },
   { key: 'dağcılık',        label: 'Dağcılık',        iconKey: 'dağcılık' },
   { key: 'kano',            label: 'Kano',            iconKey: 'kano' },
@@ -91,11 +90,20 @@ const CATEGORIES = [
   { key: 'yamaç paraşütü',  label: 'Yamaç Paraşütü', iconKey: 'paraşüt' },
 ];
 
+// Bilinmeyen kategoriler için generic ikon
+const genericIcon = (a: boolean) => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke={color(a)} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="13" cy="13" r="9" />
+    <path d="M13 8 L13 13 L16 16" />
+  </svg>
+);
+
 interface Props {
   activeCategory: string;
+  dynamicCategories?: string[];
 }
 
-export default function TurlarCategories({ activeCategory }: Props) {
+export default function TurlarCategories({ activeCategory, dynamicCategories }: Props) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -109,11 +117,30 @@ export default function TurlarCategories({ activeCategory }: Props) {
     router.push(`/turlar${q.toString() ? `?${q}` : ''}`);
   }
 
+  // Backend boş gelirse tüm statik listeyi göster
+  const hasDynamic = dynamicCategories && dynamicCategories.length > 0;
+
+  const extraKeys = hasDynamic
+    ? dynamicCategories.filter((k) => !STATIC_CATEGORIES.some((s) => s.key === k))
+    : [];
+
+  const allCategories = [
+    { key: '', label: 'Tümü', iconKey: 'all' },
+    ...(hasDynamic
+      ? STATIC_CATEGORIES.filter((s) => dynamicCategories.includes(s.key))
+      : STATIC_CATEGORIES),
+    ...extraKeys.map((k) => ({
+      key: k,
+      label: k.charAt(0).toUpperCase() + k.slice(1),
+      iconKey: '__generic__',
+    })),
+  ];
+
   return (
-    <div style={{ overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', padding: '4px 0' }}>
+    <div style={{ overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' as const }}>
       <style>{`.cat-scroll::-webkit-scrollbar{display:none}`}</style>
-      <div className="cat-scroll" style={{ display: 'flex', gap: '10px', minWidth: 'max-content', padding: '4px 2px' }}>
-        {CATEGORIES.map(({ key, label, iconKey }) => {
+      <div className="cat-scroll" style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', padding: '12px 0' }}>
+        {allCategories.map(({ key, label, iconKey }) => {
           const isActive = activeCategory === key;
           return (
             <button
@@ -123,20 +150,20 @@ export default function TurlarCategories({ activeCategory }: Props) {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '7px',
-                padding: '13px 18px',
-                borderRadius: '14px',
+                gap: '6px',
+                padding: '10px 16px',
+                borderRadius: '12px',
                 border: isActive ? '1.5px solid #FF5533' : '1.5px solid #E5E7EB',
                 background: isActive ? '#FFF4F1' : 'white',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
-                minWidth: '78px',
-                boxShadow: isActive ? '0 2px 8px rgba(255,85,51,0.12)' : '0 1px 3px rgba(0,0,0,0.05)',
+                minWidth: '72px',
+                boxShadow: isActive ? '0 2px 8px rgba(255,85,51,0.12)' : 'none',
               }}
             >
-              {icons[iconKey]?.(isActive)}
+              {iconKey === '__generic__' ? genericIcon(isActive) : icons[iconKey]?.(isActive)}
               <span style={{
-                fontSize: '0.68rem',
+                fontSize: '0.65rem',
                 fontWeight: isActive ? 700 : 500,
                 color: isActive ? '#FF5533' : '#6B7280',
                 whiteSpace: 'nowrap',

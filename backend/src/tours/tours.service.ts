@@ -64,6 +64,18 @@ export class ToursService {
     return (await qb.getMany()).map((t) => this.withProxyUrls(t));
   }
 
+  async findPublishedCategories(): Promise<string[]> {
+    const rows = await this.tourRepo
+      .createQueryBuilder('tour')
+      .select('DISTINCT tour.category', 'category')
+      .where('tour.status = :status', { status: 'published' })
+      .andWhere('tour.category IS NOT NULL')
+      .andWhere("tour.category != ''")
+      .orderBy('tour.category', 'ASC')
+      .getRawMany<{ category: string }>();
+    return rows.map((r) => r.category);
+  }
+
   async findOnePublished(id: string): Promise<Tour> {
     const tour = await this.tourRepo.findOne({
       where: { id, status: 'published' },

@@ -23,6 +23,16 @@ export async function getPublishedTours(params?: {
   }
 }
 
+export async function getCategories(): Promise<string[]> {
+  try {
+    const res = await fetch(`${API_URL}/tours/categories`, { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
 export async function getTour(id: string): Promise<Tour | null> {
   try {
     const res = await fetch(`${API_URL}/tours/${id}`, { next: { revalidate: 30 } });

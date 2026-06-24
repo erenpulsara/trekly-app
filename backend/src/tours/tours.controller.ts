@@ -11,6 +11,11 @@ export class ToursController {
     return this.toursService.findAllPublished(query);
   }
 
+  @Get('categories')
+  findCategories() {
+    return this.toursService.findPublishedCategories();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.toursService.findOnePublished(id);
