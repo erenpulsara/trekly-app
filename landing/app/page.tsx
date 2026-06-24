@@ -17,35 +17,38 @@ export default function HomePage() {
           display: inline-flex;
           align-items: center;
           gap: 10px;
-          background: white;
-          color: #1A1A1A;
+          background: transparent;
+          color: rgba(255,255,255,0.85);
           font-size: 0.95rem;
-          font-weight: 700;
+          font-weight: 600;
           padding: 16px 36px;
           border-radius: 100px;
+          border: 1.5px solid rgba(255,255,255,0.3);
           text-decoration: none;
           letter-spacing: 0.01em;
-          transition: background 0.15s, transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+          transition: border-color 0.15s, color 0.15s, transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
           white-space: nowrap;
+          backdrop-filter: blur(4px);
         }
-        .lp-hero-btn-primary:hover { background: #f0f0f0; transform: translateY(-2px); }
+        .lp-hero-btn-primary:hover { border-color: rgba(255,255,255,0.7); color: white; transform: translateY(-2px); }
         .lp-hero-btn-secondary {
           display: inline-flex;
           align-items: center;
           gap: 10px;
           background: transparent;
-          color: white;
+          color: rgba(255,255,255,0.85);
           font-size: 0.95rem;
           font-weight: 600;
           padding: 16px 36px;
           border-radius: 100px;
-          border: 1.5px solid rgba(255,255,255,0.5);
+          border: 1.5px solid rgba(255,255,255,0.3);
           text-decoration: none;
           letter-spacing: 0.01em;
-          transition: border-color 0.15s, background 0.15s, transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+          transition: border-color 0.15s, color 0.15s, transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
           white-space: nowrap;
+          backdrop-filter: blur(4px);
         }
-        .lp-hero-btn-secondary:hover { border-color: white; background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+        .lp-hero-btn-secondary:hover { border-color: rgba(255,255,255,0.7); color: white; transform: translateY(-2px); }
         @media (max-width: 540px) {
           .lp-hero-btns { flex-direction: column !important; align-items: center !important; }
           .lp-hero-title { font-size: 3rem !important; }
@@ -75,10 +78,10 @@ export default function HomePage() {
           zIndex: 2,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'center',
-          textAlign: 'center',
-          padding: '0 32px',
+          textAlign: 'left',
+          padding: '0 80px',
         }}>
           <h1
             className="lp-hero-title"
@@ -93,19 +96,20 @@ export default function HomePage() {
             }}
           >
             {tx.hero.title1}<br />
-            <em style={{ color: '#FF5533', fontStyle: 'italic' }}>{tx.hero.title2}</em>
+            <em style={{ color: '#FF5533', fontStyle: 'italic' }}>{tx.hero.title2}</em><br />
+            {tx.hero.title3}
           </h1>
           <p style={{
             fontSize: 'clamp(0.9rem, 1.2vw, 1.05rem)',
             color: 'rgba(255,255,255,0.55)',
             lineHeight: 1.85,
-            maxWidth: '520px',
+            whiteSpace: 'nowrap',
             margin: '0 0 48px',
           }}>
             {tx.hero.subtitle}
           </p>
 
-          <div className="lp-hero-btns" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div className="lp-hero-btns" style={{ display: 'flex', alignItems: 'center', gap: '14px', alignSelf: 'center' }}>
             <a href="/turlar" className="lp-hero-btn-primary">
               {tx.hero.exploreTours}
               <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">

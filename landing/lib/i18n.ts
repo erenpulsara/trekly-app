@@ -18,8 +18,9 @@ export const T = {
       about: 'Hakkımızda',
     },
     hero: {
-      title1: "Türkiye'nin Doğa ve",
-      title2: 'Su Sporları Ekosistemi.',
+      title1: "Türkiye'nin",
+      title2: "Doğa ve Su Sporları",
+      title3: "Ekosistemi.",
       subtitle:
         "Türkiye'nin en seçkin doğa ve su sporları turları, akredite profesyonel eğitmenlerle tek platformda.",
       exploreTours: 'Maceraya Ortak Ol',
@@ -84,8 +85,9 @@ export const T = {
       about: 'About',
     },
     hero: {
-      title1: "Turkey's Nature &",
-      title2: 'Water Sports Ecosystem.',
+      title1: "Turkey's",
+      title2: "Nature & Water Sports",
+      title3: "Ecosystem.",
       subtitle:
         "Turkey's finest nature and water sports tours with accredited professional instructors, all in one platform.",
       exploreTours: 'Explore Tours',
