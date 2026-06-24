@@ -49,7 +49,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
       <nav className="navbar">
         <Link href="/" className="logo">Trekly</Link>
         <div className="nav-links">
-          <Link href="/" className="nav-link">← Tüm Turlar</Link>
+          <Link href="/turlar" className="nav-link">← Tüm Turlar</Link>
           <a href={AGENCY_URL} target="_blank" rel="noopener noreferrer" className="nav-cta">Acenta Ol</a>
         </div>
       </nav>
