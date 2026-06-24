@@ -177,7 +177,7 @@ export default async function TurlarPage({
       </TurlarHero>
 
       {/* Category row — hero altında, beyaz bant */}
-      <div style={{ background: 'white', borderBottom: '1px solid #EAEAEA', padding: '0 48px' }}>
+      <div id="cat-section" style={{ background: 'white', borderBottom: '1px solid #EAEAEA', padding: '0 48px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <Suspense>
             <TurlarCategories activeCategory={activeCategory} dynamicCategories={categories} />

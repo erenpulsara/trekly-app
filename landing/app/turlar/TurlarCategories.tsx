@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const color = (active: boolean) => active ? '#FF5533' : '#6B7280';
@@ -106,6 +107,19 @@ interface Props {
 export default function TurlarCategories({ activeCategory, dynamicCategories }: Props) {
   const router = useRouter();
   const params = useSearchParams();
+  const isFirstRender = useRef(true);
+
+  // Params değişince (navigasyon sonrası) kategori satırını görünüme getir
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    const el = document.getElementById('cat-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [params]);
 
   function navigate(categoryKey: string) {
     const q = new URLSearchParams();

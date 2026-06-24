@@ -62,9 +62,9 @@ export const T = {
     principles: {
       title: 'İlkelerimiz',
       items: [
-        { icon: 'curated', title: 'Seçilmiş Deneyimler', desc: 'Sadece ticari kaygı güden değil, doğaya saygı duyan profesyonel kulüplerle çalışıyoruz.' },
-        { icon: 'compass', title: 'Algoritmadan Uzak', desc: 'Size popüler olanı değil, ihtiyacınız olanı sunuyoruz.' },
-        { icon: 'shield', title: 'Organize ve Güvenli', desc: "Dağınık bilgi kirliliğini ortadan kaldırıyoruz. Türkiye'nin tüm doğa disiplinleri tek vitrin." },
+        { icon: 'curated', title: 'Seçilmiş Deneyimler', desc: 'Sadece ticari kaygı güden değil, doğaya saygı duyan, profesyonel ve etik değerleri olan kulüplerle çalışıyoruz.' },
+        { icon: 'compass', title: 'Algoritmadan Uzak', desc: 'Size "popüler olanı" değil, ihtiyacınız olanı sunuyoruz. Kondisyonunuza, ruh halinize ve ilginize en uygun macerayı saniyeler içinde, gürültüsüzce bulun.' },
+        { icon: 'shield', title: 'Organize ve Güvenli', desc: "Dağınık ve güven vermeyen bilgi kirliliğini ortadan kaldırıyoruz. Türkiye'nin tüm doğa disiplinleri, herkes için erişilebilir ve şeffaf bir vitrinde." },
       ],
     },
     footer: {
@@ -129,9 +129,9 @@ export const T = {
     principles: {
       title: 'Our Principles',
       items: [
-        { icon: 'curated', title: 'Curated Experiences', desc: 'We work only with professional clubs that respect nature, not just commercial interests.' },
-        { icon: 'compass', title: 'Beyond the Algorithm', desc: "We show you what you need, not what's popular." },
-        { icon: 'shield', title: 'Organized & Safe', desc: "We eliminate information clutter. All of Turkey's nature disciplines in one showcase." },
+        { icon: 'curated', title: 'Curated Experiences', desc: 'We work only with clubs that respect nature and hold professional and ethical values — not just commercial interests.' },
+        { icon: 'compass', title: 'Beyond the Algorithm', desc: 'We show you what you need, not what\'s popular. Find the adventure that fits your fitness, mood and interests in seconds, noise-free.' },
+        { icon: 'shield', title: 'Organized & Safe', desc: "We eliminate scattered, unreliable information. All of Turkiye's nature disciplines in one accessible, transparent showcase." },
       ],
     },
     footer: {
