@@ -109,12 +109,9 @@ export default function HomePage() {
             {tx.hero.subtitle}
           </p>
 
-          <div className="lp-hero-btns" style={{ display: 'flex', alignItems: 'center', gap: '14px', alignSelf: 'center' }}>
+          <div className="lp-hero-btns" style={{ display: 'flex', alignItems: 'center', gap: '14px', alignSelf: 'center', marginTop: '64px' }}>
             <a href="/turlar" className="lp-hero-btn-primary">
               {tx.hero.exploreTours}
-              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-              </svg>
             </a>
             <a href={AGENCY_URL} target="_blank" rel="noopener noreferrer" className="lp-hero-btn-secondary">
               {tx.hero.becomeAgency}
