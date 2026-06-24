@@ -1,8 +1,8 @@
 import {
   Controller, Get, Post, Patch, Delete,
-  Param, Body, UseGuards, UseInterceptors,
+  Param, Body, UseInterceptors,
   UploadedFile, ParseFilePipe, MaxFileSizeValidator,
-  FileTypeValidator, Optional,
+  FileTypeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BlogService } from './blog.service';
@@ -52,8 +52,8 @@ export class BlogController {
     file?: Express.Multer.File,
   ) {
     if (file) {
-      const url = await this.mediaService.uploadFile(file);
-      dto.cover_image = url;
+      const result = await this.mediaService.uploadFile(file);
+      dto.cover_image = result.url;
     }
     return this.blogService.create(dto);
   }
@@ -75,8 +75,8 @@ export class BlogController {
     file?: Express.Multer.File,
   ) {
     if (file) {
-      const url = await this.mediaService.uploadFile(file);
-      dto.cover_image = url;
+      const result = await this.mediaService.uploadFile(file);
+      dto.cover_image = result.url;
     }
     return this.blogService.update(id, dto);
   }

@@ -333,12 +333,12 @@ export default async function TurlarPage({
       {/* Footer */}
       <footer style={{ background: '#1A1A1A', padding: '40px 48px' }}>
         <div className="footer-inner" style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Image src="/logo.png" alt="Trekly" width={22} height={22} style={{ objectFit: 'contain' }} />
-            <span style={{ fontSize: '1rem', fontWeight: 800, color: '#FF5533', letterSpacing: '-0.04em' }}>Trekly</span>
-          </div>
-
-          <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Image src="/logo.png" alt="Trekly" width={22} height={22} style={{ objectFit: 'contain' }} />
+              <span style={{ fontSize: '1rem', fontWeight: 800, color: '#FF5533', letterSpacing: '-0.04em' }}>Trekly</span>
+            </div>
+            <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.12)' }} />
             <Link href="/privacy"    style={footerLink}>{tx.footer.privacy}</Link>
             <Link href="/terms"      style={footerLink}>{tx.footer.terms}</Link>
             <Link href="/hakkimizda" style={footerLink}>{tx.footer.about}</Link>
