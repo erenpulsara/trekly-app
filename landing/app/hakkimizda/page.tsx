@@ -140,8 +140,8 @@ export default function HakkimizdaPage() {
       {/* ── Navbar ─────────────────────────────── */}
       <nav className="hk-nav">
         <Link href="/" className="hk-logo">
-          <Image src="/logo.png" alt="Trekly" width={28} height={28} style={{ objectFit: 'contain' }} />
-          <span>Trekly</span>
+          <Image src="/logo.png" alt="Trekly" width={60} height={60} style={{ objectFit: 'contain' }} />
+          <span style={{ fontFamily: '"Montserrat", sans-serif', fontWeight: 900, fontSize: '1.55rem', color: '#ff751f', letterSpacing: '-0.02em', lineHeight: 1 }}>Trekly</span>
         </Link>
         <div className="hk-nav-r">
           <a href="/turlar" className="hk-navlink">{hk.nav.tours}</a>
@@ -308,8 +308,8 @@ export default function HakkimizdaPage() {
       {/* ── Footer ─────────────────────────────── */}
       <footer className="hk-footer">
         <div className="hk-footer-logo-wrap">
-          <Image src="/logo.png" alt="Trekly" width={22} height={22} style={{ objectFit: 'contain' }} />
-          <span className="hk-footer-logo">Trekly</span>
+          <Image src="/logo.png" alt="Trekly" width={36} height={36} style={{ objectFit: 'contain' }} />
+          <span style={{ fontFamily: '"Montserrat", sans-serif', fontWeight: 900, fontSize: '1.1rem', color: '#ff751f', letterSpacing: '-0.02em', lineHeight: 1 }}>Trekly</span>
         </div>
         <div className="hk-footer-links">
           <a href="/privacy">{hk.footer.privacy}</a>
@@ -347,10 +347,6 @@ export default function HakkimizdaPage() {
           display: flex;
           align-items: center;
           gap: 8px;
-          font-size: 1.32rem;
-          font-weight: 800;
-          color: #FF5533;
-          letter-spacing: -0.04em;
           text-decoration: none;
         }
         .hk-nav-r {
