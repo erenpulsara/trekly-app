@@ -13,6 +13,8 @@ import { ToursModule } from './tours/tours.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { UsersModule } from './users/users.module';
 import { MediaModule } from './media/media.module';
+import { BlogModule } from './blog/blog.module';
+import { BlogPost } from './entities/blog-post.entity';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { MediaModule } from './media/media.module';
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
         url: config.get<string>('DATABASE_URL'),
-        entities: [Agency, Tour, TourDate, User, Booking, UserPointsLog, VerificationToken],
+        entities: [Agency, Tour, TourDate, User, Booking, UserPointsLog, VerificationToken, BlogPost],
         synchronize: true, // Set to false and use migrations in production
         autoLoadEntities: true,
         ssl: config.get<string>('DATABASE_URL')?.includes('cloudsql')
@@ -38,6 +40,7 @@ import { MediaModule } from './media/media.module';
     BookingsModule,
     UsersModule,
     MediaModule,
+    BlogModule,
   ],
 })
 export class AppModule {}

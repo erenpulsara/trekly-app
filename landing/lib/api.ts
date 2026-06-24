@@ -33,6 +33,38 @@ export async function getCategories(): Promise<string[]> {
   }
 }
 
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string | null;
+  cover_image: string | null;
+  status: 'draft' | 'published';
+  published_at: string | null;
+  created_at: string;
+}
+
+export async function getBlogPosts(): Promise<BlogPost[]> {
+  try {
+    const res = await fetch(`${API_URL}/blog`, { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export async function getBlogPost(slug: string): Promise<BlogPost | null> {
+  try {
+    const res = await fetch(`${API_URL}/blog/${slug}`, { next: { revalidate: 60 } });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
 export async function getTour(id: string): Promise<Tour | null> {
   try {
     const res = await fetch(`${API_URL}/tours/${id}`, { next: { revalidate: 30 } });

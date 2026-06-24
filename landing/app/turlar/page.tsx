@@ -147,6 +147,7 @@ export default async function TurlarPage({
         navLinks={[
           { label: 'Hakkımızda', href: '/hakkimizda' },
           { label: 'Etkinlikler', href: '#' },
+          { label: 'Blog', href: '/blog' },
           { label: 'İletişim', href: '#' },
         ]}
       />
