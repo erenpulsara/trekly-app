@@ -22,8 +22,8 @@ export const T = {
       title2: 'Su Sporları Ekosistemi.',
       subtitle:
         "Türkiye'nin en seçkin doğa ve su sporları turları, akredite profesyonel eğitmenlerle tek platformda.",
-      exploreTours: 'Turları Keşfet',
-      becomeAgency: 'Acenta Ol',
+      exploreTours: 'Maceraya Ortak Ol',
+      becomeAgency: 'Ekosisteme Katıl',
     },
     tours: {
       eyebrow: 'Tüm Turlar',
