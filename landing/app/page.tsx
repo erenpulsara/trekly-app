@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import LandingNav from './landing-nav';
+import HeroButtons from './HeroButtons';
 import { T, type Lang } from '@/lib/i18n';
 
 export const dynamic = 'force-dynamic';
@@ -109,14 +110,11 @@ export default function HomePage() {
             {tx.hero.subtitle}
           </p>
 
-          <div className="lp-hero-btns" style={{ display: 'flex', alignItems: 'center', gap: '14px', alignSelf: 'center', marginTop: '96px' }}>
-            <a href="/turlar" className="lp-hero-btn-primary">
-              {tx.hero.exploreTours}
-            </a>
-            <a href={AGENCY_URL} target="_blank" rel="noopener noreferrer" className="lp-hero-btn-secondary">
-              {tx.hero.becomeAgency}
-            </a>
-          </div>
+          <HeroButtons
+            exploreTours={tx.hero.exploreTours}
+            becomeAgency={tx.hero.becomeAgency}
+            agencyUrl={AGENCY_URL}
+          />
         </div>
       </section>
     </>
