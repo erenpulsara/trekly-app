@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-const CATEGORIES = [
+// Sabit 8 kategori — her zaman gösterilir (dropdown için)
+const STATIC_CATEGORIES = [
   'trekking', 'dağcılık', 'kano', 'rafting',
   'bisiklet', 'kamp', 'dalış', 'yamaç paraşütü',
 ];
@@ -25,9 +26,14 @@ const MONTHS = [
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-/* ── Custom Dropdown ───────────────────────────────── */
-interface DropdownOption { label: string; value: string }
+/* ── Types ──────────────────────────────────────────── */
+interface DropdownOption {
+  label: string;
+  value: string;
+  iconFn?: (active: boolean) => JSX.Element;
+}
 
+/* ── Custom Dropdown ────────────────────────────────── */
 function CustomDropdown({
   options,
   value,
@@ -47,7 +53,6 @@ function CustomDropdown({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-
   const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
@@ -91,29 +96,12 @@ function CustomDropdown({
           outline: 'none',
         }}
       >
-        <span style={{
-          fontSize: '0.58rem',
-          fontWeight: 700,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          color: 'rgba(255,255,255,0.45)',
-        }}>
+        <span style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
           {label}
         </span>
-        <span style={{
-          fontSize: '0.82rem',
-          fontWeight: 500,
-          color: value ? 'white' : 'rgba(255,255,255,0.38)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '5px',
-          whiteSpace: 'nowrap',
-        }}>
+        <span style={{ fontSize: '0.82rem', fontWeight: 500, color: value ? 'white' : 'rgba(255,255,255,0.38)', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap' }}>
           {displayLabel}
-          <svg
-            width="10" height="10" viewBox="0 0 10 10" fill="none"
-            style={{ transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)', opacity: 0.5, flexShrink: 0 }}
-          >
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)', opacity: 0.5, flexShrink: 0 }}>
             <path d="M2 3.5L5 6.5L8 3.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </span>
@@ -133,9 +121,9 @@ function CustomDropdown({
           boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
           zIndex: 999,
           padding: '8px',
-          minWidth: isGrid ? 'unset' : '160px',
+          minWidth: isGrid ? 'unset' : '180px',
         }}>
-          {/* "Tümü / Tüm Aylar" — her zaman tam genişlik */}
+          {/* Tümü / Tüm Aylar — full width always */}
           <DropdownItem
             label={placeholder}
             active={value === ''}
@@ -145,17 +133,14 @@ function CustomDropdown({
           <div style={{ height: '1px', background: 'rgba(0,0,0,0.07)', margin: '4px 0' }} />
 
           {isGrid ? (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: `repeat(${columns}, 1fr)`,
-              gap: '2px',
-            }}>
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: '2px' }}>
               {options.map((opt) => (
                 <DropdownItem
                   key={opt.value}
                   label={opt.label}
                   active={value === opt.value}
                   onClick={() => { onChange(opt.value); close(); }}
+                  iconFn={opt.iconFn}
                 />
               ))}
             </div>
@@ -167,6 +152,7 @@ function CustomDropdown({
                 active={value === opt.value}
                 onClick={() => { onChange(opt.value); close(); }}
                 fullWidth
+                iconFn={opt.iconFn}
               />
             ))
           )}
@@ -177,9 +163,13 @@ function CustomDropdown({
 }
 
 function DropdownItem({
-  label, active, onClick, fullWidth,
+  label, active, onClick, fullWidth, iconFn,
 }: {
-  label: string; active: boolean; onClick: () => void; fullWidth?: boolean;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  fullWidth?: boolean;
+  iconFn?: (a: boolean) => JSX.Element;
 }) {
   const [hover, setHover] = useState(false);
   return (
@@ -191,9 +181,10 @@ function DropdownItem({
       style={{
         display: 'flex',
         alignItems: 'center',
-        justifyContent: fullWidth ? 'space-between' : 'center',
+        justifyContent: fullWidth ? 'flex-start' : 'center',
+        gap: '8px',
         width: fullWidth ? '100%' : 'auto',
-        padding: fullWidth ? '8px 12px' : '7px 14px',
+        padding: fullWidth ? '8px 12px' : '7px 12px',
         borderRadius: '8px',
         background: active ? 'rgba(255,85,51,0.10)' : hover ? 'rgba(0,0,0,0.04)' : 'transparent',
         border: active ? '1px solid rgba(255,85,51,0.25)' : '1px solid transparent',
@@ -201,15 +192,20 @@ function DropdownItem({
         color: active ? '#FF5533' : '#3A3A3A',
         fontSize: '0.8rem',
         fontWeight: active ? 600 : 400,
-        textAlign: 'center',
+        textAlign: 'left',
         transition: 'background 0.12s, color 0.12s, border-color 0.12s',
         whiteSpace: 'nowrap',
         letterSpacing: '0.01em',
       }}
     >
-      {label}
+      {iconFn && (
+        <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0, opacity: active ? 1 : 0.6 }}>
+          {iconFn(active)}
+        </span>
+      )}
+      <span style={{ flex: 1 }}>{label}</span>
       {active && fullWidth && (
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, marginLeft: 'auto' }}>
           <path d="M2.5 7L5.5 10L11.5 4" stroke="#FF5533" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       )}
@@ -217,7 +213,7 @@ function DropdownItem({
   );
 }
 
-/* ── Props ─────────────────────────────────────────── */
+/* ── Props ──────────────────────────────────────────── */
 interface Props {
   labels: {
     searchDate: string;
@@ -226,10 +222,11 @@ interface Props {
     searchBtn: string;
     allCategories: string;
   };
+  categories?: string[];
 }
 
 /* ── Main Component ─────────────────────────────────── */
-export default function TurlarSearchBar({ labels }: Props) {
+export default function TurlarSearchBar({ labels, categories = [] }: Props) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -275,7 +272,12 @@ export default function TurlarSearchBar({ labels }: Props) {
     router.push(buildQuery({ month: val }));
   }
 
-  const categoryOptions: DropdownOption[] = CATEGORIES.map((c) => ({
+  // Sabit 8 + DB'den gelen ekstralar (zaten statikte olmayanlar)
+  const staticSet = new Set(STATIC_CATEGORIES);
+  const extras = categories.filter(c => !staticSet.has(c) && !staticSet.has(c.toLowerCase()));
+  const activeCategories = [...STATIC_CATEGORIES, ...extras];
+
+  const categoryOptions: DropdownOption[] = activeCategories.map((c) => ({
     value: c,
     label: c.charAt(0).toUpperCase() + c.slice(1),
   }));
@@ -320,15 +322,7 @@ export default function TurlarSearchBar({ labels }: Props) {
         height: '52px',
         borderRight: '1px solid rgba(255,255,255,0.12)',
       }}>
-        <label style={{
-          fontSize: '0.58rem',
-          fontWeight: 700,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          color: 'rgba(255,255,255,0.45)',
-          textAlign: 'center',
-          width: '100%',
-        }}>
+        <label style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', textAlign: 'center', width: '100%' }}>
           {labels.searchLocation}
         </label>
         <input

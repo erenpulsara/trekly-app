@@ -14,7 +14,12 @@ export default async function BlogPage() {
 
   return (
     <>
-      <LandingNav />
+      <LandingNav navLinks={[
+        { label: 'Hakkımızda', href: '/hakkimizda' },
+        { label: 'Etkinlikler', href: '/turlar' },
+        { label: 'Blog', href: '/blog', active: true },
+        { label: 'İletişim', href: '/iletisim' },
+      ]} />
 
       <style>{`
         .blog-card { transition: box-shadow 0.2s, transform 0.2s; }

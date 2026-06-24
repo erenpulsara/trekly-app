@@ -144,8 +144,10 @@ export default function HakkimizdaPage() {
           <span style={{ fontFamily: '"Montserrat", sans-serif', fontWeight: 900, fontSize: '1.55rem', color: '#ff751f', letterSpacing: '-0.02em', lineHeight: 1 }}>Trekly</span>
         </Link>
         <div className="hk-nav-r">
-          <a href="/turlar" className="hk-navlink">{hk.nav.tours}</a>
           <Link href="/hakkimizda" className="hk-navlink hk-navlink-active">{hk.nav.about}</Link>
+          <a href="/turlar" className="hk-navlink">Etkinlikler</a>
+          <a href="/blog" className="hk-navlink">Blog</a>
+          <a href="/iletisim" className="hk-navlink">İletişim</a>
           <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'rgba(0,0,0,0.06)', borderRadius: '7px', padding: '3px', marginLeft: '8px' }}>
             {(['tr', 'en'] as const).map((l) => (
               <button key={l} onClick={() => switchLang(l)} style={{ background: lang === l ? 'white' : 'transparent', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.72rem', fontWeight: 700, color: lang === l ? '#1A1A1A' : 'rgba(0,0,0,0.35)', cursor: 'pointer', letterSpacing: '0.04em', boxShadow: lang === l ? '0 1px 2px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.15s' }}>

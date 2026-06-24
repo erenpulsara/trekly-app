@@ -146,7 +146,7 @@ export default async function TurlarPage({
         logoHref="/turlar"
         navLinks={[
           { label: 'Hakkımızda', href: '/hakkimizda' },
-          { label: 'Etkinlikler', href: '#' },
+          { label: 'Etkinlikler', href: '/turlar' },
           { label: 'Blog', href: '/blog' },
           { label: 'İletişim', href: '/iletisim' },
         ]}
@@ -167,13 +167,16 @@ export default async function TurlarPage({
           Sıradaki Maceranı Keşfet
         </p>
         <Suspense>
-          <TurlarSearchBar labels={{
-            searchDate:     tt.searchDate,
-            searchLocation: tt.searchLocation,
-            searchCategory: tt.searchCategory,
-            searchBtn:      tt.searchBtn,
-            allCategories:  tt.allCategories,
-          }} />
+          <TurlarSearchBar
+            labels={{
+              searchDate:     tt.searchDate,
+              searchLocation: tt.searchLocation,
+              searchCategory: tt.searchCategory,
+              searchBtn:      tt.searchBtn,
+              allCategories:  tt.allCategories,
+            }}
+            categories={categories}
+          />
         </Suspense>
       </TurlarHero>
 
@@ -187,7 +190,7 @@ export default async function TurlarPage({
       </div>
 
       {/* Tour grid */}
-      <section className="tr-page-pad" style={{ background: '#FAFAFA', padding: '56px 48px 80px' }}>
+      <section className="tr-page-pad" style={{ background: '#FAFAFA', padding: '56px 48px 48px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
@@ -308,22 +311,22 @@ export default async function TurlarPage({
       </section>
 
       {/* Principles */}
-      <section style={{ background: '#F7F7F7', padding: '72px 48px' }}>
+      <section style={{ background: '#F7F7F7', padding: '48px 48px 56px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <p style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#FF5533', margin: '0 0 10px', textAlign: 'center' }}>
+          <p style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#FF5533', margin: '0 0 8px', textAlign: 'center' }}>
             {tp.title}
           </p>
-          <div className="principles-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginTop: '32px' }}>
+          <div className="principles-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginTop: '24px' }}>
             {tp.items.map((item) => (
               <div key={item.title} style={{
                 background: 'white',
-                borderRadius: '16px',
-                padding: '32px 28px',
-                boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
+                borderRadius: '14px',
+                padding: '22px 22px',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
               }}>
-                <div style={{ marginBottom: '20px' }}>{PRINCIPLE_ICONS[item.icon]}</div>
-                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1A1A1A', margin: '0 0 10px' }}>{item.title}</h3>
-                <p style={{ fontSize: '0.85rem', color: '#6A6A6A', margin: 0, lineHeight: 1.6 }}>{item.desc}</p>
+                <div style={{ marginBottom: '14px', transform: 'scale(0.82)', transformOrigin: 'left center' }}>{PRINCIPLE_ICONS[item.icon]}</div>
+                <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1A1A1A', margin: '0 0 8px' }}>{item.title}</h3>
+                <p style={{ fontSize: '0.8rem', color: '#6A6A6A', margin: 0, lineHeight: 1.6 }}>{item.desc}</p>
               </div>
             ))}
           </div>

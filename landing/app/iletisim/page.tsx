@@ -29,7 +29,12 @@ export default function IletisimPage() {
 
   return (
     <>
-      <LandingNav />
+      <LandingNav navLinks={[
+        { label: 'Hakkımızda', href: '/hakkimizda' },
+        { label: 'Etkinlikler', href: '/turlar' },
+        { label: 'Blog', href: '/blog' },
+        { label: 'İletişim', href: '/iletisim', active: true },
+      ]} />
 
       <main style={{ minHeight: '100vh', background: '#FAFAFA' }}>
         <div style={{ background: 'white', borderBottom: '1px solid #EAEAEA', padding: '72px 48px 80px' }}>
