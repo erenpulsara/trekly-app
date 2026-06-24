@@ -117,18 +117,14 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
     router.push(`/turlar${q.toString() ? `?${q}` : ''}`);
   }
 
-  // Backend boş gelirse tüm statik listeyi göster
-  const hasDynamic = dynamicCategories && dynamicCategories.length > 0;
-
-  const extraKeys = hasDynamic
+  // Statikleri her zaman göster; DB'de ekstra kategori varsa sona ekle
+  const extraKeys = dynamicCategories
     ? dynamicCategories.filter((k) => !STATIC_CATEGORIES.some((s) => s.key === k))
     : [];
 
   const allCategories = [
     { key: '', label: 'Tümü', iconKey: 'all' },
-    ...(hasDynamic
-      ? STATIC_CATEGORIES.filter((s) => dynamicCategories.includes(s.key))
-      : STATIC_CATEGORIES),
+    ...STATIC_CATEGORIES,
     ...extraKeys.map((k) => ({
       key: k,
       label: k.charAt(0).toUpperCase() + k.slice(1),

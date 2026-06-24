@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const SLIDES = [
   {
@@ -23,31 +23,52 @@ const SLIDES = [
 
 const OVERLAY = 'linear-gradient(rgba(0,0,0,0.32) 0%, rgba(0,0,0,0.52) 60%, rgba(0,0,0,0.70) 100%)';
 const INTERVAL = 5000;
+const FADE_MS  = 800;
 
 export default function TurlarHero({ children }: { children: React.ReactNode }) {
-  const [current, setCurrent] = useState(0);
-  const [prev, setPrev] = useState<number | null>(null);
-  const [fading, setFading] = useState(false);
+  // bottom: always fully visible base layer
+  // top: incoming slide fading in
+  const [bottom, setBottom]     = useState(0);
+  const [top, setTop]           = useState<number | null>(null);
+  const [topVisible, setTopVisible] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const goTo = (next: number) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setTop(next);
+    setTopVisible(false);
+
+    // One frame later → trigger CSS transition
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setTopVisible(true);
+      });
+    });
+
+    // After fade completes → swap bottom, hide top layer
+    timerRef.current = setTimeout(() => {
+      setBottom(next);
+      setTop(null);
+      setTopVisible(false);
+    }, FADE_MS + 50);
+  };
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setFading(true);
-      setPrev(current);
-      const next = (current + 1) % SLIDES.length;
-      setTimeout(() => {
-        setCurrent(next);
-        setFading(false);
-        setPrev(null);
-      }, 700);
+    const id = setInterval(() => {
+      setBottom((cur) => {
+        const next = (cur + 1) % SLIDES.length;
+        goTo(next);
+        return cur; // bottom stays until fade done
+      });
     }, INTERVAL);
-    return () => clearInterval(timer);
-  }, [current]);
+    return () => { clearInterval(id); if (timerRef.current) clearTimeout(timerRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const baseStyle: React.CSSProperties = {
+  const slideBase: React.CSSProperties = {
     position: 'absolute',
     inset: 0,
     backgroundSize: 'cover',
-    transition: 'opacity 0.7s ease',
   };
 
   return (
@@ -59,25 +80,25 @@ export default function TurlarHero({ children }: { children: React.ReactNode }) 
       alignItems: 'center',
       justifyContent: 'flex-end',
       paddingBottom: '40px',
-      overflow: 'hidden',
+      // NOT overflow:hidden — dropdown must bleed through
     }}>
-      {/* Previous slide (fading out) */}
-      {prev !== null && (
+      {/* Base slide — always visible */}
+      <div style={{
+        ...slideBase,
+        backgroundImage: `${OVERLAY}, url("${SLIDES[bottom].url}")`,
+        backgroundPosition: SLIDES[bottom].position,
+      }} />
+
+      {/* Incoming slide — fades in */}
+      {top !== null && (
         <div style={{
-          ...baseStyle,
-          backgroundImage: `${OVERLAY}, url("${SLIDES[prev].url}")`,
-          backgroundPosition: SLIDES[prev].position,
-          opacity: fading ? 0 : 1,
+          ...slideBase,
+          backgroundImage: `${OVERLAY}, url("${SLIDES[top].url}")`,
+          backgroundPosition: SLIDES[top].position,
+          opacity: topVisible ? 1 : 0,
+          transition: `opacity ${FADE_MS}ms ease`,
         }} />
       )}
-
-      {/* Current slide */}
-      <div style={{
-        ...baseStyle,
-        backgroundImage: `${OVERLAY}, url("${SLIDES[current].url}")`,
-        backgroundPosition: SLIDES[current].position,
-        opacity: 1,
-      }} />
 
       {/* Dot indicators */}
       <div style={{
@@ -88,33 +109,28 @@ export default function TurlarHero({ children }: { children: React.ReactNode }) 
         gap: '6px',
         zIndex: 10,
       }}>
-        {SLIDES.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => {
-              setFading(true);
-              setPrev(current);
-              setTimeout(() => {
-                setCurrent(i);
-                setFading(false);
-                setPrev(null);
-              }, 700);
-            }}
-            style={{
-              width: i === current ? '20px' : '6px',
-              height: '6px',
-              borderRadius: '3px',
-              background: i === current ? '#FF5533' : 'rgba(255,255,255,0.45)',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-              transition: 'width 0.3s ease, background 0.3s ease',
-            }}
-          />
-        ))}
+        {SLIDES.map((_, i) => {
+          const active = i === (top !== null && topVisible ? top : bottom);
+          return (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              style={{
+                width:  active ? '20px' : '6px',
+                height: '6px',
+                borderRadius: '3px',
+                background: active ? '#FF5533' : 'rgba(255,255,255,0.45)',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'width 0.3s ease, background 0.3s ease',
+              }}
+            />
+          );
+        })}
       </div>
 
-      {/* Content (search bar etc.) */}
+      {/* Content */}
       <div style={{ position: 'relative', zIndex: 5, maxWidth: '860px', width: '100%', padding: '0 32px' }}>
         {children}
       </div>
