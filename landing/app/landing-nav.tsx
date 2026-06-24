@@ -46,11 +46,6 @@ export default function LandingNav() {
         }}>Trekly</span>
       </Link>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
-        <Link href="/turlar" style={{ fontSize: '0.88rem', fontWeight: 600, color: 'rgba(0,0,0,0.55)', textDecoration: 'none' }}>{nav.tours}</Link>
-        <Link href="/hakkimizda" style={{ fontSize: '0.88rem', fontWeight: 600, color: 'rgba(0,0,0,0.55)', textDecoration: 'none' }}>{nav.about}</Link>
-      </div>
-
       <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'rgba(0,0,0,0.05)', borderRadius: '8px', padding: '3px' }}>
         {(['tr', 'en'] as const).map((l) => (
           <button

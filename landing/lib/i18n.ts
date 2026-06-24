@@ -85,11 +85,11 @@ export const T = {
       about: 'About',
     },
     hero: {
-      title1: "Turkey's",
+      title1: "Turkiye's",
       title2: "Nature & Water Sports",
       title3: "Ecosystem",
       subtitle:
-        "Turkey's finest nature and water sports tours with accredited professional instructors, all in one platform.",
+        "Turkiye's finest nature and water sports tours with accredited professional instructors, all in one platform.",
       exploreTours: 'Explore Tours',
       becomeAgency: 'Become an Agency',
     },

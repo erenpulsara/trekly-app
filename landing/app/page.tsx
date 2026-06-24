@@ -109,7 +109,7 @@ export default function HomePage() {
             {tx.hero.subtitle}
           </p>
 
-          <div className="lp-hero-btns" style={{ display: 'flex', alignItems: 'center', gap: '14px', alignSelf: 'center', marginTop: '64px' }}>
+          <div className="lp-hero-btns" style={{ display: 'flex', alignItems: 'center', gap: '14px', alignSelf: 'center', marginTop: '96px' }}>
             <a href="/turlar" className="lp-hero-btn-primary">
               {tx.hero.exploreTours}
             </a>
