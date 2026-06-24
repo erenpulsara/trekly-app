@@ -148,7 +148,7 @@ export default async function TurlarPage({
           { label: 'Hakkımızda', href: '/hakkimizda' },
           { label: 'Etkinlikler', href: '#' },
           { label: 'Blog', href: '/blog' },
-          { label: 'İletişim', href: '#' },
+          { label: 'İletişim', href: '/iletisim' },
         ]}
       />
 
