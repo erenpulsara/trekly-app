@@ -14,9 +14,14 @@ async function bootstrap() {
     }),
   );
 
-  // CORS — adjust origins for production
   app.enableCors({
-    origin: '*',
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://acenta.treklyapp.com',
+      'https://treklyapp.com',
+      'https://www.treklyapp.com',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
