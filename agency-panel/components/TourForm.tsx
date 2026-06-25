@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Input, Select, Textarea, ProvinceSelect } from "./FormControls";
 import Button from "./Button";
@@ -52,21 +52,20 @@ interface FormErrors {
   max_participants?: string;
 }
 
-const CATEGORIES = [
-  "trekking",
-  "dağcılık",
-  "kano",
-  "dalış",
-  "rafting",
-  "bisiklet",
-  "kamp",
-  "yamaç paraşütü",
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
 export default function TourForm({ mode, tour }: TourFormProps) {
   const router = useRouter();
   const { t } = useLang();
   const tx = t.tourForm;
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_URL}/tours/categories`)
+      .then((r) => r.ok ? r.json() : [])
+      .then((data: string[]) => setCategories(data))
+      .catch(() => {});
+  }, []);
 
   const difficultyOptions = [
     { value: "easy", label: t.diff.easy },
@@ -82,7 +81,7 @@ export default function TourForm({ mode, tour }: TourFormProps) {
 
   const categoryOptions = [
     { value: "", label: tx.categoryPlaceholder },
-    ...CATEGORIES.map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })),
+    ...categories.map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })),
   ];
 
   function validate(values: FormValues): FormErrors {

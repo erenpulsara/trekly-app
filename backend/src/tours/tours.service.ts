@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { Tour } from '../entities/tour.entity';
 import { TourDate } from '../entities/tour-date.entity';
 import { Booking } from '../entities/booking.entity';
+import { Category } from '../entities/category.entity';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
 import { CreateTourDateDto } from './dto/create-tour-date.dto';
@@ -25,6 +26,8 @@ export class ToursService {
     private tourDateRepo: Repository<TourDate>,
     @InjectRepository(Booking)
     private bookingRepo: Repository<Booking>,
+    @InjectRepository(Category)
+    private categoryRepo: Repository<Category>,
     private readonly mediaService: MediaService,
     private readonly configService: ConfigService,
   ) {}
@@ -65,15 +68,23 @@ export class ToursService {
   }
 
   async findPublishedCategories(): Promise<string[]> {
-    const rows = await this.tourRepo
-      .createQueryBuilder('tour')
-      .select('DISTINCT tour.category', 'category')
-      .where('tour.status = :status', { status: 'published' })
-      .andWhere('tour.category IS NOT NULL')
-      .andWhere("tour.category != ''")
-      .orderBy('tour.category', 'ASC')
-      .getRawMany<{ category: string }>();
-    return rows.map((r) => r.category);
+    // Merge: categories table (admin-managed) + any extra categories from published tours
+    const [dbCategories, tourRows] = await Promise.all([
+      this.categoryRepo.find({ order: { order: 'ASC', name: 'ASC' } }),
+      this.tourRepo
+        .createQueryBuilder('tour')
+        .select('DISTINCT tour.category', 'category')
+        .where('tour.status = :status', { status: 'published' })
+        .andWhere('tour.category IS NOT NULL')
+        .andWhere("tour.category != ''")
+        .getRawMany<{ category: string }>(),
+    ]);
+
+    const dbNames = dbCategories.map((c) => c.name);
+    const tourNames = tourRows.map((r) => r.category);
+    // DB categories first (ordered), then any tour categories not already listed
+    const extra = tourNames.filter((n) => !dbNames.includes(n));
+    return [...dbNames, ...extra];
   }
 
   async findOnePublished(id: string): Promise<Tour> {
