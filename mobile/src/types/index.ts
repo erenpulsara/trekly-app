@@ -30,6 +30,19 @@ export interface Tour {
   dates: TourDate[];
   agency?: Agency;
   created_at: string;
+  category?: string | null;
+  price?: number | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  guide_name?: string | null;
+  tursab_no?: string | null;
+  meeting_points?: string | null;
+  target_location?: string | null;
+  contact_phone?: string | null;
+  accommodation?: string | null;
+  transportation?: string | null;
+  program?: string | null;
+  important_notes?: string | null;
 }
 
 export interface User {

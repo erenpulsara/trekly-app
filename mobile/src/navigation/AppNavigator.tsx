@@ -58,7 +58,7 @@ function MainNavigator() {
 }
 
 export function AppNavigator() {
-  const { user, isLoading } = useAuth();
+  const { user, isGuest, isLoading } = useAuth();
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -66,7 +66,7 @@ export function AppNavigator() {
 
   return (
     <NavigationContainer>
-      {user ? <MainNavigator /> : <AuthNavigator />}
+      {user || isGuest ? <MainNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );
 }

@@ -2,26 +2,27 @@ import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   SafeAreaView,
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { TreklyLogo } from '../../components/common/TreklyLogo';
+import { useAuth } from '../../context/AuthContext';
 
 export function NotificationsScreen() {
+  const { user } = useAuth();
+
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" />
 
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Ionicons name="menu-outline" size={26} color="#1A1A1A" />
-        </TouchableOpacity>
         <TreklyLogo />
         <View style={styles.avatarSmall}>
-          <Text style={styles.avatarSmallText}>E</Text>
+          <Text style={styles.avatarSmallText}>
+            {user?.name?.charAt(0).toUpperCase() ?? 'U'}
+          </Text>
         </View>
       </View>
 

@@ -7,6 +7,7 @@ import React, {
   ReactNode,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { authService, LoginResponse } from '../services/api';
 import { User } from '../types';
 
@@ -18,6 +19,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   token: string | null;
   isLoading: boolean;
+  isGuest: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (
     name: string,
@@ -28,6 +30,8 @@ interface AuthContextValue {
   ) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (updates: Partial<AuthUser>) => void;
+  continueAsGuest: () => void;
+  exitGuest: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -47,11 +51,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
     async function restoreSession() {
       try {
-        const storedToken = await AsyncStorage.getItem('auth_token');
+        const storedToken = await SecureStore.getItemAsync('auth_token');
         const storedUser = await AsyncStorage.getItem('auth_user');
         if (storedToken && storedUser) {
           setToken(storedToken);
@@ -68,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const persistSession = useCallback(async (resp: LoginResponse) => {
     const authUser = mapResponseToUser(resp);
-    await AsyncStorage.setItem('auth_token', resp.access_token);
+    await SecureStore.setItemAsync('auth_token', resp.access_token);
     await AsyncStorage.setItem('auth_user', JSON.stringify(authUser));
     setToken(resp.access_token);
     setUser(authUser);
@@ -97,17 +102,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    await AsyncStorage.multiRemove(['auth_token', 'auth_user']);
+    await SecureStore.deleteItemAsync('auth_token');
+    await AsyncStorage.removeItem('auth_user');
     setToken(null);
     setUser(null);
+    setIsGuest(false);
   }, []);
+
+  const continueAsGuest = useCallback(() => setIsGuest(true), []);
+  const exitGuest = useCallback(() => setIsGuest(false), []);
 
   const updateUser = useCallback((updates: Partial<AuthUser>) => {
     setUser((prev) => (prev ? { ...prev, ...updates } : prev));
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, isGuest, login, register, logout, updateUser, continueAsGuest, exitGuest }}>
       {children}
     </AuthContext.Provider>
   );

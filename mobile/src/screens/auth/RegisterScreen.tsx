@@ -26,6 +26,7 @@ interface FormState {
   surname: string;
   email: string;
   password: string;
+  confirmPassword: string;
   phone: string;
 }
 
@@ -34,6 +35,7 @@ interface FormErrors {
   surname?: string;
   email?: string;
   password?: string;
+  confirmPassword?: string;
 }
 
 export function RegisterScreen({ navigation }: Props) {
@@ -43,9 +45,11 @@ export function RegisterScreen({ navigation }: Props) {
     surname: '',
     email: '',
     password: '',
+    confirmPassword: '',
     phone: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -62,6 +66,8 @@ export function RegisterScreen({ navigation }: Props) {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) newErrors.email = 'Geçerli bir e-posta girin';
     if (!form.password) newErrors.password = 'Şifre gerekli';
     else if (form.password.length < 6) newErrors.password = 'Şifre en az 6 karakter olmalı';
+    if (!form.confirmPassword) newErrors.confirmPassword = 'Şifre tekrarı gerekli';
+    else if (form.password !== form.confirmPassword) newErrors.confirmPassword = 'Şifreler eşleşmiyor';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -197,6 +203,30 @@ export function RegisterScreen({ navigation }: Props) {
                 </TouchableOpacity>
               </View>
               {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Şifre Tekrarı</Text>
+              <View style={[styles.inputContainer, errors.confirmPassword ? styles.inputError : null]}>
+                <Ionicons name="lock-closed-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  value={form.confirmPassword}
+                  onChangeText={(t) => setField('confirmPassword', t)}
+                  placeholder="Şifrenizi tekrar girin"
+                  placeholderTextColor="#9CA3AF"
+                  secureTextEntry={!showConfirmPassword}
+                  returnKeyType="next"
+                />
+                <TouchableOpacity onPress={() => setShowConfirmPassword((s) => !s)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Ionicons
+                    name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={18}
+                    color="#9CA3AF"
+                  />
+                </TouchableOpacity>
+              </View>
+              {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
             </View>
 
             <View style={styles.field}>
