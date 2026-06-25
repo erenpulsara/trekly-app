@@ -373,6 +373,18 @@ export const IconJeep = ({ color, size }: IP) => (
   </Svg>
 );
 
+/** Snowboard — person crouching on a board on slope */
+export const IconSnowboard = ({ color, size }: IP) => (
+  <Svg color={color} size={size}>
+    <circle cx="15.5" cy="3.5" r="2" />
+    <path d="M14 5.8 Q11.5 8.5 10 12" />
+    <path d="M14.5 6.5 L18 9" />
+    <path d="M10 12 L8.5 16" />
+    <path d="M10 12 L13.5 14" />
+    <path d="M1.5 20.5 Q6 17.5 12.5 18.5 Q17.5 19 22.5 17" strokeWidth="3" strokeLinecap="round" />
+  </Svg>
+);
+
 /** Yoga / Wellness — for wellness/yoga tours */
 export const IconYoga = ({ color, size }: IP) => (
   <Svg color={color} size={size}>
@@ -459,7 +471,41 @@ export const CATEGORY_ICON_MAP: Record<string, (props: IP) => React.JSX.Element>
   'su sporları':      IconRafting,
   'dağcılık eğitimi': IconCertificate,
   'ekspedisyon':      IconJeep,
+  'snowboard':        IconSnowboard,
+  'snowboard turu':   IconSnowboard,
+  'kış sporları':     IconSnowboard,
+  'buz pateni':       IconSnowboard,
 };
+
+// ── AUTO KEYWORD MATCHING — fallback when no icon_key is set ─────────────────
+// Normalizes Turkish characters and matches common sport/activity keywords.
+
+function normalize(s: string): string {
+  return s.toLowerCase()
+    .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+    .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c');
+}
+
+export function autoMatchIcon(name: string): ((props: IP) => React.JSX.Element) | null {
+  const n = normalize(name);
+  if (/snowboard|buz paten|kis spor|kış spor/.test(n))                  return IconSnowboard;
+  if (/kayak|ski|kizak/.test(n))                                          return IconSki;
+  if (/yoga|meditasyon|pilates|wellness|mindful/.test(n))                 return IconYoga;
+  if (/jeep|safari|off.?road|4x4|arazi/.test(n))                         return IconJeep;
+  if (/kultur|muzey|tarih|sehir|city|kent/.test(n))                       return IconBuilding;
+  if (/aile|family|cocuk|kid|bebek/.test(n))                              return IconFamily;
+  if (/sertifika|certificate|egitim|kurs|course/.test(n))                 return IconCertificate;
+  if (/parasut|yamaç|yamaç|hang.glid|paraglid|ucus/.test(n))             return IconParasut;
+  if (/bisiklet|bike|cycling|mtb|bmx/.test(n))                            return IconBisiklet;
+  if (/kamp|camp|bivi|doğa|doga|outdoor/.test(n))                         return IconKamp;
+  if (/rafting|nehir|white.water|sorf|surf|kanal/.test(n))                return IconRafting;
+  if (/kano|kaya|yelken|sail|tekne|deniz/.test(n))                        return IconKano;
+  if (/dalış|dalis|sualt|scuba|snorkel|swim|yuzme/.test(n))              return IconDalis;
+  if (/tirmanis|boulder|rock.climb/.test(n))                               return IconDalis;
+  if (/dag|zirve|summit|mountain|alpin/.test(n))                          return IconDagcilik;
+  if (/trekking|hiking|yuruyus|patika|trail/.test(n))                     return IconTrekking;
+  return null;
+}
 
 // ── ADMIN ICON PALETTE ───────────────────────────────────────────────────────
 // Full set for admin panel form fields and UI elements

@@ -164,8 +164,48 @@ export const IconCertificate = ({ color, size }: IP) => (
   </Svg>
 );
 
-export const IconSailing = ({ color, size }: IP) => <IconKano color={color} size={size} />;
+export const IconSailing  = ({ color, size }: IP) => <IconKano    color={color} size={size} />;
 export const IconWindsurf = ({ color, size }: IP) => <IconRafting color={color} size={size} />;
+
+export const IconSnowboard = ({ color, size }: IP) => (
+  <Svg color={color} size={size}>
+    <circle cx="15.5" cy="3.5" r="2" />
+    <path d="M14 5.8 Q11.5 8.5 10 12" />
+    <path d="M14.5 6.5 L18 9" />
+    <path d="M10 12 L8.5 16" />
+    <path d="M10 12 L13.5 14" />
+    <path d="M1.5 20.5 Q6 17.5 12.5 18.5 Q17.5 19 22.5 17" strokeWidth="3" strokeLinecap="round" />
+  </Svg>
+);
+
+// ── AUTO KEYWORD MATCHING ─────────────────────────────────────────────────────
+
+function normalize(s: string): string {
+  return s.toLowerCase()
+    .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+    .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c');
+}
+
+export function autoMatchIcon(name: string): React.ComponentType<IP> | null {
+  const n = normalize(name);
+  if (/snowboard|buz paten|kis spor/.test(n))            return IconSnowboard;
+  if (/kayak|ski|kizak/.test(n))                          return IconSki;
+  if (/yoga|meditasyon|pilates|wellness/.test(n))          return IconYoga;
+  if (/jeep|safari|off.?road|4x4|arazi/.test(n))          return IconJeep;
+  if (/kultur|muzey|tarih|sehir|city|kent/.test(n))        return IconBuilding;
+  if (/aile|family|cocuk|kid|bebek/.test(n))               return IconFamily;
+  if (/sertifika|certificate|egitim|kurs|course/.test(n))  return IconCertificate;
+  if (/parasut|yamac|hang.glid|paraglid|ucus/.test(n))     return IconParasut;
+  if (/bisiklet|bike|cycling|mtb|bmx/.test(n))             return IconBisiklet;
+  if (/kamp|camp|bivi|doga|outdoor/.test(n))               return IconKamp;
+  if (/rafting|nehir|sorf|surf/.test(n))                   return IconRafting;
+  if (/kano|yelken|sail|tekne|deniz/.test(n))              return IconKano;
+  if (/dalis|sualt|scuba|snorkel|swim|yuzme/.test(n))     return IconDalis;
+  if (/tirmanis|boulder|rock.climb/.test(n))               return IconDalis;
+  if (/dag|zirve|summit|mountain|alpin/.test(n))           return IconDagcilik;
+  if (/trekking|hiking|yuruyus|patika|trail/.test(n))      return IconTrekking;
+  return null;
+}
 
 // ── ICON PALETTE — for visual picker in admin panel ───────────────────────────
 
@@ -186,6 +226,7 @@ export const ICON_PALETTE: { key: string; label: string; Icon: React.ComponentTy
   { key: 'sertifika',       label: 'Sertifika',     Icon: IconCertificate },
   { key: 'yelken',          label: 'Yelken',        Icon: IconSailing     },
   { key: 'rüzgar sörfü',    label: 'Sörf',          Icon: IconWindsurf    },
+  { key: 'snowboard',       label: 'Snowboard',     Icon: IconSnowboard   },
 ];
 
 // ── Key → component map (for category rows) ───────────────────────────────────
@@ -193,3 +234,14 @@ export const ICON_PALETTE: { key: string; label: string; Icon: React.ComponentTy
 export const ICON_MAP: Record<string, React.ComponentType<IP>> = Object.fromEntries(
   ICON_PALETTE.map(({ key, Icon }) => [key, Icon])
 );
+
+// Resolve: ICON_MAP[icon_key] → autoMatchIcon(name) → null
+export function resolveIcon(name: string, iconKey?: string | null): React.ComponentType<IP> | null {
+  if (iconKey) {
+    const byKey = ICON_MAP[iconKey.toLowerCase()];
+    if (byKey) return byKey;
+  }
+  const byName = ICON_MAP[name.toLowerCase()];
+  if (byName) return byName;
+  return autoMatchIcon(name);
+}

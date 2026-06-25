@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { IconAll, IconInfo, ICON_MAP, CATEGORY_ICON_MAP } from '@/lib/category-icons';
+import { IconAll, IconInfo, ICON_MAP, CATEGORY_ICON_MAP, autoMatchIcon } from '@/lib/category-icons';
 import type { CategoryItem } from '@/lib/api';
 
 const CA = '#FF5533';
@@ -57,13 +57,16 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
     c => !staticKeys.has(c.name.toLowerCase())
   );
 
-  // İkon çözümleme: icon_key → CATEGORY_ICON_MAP → ICON_MAP[name] → fallback
+  // İkon çözümleme: icon_key → CATEGORY_ICON_MAP → ICON_MAP[name] → autoMatchIcon → fallback
   function resolveIcon(name: string, icon_key: string | null | undefined) {
     const ik = icon_key?.toLowerCase() ?? '';
     if (ik && CATEGORY_ICON_MAP[ik]) return (a: boolean) => CATEGORY_ICON_MAP[ik]({ color: a ? CA : CD, size: sz });
     const nk = name.toLowerCase();
     if (ICON_MAP[nk]) return ICON_MAP[nk];
     if (CATEGORY_ICON_MAP[nk]) return (a: boolean) => CATEGORY_ICON_MAP[nk]({ color: a ? CA : CD, size: sz });
+    // Anahtar kelime bazlı otomatik eşleme
+    const auto = autoMatchIcon(name);
+    if (auto) return (a: boolean) => auto({ color: a ? CA : CD, size: sz });
     return fallbackIcon;
   }
 

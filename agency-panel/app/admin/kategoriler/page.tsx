@@ -5,7 +5,7 @@ import {
   adminGetCategories, adminCreateCategory, adminUpdateCategory,
   adminDeleteCategory, AdminCategory, ApiError,
 } from "@/lib/api";
-import { ICON_PALETTE, ICON_MAP } from "@/lib/category-icons";
+import { ICON_PALETTE, ICON_MAP, resolveIcon } from "@/lib/category-icons";
 import Button from "@/components/Button";
 
 const STATIC_KEYS = ["trekking","dağcılık","kano","rafting","bisiklet","kamp","dalış","yamaç paraşütü"];
@@ -237,7 +237,7 @@ export default function AdminKategorilerPage() {
           <div className="text-center py-12 text-gray-400 text-sm">Henüz ek kategori yok. Yukarıdan ekleyebilirsiniz.</div>
         ) : cats.map((cat) => {
           const iconKey = cat.icon_key?.toLowerCase() ?? "";
-          const Icon = ICON_MAP[iconKey];
+          const Icon = resolveIcon(cat.name, cat.icon_key);
           return (
             <div key={cat.id} className="flex items-center gap-4 px-6 py-4 border-b border-gray-50 last:border-0">
               {/* Icon preview */}
