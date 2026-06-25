@@ -67,7 +67,7 @@ export class ToursService {
     return (await qb.getMany()).map((t) => this.withProxyUrls(t));
   }
 
-  async findPublishedCategories(): Promise<string[]> {
+  async findPublishedCategories(): Promise<{ name: string; icon_key: string | null }[]> {
     // Merge: categories table (admin-managed) + any extra categories from published tours
     const [dbCategories, tourRows] = await Promise.all([
       this.categoryRepo.find({ order: { order: 'ASC', name: 'ASC' } }),
@@ -80,11 +80,13 @@ export class ToursService {
         .getRawMany<{ category: string }>(),
     ]);
 
-    const dbNames = dbCategories.map((c) => c.name);
-    const tourNames = tourRows.map((r) => r.category);
-    // DB categories first (ordered), then any tour categories not already listed
-    const extra = tourNames.filter((n) => !dbNames.includes(n));
-    return [...dbNames, ...extra];
+    const dbItems = dbCategories.map((c) => ({ name: c.name, icon_key: c.icon_key }));
+    const dbNames = new Set(dbCategories.map((c) => c.name.toLowerCase()));
+    const extra = tourRows
+      .map((r) => r.category)
+      .filter((n) => !dbNames.has(n.toLowerCase()))
+      .map((n) => ({ name: n, icon_key: null }));
+    return [...dbItems, ...extra];
   }
 
   async findOnePublished(id: string): Promise<Tour> {

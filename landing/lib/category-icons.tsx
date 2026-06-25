@@ -432,7 +432,7 @@ export const ICON_MAP: Record<string, (active: boolean) => React.JSX.Element> = 
   'yamaç paraşütü':   (a) => <IconParasut     color={a ? CA : CD} size={SZ} />,
 };
 
-// ── CATEGORY KEY → ICON MAP (props-based, for admin dropdowns) ───────────────
+// ── CATEGORY KEY → ICON MAP (props-based, icon_key lookup — always lowercase) ─
 
 export const CATEGORY_ICON_MAP: Record<string, (props: IP) => React.JSX.Element> = {
   '__all__':          IconAll,
@@ -444,13 +444,21 @@ export const CATEGORY_ICON_MAP: Record<string, (props: IP) => React.JSX.Element>
   'kamp':             IconKamp,
   'dalış':            IconDalis,
   'yamaç paraşütü':   IconParasut,
-  // Admin-only categories (for future use):
   'kayak':            IconSki,
   'yelken':           IconSailing,
   'rüzgar sörfü':     IconWindsurfing,
   'yoga':             IconYoga,
   'safari':           IconJeep,
+  'jeep safari':      IconJeep,
   'aile':             IconFamily,
+  'aile kampı':       IconFamily,
+  'kültür turu':      IconBuilding,
+  'sertifika':        IconCertificate,
+  'zirve tırmanışı':  IconDagcilik,
+  'kaya tırmanışı':   IconDalis,
+  'su sporları':      IconRafting,
+  'dağcılık eğitimi': IconCertificate,
+  'ekspedisyon':      IconJeep,
 };
 
 // ── ADMIN ICON PALETTE ───────────────────────────────────────────────────────

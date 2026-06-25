@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import type { CategoryItem } from '@/lib/api';
+
 
 // Sabit 8 kategori — her zaman gösterilir (dropdown için)
 const STATIC_CATEGORIES = [
@@ -222,7 +224,7 @@ interface Props {
     searchBtn: string;
     allCategories: string;
   };
-  categories?: string[];
+  categories?: CategoryItem[];
 }
 
 /* ── Main Component ─────────────────────────────────── */
@@ -274,7 +276,9 @@ export default function TurlarSearchBar({ labels, categories = [] }: Props) {
 
   // Sabit 8 + DB'den gelen ekstralar (zaten statikte olmayanlar)
   const staticSet = new Set(STATIC_CATEGORIES);
-  const extras = categories.filter(c => !staticSet.has(c) && !staticSet.has(c.toLowerCase()));
+  const extras = categories
+    .filter(c => !staticSet.has(c.name) && !staticSet.has(c.name.toLowerCase()))
+    .map(c => c.name);
   const activeCategories = [...STATIC_CATEGORIES, ...extras];
 
   const categoryOptions: DropdownOption[] = activeCategories.map((c) => ({

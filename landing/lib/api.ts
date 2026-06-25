@@ -23,7 +23,12 @@ export async function getPublishedTours(params?: {
   }
 }
 
-export async function getCategories(): Promise<string[]> {
+export interface CategoryItem {
+  name: string;
+  icon_key: string | null;
+}
+
+export async function getCategories(): Promise<CategoryItem[]> {
   try {
     const res = await fetch(`${API_URL}/tours/categories`, { next: { revalidate: 60 } });
     if (!res.ok) return [];

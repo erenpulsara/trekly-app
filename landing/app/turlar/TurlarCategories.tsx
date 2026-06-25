@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { IconAll, IconInfo, ICON_MAP } from '@/lib/category-icons';
+import { IconAll, IconInfo, ICON_MAP, CATEGORY_ICON_MAP } from '@/lib/category-icons';
+import type { CategoryItem } from '@/lib/api';
 
 const CA = '#FF5533';
 const CD = '#6B7280';
@@ -12,19 +13,19 @@ const fallbackIcon = (a: boolean) => <IconInfo color={a ? CA : CD} size={sz} />;
 
 // Sabit 8 kategori — her zaman gösterilir
 const STATIC_CATEGORIES = [
-  { key: 'trekking',        label: 'Trekking' },
-  { key: 'dağcılık',        label: 'Dağcılık' },
-  { key: 'kano',            label: 'Kano' },
-  { key: 'rafting',         label: 'Rafting' },
-  { key: 'bisiklet',        label: 'Bisiklet' },
-  { key: 'kamp',            label: 'Kamp' },
-  { key: 'dalış',           label: 'Dalış' },
-  { key: 'yamaç paraşütü',  label: 'Yamaç Paraşütü' },
+  { key: 'trekking',        label: 'Trekking'       },
+  { key: 'dağcılık',        label: 'Dağcılık'       },
+  { key: 'kano',            label: 'Kano'            },
+  { key: 'rafting',         label: 'Rafting'         },
+  { key: 'bisiklet',        label: 'Bisiklet'        },
+  { key: 'kamp',            label: 'Kamp'            },
+  { key: 'dalış',           label: 'Dalış'           },
+  { key: 'yamaç paraşütü',  label: 'Yamaç Paraşütü'  },
 ];
 
 interface Props {
   activeCategory: string;
-  dynamicCategories?: string[];
+  dynamicCategories?: CategoryItem[];
 }
 
 export default function TurlarCategories({ activeCategory, dynamicCategories }: Props) {
@@ -50,25 +51,42 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
     router.push(`/turlar${q.toString() ? `?${q}` : ''}`);
   }
 
-  // Statikte olmayan DB kategorilerini sona ekle
-  const staticKeys = new Set(STATIC_CATEGORIES.map(s => s.key));
-  const extraKeys = (dynamicCategories ?? []).filter(k => !staticKeys.has(k) && !staticKeys.has(k.toLowerCase()));
+  // DB'den gelen, statik listede OLMAYAN kategoriler
+  const staticKeys = new Set(STATIC_CATEGORIES.map(s => s.key.toLowerCase()));
+  const extraItems = (dynamicCategories ?? []).filter(
+    c => !staticKeys.has(c.name.toLowerCase())
+  );
 
-  const allCategories = [
-    { key: '', label: 'Tümü' },
-    ...STATIC_CATEGORIES,
-    ...extraKeys.map(k => ({ key: k, label: k })),
+  // İkon çözümleme: icon_key → CATEGORY_ICON_MAP → ICON_MAP[name] → fallback
+  function resolveIcon(name: string, icon_key: string | null | undefined) {
+    const ik = icon_key?.toLowerCase() ?? '';
+    if (ik && CATEGORY_ICON_MAP[ik]) return (a: boolean) => CATEGORY_ICON_MAP[ik]({ color: a ? CA : CD, size: sz });
+    const nk = name.toLowerCase();
+    if (ICON_MAP[nk]) return ICON_MAP[nk];
+    if (CATEGORY_ICON_MAP[nk]) return (a: boolean) => CATEGORY_ICON_MAP[nk]({ color: a ? CA : CD, size: sz });
+    return fallbackIcon;
+  }
+
+  const allCategories: { key: string; label: string; iconFn: (a: boolean) => JSX.Element }[] = [
+    { key: '', label: 'Tümü', iconFn: (a) => <IconAll color={a ? CA : CD} size={sz} /> },
+    ...STATIC_CATEGORIES.map(c => ({
+      key: c.key,
+      label: c.label,
+      iconFn: ICON_MAP[c.key] ?? fallbackIcon,
+    })),
+    ...extraItems.map(c => ({
+      key: c.name,
+      label: c.name,
+      iconFn: resolveIcon(c.name, c.icon_key),
+    })),
   ];
 
   return (
     <div style={{ overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' as const }}>
       <style>{`.cat-scroll::-webkit-scrollbar{display:none}`}</style>
       <div className="cat-scroll" style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', padding: '12px 0' }}>
-        {allCategories.map(({ key, label }) => {
+        {allCategories.map(({ key, label, iconFn }) => {
           const isActive = activeCategory === key;
-          const renderIcon = key === ''
-            ? (a: boolean) => <IconAll color={a ? CA : CD} size={sz} />
-            : (ICON_MAP[key] ?? ICON_MAP[key.toLowerCase()] ?? fallbackIcon);
           return (
             <button
               key={key || '__all__'}
@@ -88,7 +106,7 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
                 boxShadow: isActive ? '0 2px 8px rgba(255,85,51,0.12)' : 'none',
               }}
             >
-              {renderIcon(isActive)}
+              {iconFn(isActive)}
               <span style={{
                 fontSize: '0.65rem',
                 fontWeight: isActive ? 700 : 500,
