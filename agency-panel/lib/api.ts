@@ -348,3 +348,43 @@ export async function adminUpdateCategory(id: string, dto: { icon_key?: string; 
 export async function adminDeleteCategory(id: string): Promise<void> {
   return adminRequest<void>(`/admin/categories/${id}`, { method: 'DELETE' });
 }
+
+// ── Admin Users ───────────────────────────────────────────────────────────
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  surname: string;
+  email: string;
+  phone: string | null;
+  total_points: number;
+  is_banned: boolean;
+  created_at: string;
+}
+
+export async function adminGetUsers(): Promise<AdminUser[]> {
+  return adminRequest<AdminUser[]>('/admin/users');
+}
+
+export async function adminBanUser(id: string): Promise<{ message: string }> {
+  return adminRequest<{ message: string }>(`/admin/users/${id}/ban`, { method: 'PATCH' });
+}
+
+export async function adminActivateUser(id: string): Promise<{ message: string }> {
+  return adminRequest<{ message: string }>(`/admin/users/${id}/activate`, { method: 'PATCH' });
+}
+
+// ── Admin Reports ─────────────────────────────────────────────────────────
+
+export interface AdminReports {
+  totalBookings: number;
+  totalUsers: number;
+  totalAgencies: number;
+  totalTours: number;
+  topTours: { id: string; name: string; bookings: number }[];
+  topAgencies: { id: string; name: string; tours: number }[];
+}
+
+export async function adminGetReports(): Promise<AdminReports> {
+  return adminRequest<AdminReports>('/admin/reports');
+}

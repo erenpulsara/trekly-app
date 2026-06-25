@@ -6,6 +6,7 @@ import { Tour } from '../entities/tour.entity';
 import { Booking } from '../entities/booking.entity';
 import { BlogPost } from '../entities/blog-post.entity';
 import { Category } from '../entities/category.entity';
+import { User } from '../entities/user.entity';
 
 @Injectable()
 export class AdminService {
@@ -20,6 +21,8 @@ export class AdminService {
     private blogRepo: Repository<BlogPost>,
     @InjectRepository(Category)
     private categoryRepo: Repository<Category>,
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
   ) {}
 
   // ── Stats ─────────────────────────────────────────────────────────────────
@@ -140,6 +143,66 @@ export class AdminService {
     if (!post) throw new NotFoundException('Blog yazısı bulunamadı');
     await this.blogRepo.remove(post);
     return { message: 'Blog yazısı silindi' };
+  }
+
+  // ── Users ─────────────────────────────────────────────────────────────────
+
+  async getAllUsers() {
+    const users = await this.userRepo.find({ order: { created_at: 'DESC' } });
+    return users.map(({ password_hash: _ph, password_reset_token: _t, password_reset_expires: _e, ...u }) => u);
+  }
+
+  async banUser(id: string) {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('Kullanıcı bulunamadı');
+    user.is_banned = true;
+    await this.userRepo.save(user);
+    return { message: 'Kullanıcı banlandı' };
+  }
+
+  async activateUser(id: string) {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('Kullanıcı bulunamadı');
+    user.is_banned = false;
+    await this.userRepo.save(user);
+    return { message: 'Kullanıcı aktifleştirildi' };
+  }
+
+  // ── Reports ───────────────────────────────────────────────────────────────
+
+  async getReports() {
+    const [totalBookings, totalUsers, totalAgencies, totalTours] = await Promise.all([
+      this.bookingRepo.count(),
+      this.userRepo.count(),
+      this.agencyRepo.count(),
+      this.tourRepo.count(),
+    ]);
+
+    // Top 5 tours by booking count
+    const topTours = await this.tourRepo
+      .createQueryBuilder('tour')
+      .leftJoin('tour.bookings', 'booking')
+      .select('tour.id', 'id')
+      .addSelect('tour.name', 'name')
+      .addSelect('COUNT(booking.id)', 'bookings')
+      .groupBy('tour.id')
+      .orderBy('bookings', 'DESC')
+      .limit(5)
+      .getRawMany();
+
+    // Top 5 agencies by tour count
+    const topAgencies = await this.agencyRepo
+      .createQueryBuilder('agency')
+      .leftJoin('agency.tours', 'tour')
+      .select('agency.id', 'id')
+      .addSelect('agency.name', 'name')
+      .addSelect('COUNT(tour.id)', 'tours')
+      .groupBy('agency.id')
+      .orderBy('tours', 'DESC')
+      .limit(5)
+      .getRawMany();
+
+    return { totalBookings, totalUsers, totalAgencies, totalTours, topTours, topAgencies };
   }
 
   // ── Categories ────────────────────────────────────────────────────────────

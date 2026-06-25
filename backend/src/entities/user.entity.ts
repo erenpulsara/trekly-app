@@ -31,6 +31,9 @@ export class User {
   @Column({ type: 'integer', default: 0 })
   total_points!: number;
 
+  @Column({ type: 'boolean', default: false })
+  is_banned!: boolean;
+
   @Column({ type: 'varchar', nullable: true })
   password_reset_token!: string | null;
 

@@ -44,6 +44,20 @@ export class AdminController {
   @Delete('blog/:id')
   deleteBlogPost(@Param('id') id: string) { return this.adminService.deleteBlogPost(id); }
 
+  // ── Users ─────────────────────────────────────────────────────────────────
+  @Get('users')
+  getAllUsers() { return this.adminService.getAllUsers(); }
+
+  @Patch('users/:id/ban')
+  banUser(@Param('id') id: string) { return this.adminService.banUser(id); }
+
+  @Patch('users/:id/activate')
+  activateUser(@Param('id') id: string) { return this.adminService.activateUser(id); }
+
+  // ── Reports ───────────────────────────────────────────────────────────────
+  @Get('reports')
+  getReports() { return this.adminService.getReports(); }
+
   // ── Categories ────────────────────────────────────────────────────────────
   @Get('categories')
   getAllCategories() { return this.adminService.getAllCategories(); }

@@ -35,12 +35,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             Trekly <span className="text-brand-orange">Admin</span>
           </span>
         </div>
-        <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
+        <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
           <NavLink href="/admin/agencies" current={pathname}>Acentalar</NavLink>
           <NavLink href="/admin/tours" current={pathname}>Turlar</NavLink>
           <NavLink href="/admin/rezervasyonlar" current={pathname}>Rezervasyonlar</NavLink>
+          <NavLink href="/admin/kullanicilar" current={pathname}>Kullanıcılar</NavLink>
           <NavLink href="/admin/blog" current={pathname}>Blog</NavLink>
           <NavLink href="/admin/kategoriler" current={pathname}>Kategoriler</NavLink>
+          <NavLink href="/admin/raporlar" current={pathname}>Raporlar</NavLink>
+          <NavLink href="/admin/denetim-logu" current={pathname}>Denetim Logu</NavLink>
+          <NavLink href="/admin/ayarlar" current={pathname}>Ayarlar</NavLink>
         </nav>
         <div className="px-3 py-4 border-t border-gray-100">
           <button
