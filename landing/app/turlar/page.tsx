@@ -334,7 +334,7 @@ export default async function TurlarPage({
       </section>
 
       {/* Footer */}
-      <footer style={{ background: '#1A1A1A', padding: '40px 48px' }}>
+      <footer style={{ background: '#1A1A1A', padding: '12px 48px' }}>
         <div className="footer-inner" style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -420,7 +420,7 @@ export default async function TurlarPage({
             </a>
           </div>
         </div>
-        <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'rgba(255,255,255,0.2)', margin: '28px 0 0' }}>
+        <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'rgba(255,255,255,0.2)', margin: '8px 0 0' }}>
           © {new Date().getFullYear()} Trekly
         </p>
       </footer>

@@ -458,7 +458,7 @@ img { display: block; }
 /* ── Footer ─────────────────────────────────────── */
 .footer {
   border-top: 1px solid var(--border);
-  padding: 28px 40px;
+  padding: 14px 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
