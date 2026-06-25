@@ -38,6 +38,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
           <NavLink href="/admin/agencies" current={pathname}>Acentalar</NavLink>
           <NavLink href="/admin/tours" current={pathname}>Turlar</NavLink>
+          <NavLink href="/admin/rezervasyonlar" current={pathname}>Rezervasyonlar</NavLink>
+          <NavLink href="/admin/blog" current={pathname}>Blog</NavLink>
+          <NavLink href="/admin/kategoriler" current={pathname}>Kategoriler</NavLink>
         </nav>
         <div className="px-3 py-4 border-t border-gray-100">
           <button

@@ -245,3 +245,106 @@ export async function adminGetTours(): Promise<AdminTour[]> {
 export async function adminDeleteTour(id: string): Promise<void> {
   return adminRequest<void>(`/admin/tours/${id}`, { method: 'DELETE' });
 }
+
+// ── Admin Stats ───────────────────────────────────────────────────────────
+
+export interface AdminStats {
+  agencies: number;
+  tours: number;
+  bookings: number;
+  blogPosts: number;
+  pendingBookings: number;
+}
+
+export async function adminGetStats(): Promise<AdminStats> {
+  return adminRequest<AdminStats>('/admin/stats');
+}
+
+// ── Admin Bookings ────────────────────────────────────────────────────────
+
+export interface AdminBooking {
+  id: string;
+  name: string;
+  surname: string;
+  email: string;
+  phone: string;
+  participant_count: number;
+  status: string;
+  created_at: string;
+  tour: { id: string; name: string; location_name: string } | null;
+  user: { id: string; name: string; email: string } | null;
+}
+
+export async function adminGetBookings(): Promise<AdminBooking[]> {
+  return adminRequest<AdminBooking[]>('/admin/bookings');
+}
+
+// ── Admin Blog ────────────────────────────────────────────────────────────
+
+export interface AdminBlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string | null;
+  cover_image: string | null;
+  status: 'draft' | 'published';
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function adminGetBlogPosts(): Promise<AdminBlogPost[]> {
+  return adminRequest<AdminBlogPost[]>('/admin/blog');
+}
+
+export async function adminCreateBlogPost(dto: Partial<AdminBlogPost>): Promise<AdminBlogPost> {
+  return adminRequest<AdminBlogPost>('/admin/blog', {
+    method: 'POST',
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function adminUpdateBlogPost(id: string, dto: Partial<AdminBlogPost>): Promise<AdminBlogPost> {
+  return adminRequest<AdminBlogPost>(`/admin/blog/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function adminDeleteBlogPost(id: string): Promise<void> {
+  return adminRequest<void>(`/admin/blog/${id}`, { method: 'DELETE' });
+}
+
+// ── Admin Categories ──────────────────────────────────────────────────────
+
+export interface AdminCategory {
+  id: string;
+  name: string;
+  icon_key: string | null;
+  order: number;
+  is_static: boolean;
+  created_at: string;
+}
+
+export async function adminGetCategories(): Promise<AdminCategory[]> {
+  return adminRequest<AdminCategory[]>('/admin/categories');
+}
+
+export async function adminCreateCategory(dto: { name: string; icon_key?: string }): Promise<AdminCategory> {
+  return adminRequest<AdminCategory>('/admin/categories', {
+    method: 'POST',
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function adminUpdateCategory(id: string, dto: { icon_key?: string; name?: string }): Promise<AdminCategory> {
+  return adminRequest<AdminCategory>(`/admin/categories/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function adminDeleteCategory(id: string): Promise<void> {
+  return adminRequest<void>(`/admin/categories/${id}`, { method: 'DELETE' });
+}
