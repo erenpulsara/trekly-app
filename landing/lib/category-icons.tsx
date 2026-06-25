@@ -385,6 +385,19 @@ export const IconSnowboard = ({ color, size }: IP) => (
   </Svg>
 );
 
+export const IconJetski = ({ color, size }: IP) => (
+  <Svg color={color} size={size}>
+    <circle cx="15" cy="4" r="2" />
+    <path d="M14 6 L13 9.5" />
+    <path d="M13 7.5 L10 7" />
+    <path d="M10 7 L9.5 9.5" />
+    <path d="M3 13.5 Q5 11.5 9.5 11 L15 11 Q18.5 11 20 13" />
+    <path d="M2 14.5 Q10 17 20 13.5" />
+    <path d="M1 17 Q7 15 13 16.5 Q17 17.5 20 16" strokeWidth="1.2" />
+    <path d="M2 19.5 Q8 18 14 19 Q17 19.5 20 18.5" strokeWidth="1" />
+  </Svg>
+);
+
 /** Yoga / Wellness — for wellness/yoga tours */
 export const IconYoga = ({ color, size }: IP) => (
   <Svg color={color} size={size}>
@@ -475,6 +488,10 @@ export const CATEGORY_ICON_MAP: Record<string, (props: IP) => React.JSX.Element>
   'snowboard turu':   IconSnowboard,
   'kış sporları':     IconSnowboard,
   'buz pateni':       IconSnowboard,
+  'jetski':           IconJetski,
+  'jet ski':          IconJetski,
+  'su scooter':       IconJetski,
+  'deniz scooter':    IconJetski,
 };
 
 // ── AUTO KEYWORD MATCHING — fallback when no icon_key is set ─────────────────
@@ -489,6 +506,7 @@ function normalize(s: string): string {
 export function autoMatchIcon(name: string): ((props: IP) => React.JSX.Element) | null {
   const n = normalize(name);
   if (/snowboard|buz paten|kis spor|kış spor/.test(n))                  return IconSnowboard;
+  if (/jetski|jet.ski|jet ski|su scooter|deniz scooter/.test(n))        return IconJetski;
   if (/kayak|ski|kizak/.test(n))                                          return IconSki;
   if (/yoga|meditasyon|pilates|wellness|mindful/.test(n))                 return IconYoga;
   if (/jeep|safari|off.?road|4x4|arazi/.test(n))                         return IconJeep;
