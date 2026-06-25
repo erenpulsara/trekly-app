@@ -268,6 +268,23 @@ export class AuthService {
     );
   }
 
+  // ── Admin ─────────────────────────────────────────────────────────────────
+
+  async loginAdmin(email: string, password: string) {
+    const adminEmail = this.configService.get<string>('ADMIN_EMAIL') ?? 'admin@treklyapp.com';
+    const adminPassword = this.configService.get<string>('ADMIN_PASSWORD') ?? '';
+
+    if (email !== adminEmail || password !== adminPassword) {
+      throw new UnauthorizedException('Geçersiz kimlik bilgileri');
+    }
+
+    const token = this.jwtService.sign(
+      { sub: 'admin', email, type: 'admin' },
+      { secret: this.configService.get<string>('JWT_AGENCY_SECRET') },
+    );
+    return { access_token: token };
+  }
+
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   private generateOtp(): string {

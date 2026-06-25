@@ -15,6 +15,7 @@ import { UsersModule } from './users/users.module';
 import { MediaModule } from './media/media.module';
 import { BlogModule } from './blog/blog.module';
 import { BlogPost } from './entities/blog-post.entity';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { BlogPost } from './entities/blog-post.entity';
     UsersModule,
     MediaModule,
     BlogModule,
+    AdminModule,
   ],
 })
 export class AppModule {}

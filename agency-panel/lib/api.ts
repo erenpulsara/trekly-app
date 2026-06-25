@@ -1,4 +1,4 @@
-import { getToken } from './auth';
+import { getToken, getAdminToken } from './auth';
 import type {
   Booking,
   CreateTourDatePayload,
@@ -173,4 +173,75 @@ export async function uploadMedia(file: File): Promise<string> {
 
   const data = (await res.json()) as { url: string };
   return data.url;
+}
+
+// ── Admin ─────────────────────────────────────────────────────────────────
+
+async function adminRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = getAdminToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string>),
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+
+  if (!res.ok) {
+    let message = `HTTP ${res.status}`;
+    try {
+      const data = await res.json();
+      message = data.message ?? message;
+    } catch { /* ignore */ }
+    throw new ApiError(res.status, message);
+  }
+
+  if (res.status === 204) return undefined as T;
+  return res.json() as Promise<T>;
+}
+
+export async function adminLogin(email: string, password: string): Promise<{ access_token: string }> {
+  return request<{ access_token: string }>('/auth/admin/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export interface AdminAgency {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  description: string | null;
+  logo_url: string | null;
+  email_verified: boolean;
+  created_at: string;
+  tour_count: number;
+}
+
+export interface AdminTour {
+  id: string;
+  name: string;
+  location_name: string;
+  status: string;
+  difficulty: string;
+  price: string | null;
+  created_at: string;
+  agency: { id: string; name: string; email: string };
+}
+
+export async function adminGetAgencies(): Promise<AdminAgency[]> {
+  return adminRequest<AdminAgency[]>('/admin/agencies');
+}
+
+export async function adminDeleteAgency(id: string): Promise<void> {
+  return adminRequest<void>(`/admin/agencies/${id}`, { method: 'DELETE' });
+}
+
+export async function adminGetTours(): Promise<AdminTour[]> {
+  return adminRequest<AdminTour[]>('/admin/tours');
+}
+
+export async function adminDeleteTour(id: string): Promise<void> {
+  return adminRequest<void>(`/admin/tours/${id}`, { method: 'DELETE' });
 }

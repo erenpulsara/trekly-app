@@ -68,3 +68,51 @@ export function logout(): void {
     window.location.href = "/login";
   }
 }
+
+// ── Admin auth ────────────────────────────────────────────────────────────
+
+const ADMIN_TOKEN_KEY = "trekly_admin_token";
+
+export function setAdminToken(token: string): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(ADMIN_TOKEN_KEY, token);
+  }
+}
+
+export function getAdminToken(): string | null {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem(ADMIN_TOKEN_KEY);
+  }
+  return null;
+}
+
+export function removeAdminToken(): void {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+  }
+}
+
+export function isAdminAuthenticated(): boolean {
+  const token = getAdminToken();
+  if (!token) return false;
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return false;
+    const payload = JSON.parse(atob(parts[1]));
+    if (payload.type !== "admin") return false;
+    if (payload.exp && Date.now() / 1000 > payload.exp) {
+      removeAdminToken();
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function adminLogout(): void {
+  removeAdminToken();
+  if (typeof window !== "undefined") {
+    window.location.href = "/admin/login";
+  }
+}

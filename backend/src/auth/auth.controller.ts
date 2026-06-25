@@ -39,6 +39,11 @@ export class AuthController {
     return this.authService.loginUser(dto);
   }
 
+  @Post('admin/login')
+  loginAdmin(@Body() body: { email: string; password: string }) {
+    return this.authService.loginAdmin(body.email, body.password);
+  }
+
   @Post('user/forgot-password')
   forgotPassword(@Body() body: { email: string }) {
     return this.authService.forgotPassword(body.email);
