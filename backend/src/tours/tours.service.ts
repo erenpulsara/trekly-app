@@ -68,7 +68,11 @@ export class ToursService {
   }
 
   async findPublishedCategories(): Promise<{ name: string; icon_key: string | null }[]> {
-    // Merge: categories table (admin-managed) + any extra categories from published tours
+    const STATIC_8 = [
+      'trekking', 'dağcılık', 'kano', 'rafting',
+      'bisiklet', 'kamp', 'dalış', 'yamaç paraşütü',
+    ];
+
     const [dbCategories, tourRows] = await Promise.all([
       this.categoryRepo.find({ order: { order: 'ASC', name: 'ASC' } }),
       this.tourRepo
@@ -80,13 +84,33 @@ export class ToursService {
         .getRawMany<{ category: string }>(),
     ]);
 
-    const dbItems = dbCategories.map((c) => ({ name: c.name, icon_key: c.icon_key }));
-    const dbNames = new Set(dbCategories.map((c) => c.name.toLowerCase()));
-    const extra = tourRows
-      .map((r) => r.category)
-      .filter((n) => !dbNames.has(n.toLowerCase()))
-      .map((n) => ({ name: n, icon_key: null }));
-    return [...dbItems, ...extra];
+    const result: { name: string; icon_key: string | null }[] = [];
+    const seen = new Set<string>();
+
+    // 1. Static 8 — her zaman önce gelir
+    for (const key of STATIC_8) {
+      const dbMatch = dbCategories.find((c) => c.name.toLowerCase() === key);
+      result.push({ name: key, icon_key: dbMatch?.icon_key ?? null });
+      seen.add(key);
+    }
+
+    // 2. DB'den gelen (admin-ekledi), statik 8'de olmayan
+    for (const c of dbCategories) {
+      if (!seen.has(c.name.toLowerCase())) {
+        result.push({ name: c.name, icon_key: c.icon_key });
+        seen.add(c.name.toLowerCase());
+      }
+    }
+
+    // 3. Yayındaki turlardan gelen, yukarıda olmayan
+    for (const r of tourRows) {
+      if (!seen.has(r.category.toLowerCase())) {
+        result.push({ name: r.category, icon_key: null });
+        seen.add(r.category.toLowerCase());
+      }
+    }
+
+    return result;
   }
 
   async findOnePublished(id: string): Promise<Tour> {
