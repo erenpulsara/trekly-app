@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { type Lang, getLangClient, setLangCookie } from '@/lib/i18n';
+import { type Lang, getLangClient } from '@/lib/i18n';
+import LandingNav from '../landing-nav';
 
 const AGENCY_URL = process.env.NEXT_PUBLIC_AGENCY_URL ?? 'https://acenta.treklyapp.com';
 
@@ -115,11 +115,6 @@ export default function HakkimizdaPage() {
     setLangState(getLangClient());
   }, []);
 
-  const switchLang = (l: Lang) => {
-    setLangCookie(l);
-    window.location.reload();
-  };
-
   const hk = HK[lang];
 
   useEffect(() => {
@@ -138,25 +133,12 @@ export default function HakkimizdaPage() {
   return (
     <div className="hk">
       {/* ── Navbar ─────────────────────────────── */}
-      <nav className="hk-nav">
-        <Link href="/" className="hk-logo">
-          <Image src="/logo.png" alt="Trekly" width={60} height={60} style={{ objectFit: 'contain' }} />
-          <span style={{ fontFamily: '"Montserrat", sans-serif', fontWeight: 900, fontSize: '1.55rem', color: '#ff751f', letterSpacing: '-0.02em', lineHeight: 1 }}>Trekly</span>
-        </Link>
-        <div className="hk-nav-r">
-          <Link href="/hakkimizda" className="hk-navlink hk-navlink-active">{hk.nav.about}</Link>
-          <a href="/turlar" className="hk-navlink">Etkinlikler</a>
-          <a href="/blog" className="hk-navlink">Blog</a>
-          <a href="/iletisim" className="hk-navlink">İletişim</a>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'rgba(0,0,0,0.06)', borderRadius: '7px', padding: '3px', marginLeft: '8px' }}>
-            {(['tr', 'en'] as const).map((l) => (
-              <button key={l} onClick={() => switchLang(l)} style={{ background: lang === l ? 'white' : 'transparent', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.72rem', fontWeight: 700, color: lang === l ? '#1A1A1A' : 'rgba(0,0,0,0.35)', cursor: 'pointer', letterSpacing: '0.04em', boxShadow: lang === l ? '0 1px 2px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.15s' }}>
-                {l.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
-      </nav>
+      <LandingNav navLinks={[
+        { label: hk.nav.about,   href: '/hakkimizda', active: true },
+        { label: 'Etkinlikler',  href: '/turlar' },
+        { label: 'Blog',         href: '/blog' },
+        { label: 'İletişim',     href: '/iletisim' },
+      ]} />
 
       {/* ── Hero ───────────────────────────────── */}
       <section className="hk-hero">
@@ -276,31 +258,9 @@ export default function HakkimizdaPage() {
           -webkit-font-smoothing: antialiased;
           color: #1A1A1A;
         }
-        .hk-nav {
-          position: fixed;
-          top: 0; left: 0; right: 0;
-          z-index: 200;
-          height: 64px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 44px;
-          background: rgba(255,255,255,0.96);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border-bottom: 1px solid rgba(0,0,0,0.08);
-        }
-        .hk-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
-        .hk-nav-r { display: flex; align-items: center; gap: 24px; }
-        .hk-navlink { font-size: 0.85rem; font-weight: 500; color: rgba(0,0,0,0.45); text-decoration: none; transition: color 0.15s; }
-        .hk-navlink:hover { color: rgba(0,0,0,0.85); }
-        .hk-navlink-active { color: #FF5533 !important; }
-        .hk-nav-cta { font-size: 0.8rem; font-weight: 700; background: #FF5533; color: white; padding: 8px 18px; border-radius: 9px; text-decoration: none; transition: background 0.15s; }
-        .hk-nav-cta:hover { background: #E64420; }
-
         .hk-hero {
           position: relative;
-          min-height: 100vh;
+          min-height: calc(100vh - 80px);
           background: #FFFFFF;
           display: flex;
           align-items: center;
@@ -323,7 +283,7 @@ export default function HakkimizdaPage() {
           mask-image: radial-gradient(ellipse 70% 70% at 50% 40%, black 0%, transparent 100%);
           -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 40%, black 0%, transparent 100%);
         }
-        .hk-hero-inner { position: relative; z-index: 10; text-align: center; padding: 80px 24px 0; max-width: 900px; }
+        .hk-hero-inner { position: relative; z-index: 10; text-align: center; padding: 40px 24px 0; max-width: 900px; }
         .hk-eyebrow { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: #FF5533; margin: 0 0 32px; animation: fadeUp 0.8s ease both; animation-delay: 0.15s; }
         .hk-h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(3.5rem, 8vw, 8rem); font-weight: 400; line-height: 1.06; letter-spacing: -0.03em; margin: 0 0 48px; display: flex; flex-direction: column; color: #0D0D1A; }
         .hk-h1-line { display: block; }
@@ -397,8 +357,6 @@ export default function HakkimizdaPage() {
         @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
 
         @media (max-width: 860px) {
-          .hk-nav { padding: 0 20px; }
-          .hk-nav-r { gap: 12px; }
           .hk-origin-inner { grid-template-columns: 1fr; gap: 48px; }
           .hk-pillars { grid-template-columns: 1fr; gap: 2px; }
           .hk-pillar:first-child { border-radius: 16px 16px 0 0; }
