@@ -1,70 +1,60 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   adminGetCategories, adminCreateCategory,
-  adminDeleteCategory, adminUpdateCategoryIcon, AdminCategory, ApiError,
+  adminDeleteCategory, AdminCategory, ApiError,
 } from "@/lib/api";
-import { ICON_MAP, resolveIcon } from "@/lib/category-icons";
+import { ICON_PALETTE, ICON_MAP, resolveIcon, autoMatchIcon } from "@/lib/category-icons";
 import Button from "@/components/Button";
 
 const STATIC_KEYS = ["trekking","dağcılık","kano","rafting","bisiklet","kamp","dalış","yamaç paraşütü"];
 const BRAND = "#FF5A1F";
+const GRAY  = "#6B7280";
 
-function UploadedIcon({ svg, size = 22 }: { svg: string; size?: number }) {
-  return (
-    <span
-      style={{ display: "inline-flex", width: size, height: size, alignItems: "center", justifyContent: "center" }}
-      className="[&>svg]:w-full [&>svg]:h-full"
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
-  );
-}
-
-function SvgUploadButton({
-  current,
-  onUpload,
-  label = "SVG Yükle",
+function IconPicker({
+  value,
+  onChange,
+  onClose,
 }: {
-  current?: string | null;
-  onUpload: (svg: string) => void;
-  label?: string;
+  value: string;
+  onChange: (key: string) => void;
+  onClose: () => void;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const raw = ev.target?.result as string;
-      const clean = raw
-        .replace(/<script[\s\S]*?<\/script>/gi, "")
-        .replace(/on\w+="[^"]*"/gi, "")
-        .replace(/javascript:/gi, "");
-      onUpload(clean);
-    };
-    reader.readAsText(file);
-    e.target.value = "";
-  }
-
   return (
-    <div className="flex items-center gap-2">
-      <input ref={inputRef} type="file" accept=".svg,image/svg+xml" className="hidden" onChange={handleFile} />
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        className="flex items-center gap-2 border border-dashed border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-500 hover:border-brand-orange hover:text-brand-orange transition-colors w-full"
-      >
-        {current ? (
-          <>
-            <UploadedIcon svg={current} size={20} />
-            <span className="text-gray-700">İkon yüklendi — değiştir</span>
-          </>
-        ) : (
-          <span>{label}</span>
-        )}
-      </button>
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 className="text-base font-semibold text-gray-900">İkon Seç</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+        </div>
+        <div className="p-4 grid grid-cols-4 gap-2 max-h-80 overflow-y-auto">
+          <button
+            onClick={() => { onChange(""); onClose(); }}
+            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${
+              value === "" ? "border-brand-orange bg-brand-orange/5" : "border-transparent hover:border-gray-200 hover:bg-gray-50"
+            }`}
+          >
+            <span className="w-6 h-6 flex items-center justify-center text-gray-300 text-xl">—</span>
+            <span className="text-[10px] text-gray-500 leading-tight text-center">Otomatik</span>
+          </button>
+          {ICON_PALETTE.map(({ key, label, Icon }) => {
+            const selected = value.toLowerCase() === key.toLowerCase();
+            return (
+              <button key={key} onClick={() => { onChange(key); onClose(); }}
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${
+                  selected ? "border-brand-orange bg-brand-orange/5" : "border-transparent hover:border-gray-200 hover:bg-gray-50"
+                }`}
+              >
+                <Icon color={selected ? BRAND : GRAY} size={24} />
+                <span className={`text-[10px] leading-tight text-center ${selected ? "text-brand-orange font-semibold" : "text-gray-500"}`}>
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -75,16 +65,15 @@ export default function AdminKategorilerPage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [newName, setNewName] = useState("");
-  const [newIconSvg, setNewIconSvg] = useState("");
+  const [newIconKey, setNewIconKey] = useState("");
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [pickerFor, setPickerFor] = useState<string | null>(null);
 
   useEffect(() => { load(); }, []);
 
   async function load() {
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     try { setCats(await adminGetCategories()); } catch (err) {
       setError(err instanceof ApiError ? err.message : "Yüklenemedi");
     } finally { setLoading(false); }
@@ -94,21 +83,12 @@ export default function AdminKategorilerPage() {
     if (!newName.trim()) return;
     setSaving(true);
     try {
-      await adminCreateCategory({
-        name: newName.trim(),
-        icon_svg: newIconSvg || undefined,
-      });
-      setNewName(""); setNewIconSvg(""); setShowForm(false);
+      await adminCreateCategory({ name: newName.trim(), icon_key: newIconKey || undefined });
+      setNewName(""); setNewIconKey(""); setShowForm(false);
       await load();
     } catch (err) {
       alert(err instanceof ApiError ? err.message : "Eklenemedi");
     } finally { setSaving(false); }
-  }
-
-  async function handleUploadIcon(id: string, svg: string) {
-    setUploadingId(id);
-    try { await adminUpdateCategoryIcon(id, svg); await load(); } catch {}
-    finally { setUploadingId(null); }
   }
 
   async function handleDelete(id: string, name: string) {
@@ -119,11 +99,28 @@ export default function AdminKategorilerPage() {
     } finally { setDeletingId(null); }
   }
 
+  // Canlı önizleme: icon_key varsa onu, yoksa isimden otomatik eşle
+  const PreviewIcon = newIconKey
+    ? (ICON_MAP[newIconKey] ?? null)
+    : newName.trim()
+      ? autoMatchIcon(newName.trim())
+      : null;
+
   const dbNames = new Set(cats.map((c) => c.name.toLowerCase()));
   const staticDisplay = STATIC_KEYS.filter((k) => !dbNames.has(k.toLowerCase()));
 
   return (
     <div className="p-8">
+      {pickerFor !== null && (
+        <IconPicker
+          value={pickerFor === "new" ? newIconKey : (cats.find(c => c.id === pickerFor)?.icon_key ?? "")}
+          onChange={(key) => {
+            if (pickerFor === "new") setNewIconKey(key);
+          }}
+          onClose={() => setPickerFor(null)}
+        />
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Kategoriler</h1>
@@ -143,9 +140,10 @@ export default function AdminKategorilerPage() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <h2 className="text-lg font-bold text-gray-900">Yeni Kategori</h2>
-              <button onClick={() => { setShowForm(false); setNewIconSvg(""); }} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+              <button onClick={() => { setShowForm(false); setNewName(""); setNewIconKey(""); }} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
             </div>
             <div className="p-6 flex flex-col gap-4">
+              {/* Name input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Kategori Adı</label>
                 <input
@@ -154,31 +152,39 @@ export default function AdminKategorilerPage() {
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                   placeholder="örn: Atçılık Turu"
+                  autoFocus
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">İkon (SVG dosyası)</label>
-                <SvgUploadButton
-                  current={newIconSvg}
-                  onUpload={setNewIconSvg}
-                  label="SVG dosyası seç"
-                />
-                {newIconSvg && (
-                  <div className="mt-2 flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <UploadedIcon svg={newIconSvg} size={40} />
-                    <span className="text-xs text-gray-500">Önizleme</span>
-                    <button
-                      onClick={() => setNewIconSvg("")}
-                      className="ml-auto text-xs text-red-400 hover:text-red-600"
-                    >
-                      Kaldır
-                    </button>
+
+              {/* Live icon preview */}
+              {newName.trim() && (
+                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+                  <div className="w-12 h-12 rounded-xl bg-brand-orange/10 flex items-center justify-center flex-shrink-0">
+                    {PreviewIcon
+                      ? <PreviewIcon color={BRAND} size={26} />
+                      : <span className="text-gray-400 text-lg font-bold">{newName[0]?.toUpperCase()}</span>
+                    }
                   </div>
-                )}
-              </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{newName}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {newIconKey
+                        ? `Elle seçildi: ${ICON_PALETTE.find(p => p.key === newIconKey)?.label ?? newIconKey}`
+                        : "Otomatik eşlendi"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPickerFor("new")}
+                    className="text-xs text-brand-orange hover:underline flex-shrink-0"
+                  >
+                    Değiştir
+                  </button>
+                </div>
+              )}
             </div>
             <div className="flex gap-3 px-6 py-5 border-t border-gray-100">
-              <Button variant="secondary" size="md" onClick={() => { setShowForm(false); setNewIconSvg(""); }} className="flex-1">İptal</Button>
+              <Button variant="secondary" size="md" onClick={() => { setShowForm(false); setNewName(""); setNewIconKey(""); }} className="flex-1">İptal</Button>
               <Button variant="primary" size="md" onClick={handleCreate} loading={saving} disabled={!newName.trim()} className="flex-1">Ekle</Button>
             </div>
           </div>
@@ -215,30 +221,19 @@ export default function AdminKategorilerPage() {
         ) : cats.length === 0 ? (
           <div className="text-center py-12 text-gray-400 text-sm">Henüz ek kategori yok. Yukarıdan ekleyebilirsiniz.</div>
         ) : cats.map((cat) => {
-          const PaletteIcon = resolveIcon(cat.name, cat.icon_key);
+          const Icon = resolveIcon(cat.name, cat.icon_key);
+          const isAutoMatched = !cat.icon_key;
           return (
             <div key={cat.id} className="flex items-center gap-4 px-6 py-4 border-b border-gray-50 last:border-0">
-              {/* Icon preview */}
               <div className="w-9 h-9 rounded-xl bg-brand-orange/10 flex items-center justify-center flex-shrink-0">
-                {cat.icon_svg
-                  ? <UploadedIcon svg={cat.icon_svg} size={22} />
-                  : PaletteIcon
-                    ? <PaletteIcon color={BRAND} size={20} />
-                    : <span className="text-gray-400 text-sm font-bold">{cat.name[0]?.toUpperCase()}</span>
-                }
+                <Icon color={BRAND} size={20} />
               </div>
-
-              <span className="text-sm font-medium text-gray-900 flex-1">{cat.name}</span>
-
-              {/* SVG upload for this category */}
-              <div className="flex items-center gap-1">
-                <SvgUploadButton
-                  current={null}
-                  onUpload={(svg) => handleUploadIcon(cat.id, svg)}
-                  label={uploadingId === cat.id ? "Yükleniyor..." : cat.icon_svg ? "İkonu değiştir" : "SVG yükle"}
-                />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900">{cat.name}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {isAutoMatched ? "Otomatik eşlendi" : `Seçili: ${ICON_PALETTE.find(p => p.key === cat.icon_key)?.label ?? cat.icon_key}`}
+                </p>
               </div>
-
               <Button
                 variant="danger"
                 size="sm"
