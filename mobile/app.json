@@ -19,9 +19,45 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.trekly.app",
       "buildNumber": "1",
+      "deploymentTarget": "16.0",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "Tur fotoğraflarınızı yüklemek için fotoğraf kitaplığınıza erişim gerekiyor.",
-        "NSCameraUsageDescription": "Profil fotoğrafı çekmek için kameraya erişim gerekiyor."
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
+          }
+        ],
+        "NSPrivacyCollectedDataTypes": [
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeEmailAddress",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeName",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePhoneNumber",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          }
+        ]
       }
     },
     "android": {
@@ -35,7 +71,14 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiUrl": "https://trekly-api-835377577547.europe-west1.run.app"
-    }
+      "apiUrl": "https://trekly-api-835377577547.europe-west1.run.app",
+      "eas": {
+        "projectId": "acd750ce-643e-4631-8554-6ef3643f4efb"
+      }
+    },
+    "plugins": [
+      "expo-font",
+      "expo-secure-store"
+    ]
   }
 }

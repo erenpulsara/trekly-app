@@ -26,14 +26,19 @@ type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'PopularTours'>;
 };
 
-type TabKey = 'popular' | 'following';
+function stableLikeCount(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  }
+  return (hash % 2500) + 500;
+}
 
 export function PopularToursScreen({ navigation }: Props) {
   const [tours, setTours] = useState<Tour[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabKey>('popular');
   const [likes, setLikes] = useState<Record<string, boolean>>({});
 
   const fetchTours = useCallback(async () => {
@@ -60,8 +65,6 @@ export function PopularToursScreen({ navigation }: Props) {
     setLikes((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
-  const displayTours = activeTab === 'following' ? [] : tours;
-
   if (isLoading) return <LoadingSpinner />;
 
   return (
@@ -71,51 +74,32 @@ export function PopularToursScreen({ navigation }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#1A1A1A" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.searchBtn}>
-          <Ionicons name="search-outline" size={22} color="#1A1A1A" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Tabs */}
-      <View style={styles.tabs}>
-        {(['popular', 'following'] as TabKey[]).map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            style={styles.tab}
-            onPress={() => setActiveTab(tab)}
-          >
-            <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
-              {tab === 'popular' ? 'Popüler' : 'Takip Edilenler'}
-            </Text>
-            {activeTab === tab && <View style={styles.tabUnderline} />}
-          </TouchableOpacity>
-        ))}
+        <Text style={styles.headerTitle}>Popüler Rotalar</Text>
+        <View style={{ width: 38 }} />
       </View>
 
       {error ? (
         <ErrorMessage message={error} onRetry={fetchTours} />
       ) : (
         <FlatList
-          data={displayTours}
+          data={tours}
           keyExtractor={(item) => item.id}
           numColumns={2}
           columnWrapperStyle={styles.row}
-          contentContainerStyle={displayTours.length === 0 ? styles.emptyContainer : styles.grid}
+          contentContainerStyle={tours.length === 0 ? styles.emptyContainer : styles.grid}
           refreshControl={
             <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor="#FF5A1F" />
           }
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Ionicons name="people-outline" size={56} color="#D1D5DB" />
-              <Text style={styles.emptyTitle}>
-                {activeTab === 'following' ? 'Henüz takip edilmiyor' : 'Tur bulunamadı'}
-              </Text>
+              <Ionicons name="compass-outline" size={56} color="#D1D5DB" />
+              <Text style={styles.emptyTitle}>Tur bulunamadı</Text>
             </View>
           }
           renderItem={({ item, index }) => {
             const cardHeight = HEIGHTS[index % HEIGHTS.length];
             const isLiked = likes[item.id] ?? false;
-            const fakeLikeCount = Math.floor(Math.random() * 3000) + 500;
+            const baseCount = stableLikeCount(item.id);
 
             return (
               <TouchableOpacity
@@ -145,7 +129,7 @@ export function PopularToursScreen({ navigation }: Props) {
                     color={isLiked ? '#FF5A1F' : '#FFFFFF'}
                   />
                   <Text style={styles.likeCount}>
-                    {isLiked ? fakeLikeCount + 1 : fakeLikeCount}
+                    {isLiked ? baseCount + 1 : baseCount}
                   </Text>
                 </TouchableOpacity>
               </TouchableOpacity>
@@ -174,32 +158,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  searchBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tabs: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    marginBottom: 8,
-  },
-  tab: { paddingBottom: 12, marginRight: 24, position: 'relative' },
-  tabText: { fontSize: 15, fontWeight: '600', color: '#9CA3AF' },
-  tabTextActive: { color: '#1A1A1A' },
-  tabUnderline: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: '#FF5A1F',
-    borderRadius: 1,
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1A1A1A',
   },
   grid: { padding: 16, gap: 8 },
   row: { gap: 8 },

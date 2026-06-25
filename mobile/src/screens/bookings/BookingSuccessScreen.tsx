@@ -8,6 +8,7 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
+  Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -27,11 +28,12 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
   const { bookingId, tourId } = route.params;
   const [booking, setBooking] = useState<Booking | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     bookingsService.getById(bookingId)
       .then(setBooking)
-      .catch(() => {})
+      .catch(() => setFetchError(true))
       .finally(() => setIsLoading(false));
   }, [bookingId]);
 
@@ -48,7 +50,14 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
           <Ionicons name="close" size={22} color="#1A1A1A" />
         </TouchableOpacity>
         <View style={{ flex: 1 }} />
-        <TouchableOpacity style={styles.iconBtn}>
+        <TouchableOpacity
+          style={styles.iconBtn}
+          onPress={() => Share.share({
+            message: booking
+              ? `${booking.tour.name} turuna kaydoldum! Trekly'de keşfet: https://treklyapp.com`
+              : 'Trekly\'de bir tura kaydoldum! https://treklyapp.com',
+          })}
+        >
           <Ionicons name="share-outline" size={22} color="#1A1A1A" />
         </TouchableOpacity>
       </View>
@@ -74,6 +83,8 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
         {/* Tour card */}
         {isLoading ? (
           <ActivityIndicator color="#FF5A1F" style={{ marginTop: 24 }} />
+        ) : fetchError ? (
+          <Text style={styles.fetchErrorText}>Tur detayları yüklenemedi.</Text>
         ) : booking ? (
           <View style={styles.tourCard}>
             {booking.tour.photo_urls.length > 0 ? (
@@ -289,4 +300,5 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
   },
   secondaryBtnText: { fontSize: 15, fontWeight: '600', color: '#1A1A1A' },
+  fetchErrorText: { fontSize: 14, color: '#9CA3AF', textAlign: 'center', marginTop: 24 },
 });

@@ -4,13 +4,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { ExploreScreen } from '../screens/explore/ExploreScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
-import { NotificationsScreen } from '../screens/notifications/NotificationsScreen';
 
 export type BottomTabParamList = {
   Home: undefined;
   Explore: undefined;
   Profile: undefined;
-  Notifications: undefined;
 };
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -21,14 +19,12 @@ const TAB_ICONS: Record<keyof BottomTabParamList, { active: IoniconName; inactiv
   Home: { active: 'home', inactive: 'home-outline' },
   Explore: { active: 'compass', inactive: 'compass-outline' },
   Profile: { active: 'person', inactive: 'person-outline' },
-  Notifications: { active: 'notifications', inactive: 'notifications-outline' },
 };
 
 const TAB_LABELS: Record<keyof BottomTabParamList, string> = {
   Home: 'Ana Sayfa',
   Explore: 'Keşfet',
   Profile: 'Profil',
-  Notifications: 'Bildirimler',
 };
 
 export function BottomTabNavigator() {
@@ -60,7 +56,6 @@ export function BottomTabNavigator() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Explore" component={ExploreScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
-      <Tab.Screen name="Notifications" component={NotificationsScreen} />
     </Tab.Navigator>
   );
 }

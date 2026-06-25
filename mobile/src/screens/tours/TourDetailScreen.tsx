@@ -8,6 +8,7 @@ import {
   Dimensions,
   Image,
   Alert,
+  Share,
   SafeAreaView,
   Platform,
 } from 'react-native';
@@ -21,6 +22,7 @@ import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { toursService } from '../../services/api';
 import { Tour } from '../../types';
 import { formatDate, formatDistance, formatAltitude } from '../../utils/formatting';
+import { useAuth } from '../../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 const HERO_HEIGHT = height * 0.42;
@@ -35,6 +37,7 @@ type DetailTab = 'info' | 'program' | 'notes' | 'gallery';
 
 export function TourDetailScreen({ navigation, route }: Props) {
   const { tourId } = route.params;
+  const { isGuest, exitGuest } = useAuth();
   const [tour, setTour] = useState<Tour | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -88,31 +91,57 @@ export function TourDetailScreen({ navigation, route }: Props) {
                 <Text style={styles.sectionTitle}>Konum</Text>
               </View>
               <Text style={styles.locationText}>{tour.location_name}</Text>
-              <View style={styles.mapPlaceholder}>
-                <Ionicons name="map-outline" size={32} color="#D1D5DB" />
-                <Text style={styles.mapPlaceholderText}>Harita görünümü</Text>
-              </View>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.equipmentSection}>
-              <View style={styles.sectionHeader}>
-                <Ionicons name="bag-outline" size={18} color="#FF5A1F" />
-                <Text style={styles.sectionTitle}>Gerekli Ekipmanlar</Text>
-              </View>
-              <Text style={styles.emptyTabText}>Ekipman listesi henüz eklenmedi.</Text>
             </View>
           </View>
         );
       case 'program':
         return (
           <View style={styles.tabContent}>
-            <Text style={styles.emptyTabText}>Program henüz eklenmedi.</Text>
+            {tour.program ? (
+              <Text style={styles.description}>{tour.program}</Text>
+            ) : (
+              <Text style={styles.emptyTabText}>Program henüz eklenmedi.</Text>
+            )}
+            {tour.accommodation ? (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.sectionHeader}>
+                  <Ionicons name="bed-outline" size={18} color="#FF5A1F" />
+                  <Text style={styles.sectionTitle}>Konaklama</Text>
+                </View>
+                <Text style={styles.description}>{tour.accommodation}</Text>
+              </>
+            ) : null}
+            {tour.transportation ? (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.sectionHeader}>
+                  <Ionicons name="bus-outline" size={18} color="#FF5A1F" />
+                  <Text style={styles.sectionTitle}>Ulaşım</Text>
+                </View>
+                <Text style={styles.description}>{tour.transportation}</Text>
+              </>
+            ) : null}
           </View>
         );
       case 'notes':
         return (
           <View style={styles.tabContent}>
-            <Text style={styles.emptyTabText}>Notlar henüz eklenmedi.</Text>
+            {tour.important_notes ? (
+              <Text style={styles.description}>{tour.important_notes}</Text>
+            ) : (
+              <Text style={styles.emptyTabText}>Önemli not bulunmuyor.</Text>
+            )}
+            {tour.meeting_points ? (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.sectionHeader}>
+                  <Ionicons name="flag-outline" size={18} color="#FF5A1F" />
+                  <Text style={styles.sectionTitle}>Buluşma Noktaları</Text>
+                </View>
+                <Text style={styles.description}>{tour.meeting_points}</Text>
+              </>
+            ) : null}
           </View>
         );
       case 'gallery':
@@ -160,7 +189,10 @@ export function TourDetailScreen({ navigation, route }: Props) {
                   color={isLiked ? '#FF5A1F' : '#FFFFFF'}
                 />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.heroBtn}>
+              <TouchableOpacity
+                style={styles.heroBtn}
+                onPress={() => Share.share({ message: `${tour.name} — Trekly'de keşfet: https://treklyapp.com` })}
+              >
                 <Ionicons name="share-outline" size={20} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
@@ -265,6 +297,17 @@ export function TourDetailScreen({ navigation, route }: Props) {
         <TouchableOpacity
           style={styles.bookButton}
           onPress={() => {
+            if (isGuest) {
+              Alert.alert(
+                'Giriş Gerekli',
+                'Rezervasyon yapmak için giriş yapmanız gerekiyor.',
+                [
+                  { text: 'İptal', style: 'cancel' },
+                  { text: 'Giriş Yap', onPress: exitGuest },
+                ]
+              );
+              return;
+            }
             if (!selectedDateId) {
               Alert.alert('Tarih Seçin', 'Rezervasyon için bir tur tarihi seçmelisiniz.');
               return;
@@ -273,7 +316,9 @@ export function TourDetailScreen({ navigation, route }: Props) {
           }}
           activeOpacity={0.85}
         >
-          <Text style={styles.bookButtonText}>Rezervasyon Yap</Text>
+          <Text style={styles.bookButtonText}>
+            {isGuest ? 'Rezervasyon için giriş yap' : 'Rezervasyon Yap'}
+          </Text>
           <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
         </TouchableOpacity>
       </View>

@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AppNavigator';
+import { useAuth } from '../../context/AuthContext';
 
 const { height } = Dimensions.get('window');
 
@@ -22,6 +23,8 @@ type Props = {
 };
 
 export function WelcomeScreen({ navigation }: Props) {
+  const { continueAsGuest } = useAuth();
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -74,32 +77,31 @@ export function WelcomeScreen({ navigation }: Props) {
 
           {/* Buttons */}
           <View style={styles.buttonsSection}>
-            <TouchableOpacity style={styles.appleButton} activeOpacity={0.85}>
-              <Ionicons name="logo-apple" size={20} color="#FFFFFF" />
-              <Text style={styles.appleButtonText}>Apple ile devam et</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.googleButton} activeOpacity={0.85}>
-              <View style={styles.googleIcon}>
-                <Text style={styles.googleG}>G</Text>
-              </View>
-              <Text style={styles.googleButtonText}>Google ile devam et</Text>
-            </TouchableOpacity>
-
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>VEYA</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
             <TouchableOpacity
               style={styles.loginButton}
               onPress={() => navigation.navigate('Login')}
               activeOpacity={0.85}
             >
-              <Text style={styles.loginButtonText}>Giriş yap / Kayıt ol</Text>
+              <Text style={styles.loginButtonText}>Giriş yap</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.registerButton}
+              onPress={() => navigation.navigate('Register')}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.registerButtonText}>Hesap oluştur</Text>
             </TouchableOpacity>
           </View>
+
+          <TouchableOpacity
+            style={styles.guestButton}
+            onPress={continueAsGuest}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.guestButtonText}>Misafir olarak devam et</Text>
+            <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.5)" />
+          </TouchableOpacity>
 
           <Text style={styles.terms}>
             Devam ederek{' '}
@@ -218,64 +220,6 @@ const styles = StyleSheet.create({
   buttonsSection: {
     gap: 12,
   },
-  appleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: '#1C1C1E',
-    paddingVertical: 16,
-    borderRadius: 14,
-  },
-  appleButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  googleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 16,
-    borderRadius: 14,
-  },
-  googleIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#4285F4',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  googleG: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  googleButtonText: {
-    color: '#1A1A1A',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginVertical: 4,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-  },
-  dividerText: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.5)',
-    fontWeight: '600',
-    letterSpacing: 1,
-  },
   loginButton: {
     backgroundColor: '#FF5A1F',
     paddingVertical: 16,
@@ -286,6 +230,31 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+  registerButton: {
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  registerButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  guestButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 12,
+  },
+  guestButtonText: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.5)',
+    fontWeight: '500',
   },
   terms: {
     fontSize: 12,

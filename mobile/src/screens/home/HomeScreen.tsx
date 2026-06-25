@@ -16,7 +16,6 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { TreklyLogo } from '../../components/common/TreklyLogo';
 import { SearchBar } from '../../components/home/SearchBar';
-import { FilterChips } from '../../components/home/FilterChips';
 import { FeaturedTourCard } from '../../components/home/FeaturedTourCard';
 import { TourCard } from '../../components/common/TourCard';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
@@ -43,7 +42,6 @@ export function HomeScreen({ navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
 
   const loadTours = useCallback(async () => {
     setError(null);
@@ -80,9 +78,6 @@ export function HomeScreen({ navigation }: Props) {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.headerIcon}>
-            <Ionicons name="menu-outline" size={24} color="#1A1A1A" />
-          </TouchableOpacity>
           <TreklyLogo size="medium" />
           <TouchableOpacity
             style={styles.avatarContainer}
@@ -99,7 +94,7 @@ export function HomeScreen({ navigation }: Props) {
         {/* Greeting */}
         <View style={styles.greeting}>
           <Text style={styles.greetingText}>
-            Merhaba, {user?.name ?? 'Kaşif'} 👋
+            Merhaba, {user?.name ?? 'Kaşif'}
           </Text>
           <Text style={styles.greetingSubtext}>Bugün nereye gitmek istersin?</Text>
         </View>
@@ -111,11 +106,6 @@ export function HomeScreen({ navigation }: Props) {
             onChangeText={setSearch}
             onSubmit={() => navigation.navigate('Explore' as never)}
           />
-        </View>
-
-        {/* Filter chips */}
-        <View style={styles.filterContainer}>
-          <FilterChips selected={activeFilter} onSelect={setActiveFilter} />
         </View>
 
         {isLoading ? (

@@ -32,7 +32,7 @@ type Props = {
 
 
 export function ProfileScreen({ navigation }: Props) {
-  const { user: authUser, logout } = useAuth();
+  const { user: authUser, logout, isGuest, exitGuest } = useAuth();
   const [profile, setProfile] = useState<User | null>(null);
   const [pointsLog, setPointsLog] = useState<PointsLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,6 +93,26 @@ export function ProfileScreen({ navigation }: Props) {
   const progress = getLevelProgress(totalPoints);
   const toNext = getPointsToNextLevel(totalPoints);
 
+  if (isGuest) {
+    return (
+      <SafeAreaView style={[styles.safe, { justifyContent: 'center', alignItems: 'center', gap: 16 }]}>
+        <StatusBar barStyle="dark-content" />
+        <Ionicons name="person-circle-outline" size={72} color="#D1D5DB" />
+        <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1A1A' }}>Profili görüntülemek için giriş yap</Text>
+        <Text style={{ fontSize: 14, color: '#6B7280', textAlign: 'center', paddingHorizontal: 32 }}>
+          Profilinizi yönetmek, rezervasyonlarınızı takip etmek ve puanlarınızı görmek için giriş yapın.
+        </Text>
+        <TouchableOpacity
+          style={{ backgroundColor: '#FF5A1F', paddingHorizontal: 32, paddingVertical: 14, borderRadius: 12, marginTop: 8 }}
+          onPress={exitGuest}
+          activeOpacity={0.85}
+        >
+          <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}>Giriş Yap</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
   if (isLoading) return <LoadingSpinner />;
 
   return (
@@ -100,20 +120,12 @@ export function ProfileScreen({ navigation }: Props) {
       <StatusBar barStyle="dark-content" />
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Ionicons name="menu-outline" size={26} color="#1A1A1A" />
-        </TouchableOpacity>
         <TreklyLogo />
-        <TouchableOpacity
-          style={styles.avatarBtn}
-          onPress={() => {}}
-        >
-          <View style={styles.avatarSmall}>
-            <Text style={styles.avatarSmallText}>
-              {displayUser?.name?.charAt(0).toUpperCase() ?? 'U'}
-            </Text>
-          </View>
-        </TouchableOpacity>
+        <View style={styles.avatarSmall}>
+          <Text style={styles.avatarSmallText}>
+            {displayUser?.name?.charAt(0).toUpperCase() ?? 'U'}
+          </Text>
+        </View>
       </View>
 
       <ScrollView
