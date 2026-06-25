@@ -15,6 +15,7 @@ import { UsersModule } from './users/users.module';
 import { MediaModule } from './media/media.module';
 import { BlogModule } from './blog/blog.module';
 import { BlogPost } from './entities/blog-post.entity';
+import { Category } from './entities/category.entity';
 import { AdminModule } from './admin/admin.module';
 
 @Module({
@@ -27,7 +28,7 @@ import { AdminModule } from './admin/admin.module';
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
         url: config.get<string>('DATABASE_URL'),
-        entities: [Agency, Tour, TourDate, User, Booking, UserPointsLog, VerificationToken, BlogPost],
+        entities: [Agency, Tour, TourDate, User, Booking, UserPointsLog, VerificationToken, BlogPost, Category],
         synchronize: true, // Set to false and use migrations in production
         autoLoadEntities: true,
         ssl: config.get<string>('DATABASE_URL')?.includes('cloudsql')
