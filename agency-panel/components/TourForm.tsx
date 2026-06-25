@@ -63,7 +63,9 @@ export default function TourForm({ mode, tour }: TourFormProps) {
   useEffect(() => {
     fetch(`${API_URL}/tours/categories`)
       .then((r) => r.ok ? r.json() : [])
-      .then((data: string[]) => setCategories(data))
+      .then((data: Array<{ name: string; icon_key: string | null } | string>) =>
+        setCategories(data.map((d) => (typeof d === "string" ? d : d.name)))
+      )
       .catch(() => {});
   }, []);
 
