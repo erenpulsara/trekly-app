@@ -67,7 +67,7 @@ export class ToursService {
     return (await qb.getMany()).map((t) => this.withProxyUrls(t));
   }
 
-  async findPublishedCategories(): Promise<{ name: string; icon_key: string | null }[]> {
+  async findPublishedCategories(): Promise<{ name: string; icon_key: string | null; icon_svg: string | null }[]> {
     const STATIC_8 = [
       'trekking', 'dağcılık', 'kano', 'rafting',
       'bisiklet', 'kamp', 'dalış', 'yamaç paraşütü',
@@ -84,20 +84,20 @@ export class ToursService {
         .getRawMany<{ category: string }>(),
     ]);
 
-    const result: { name: string; icon_key: string | null }[] = [];
+    const result: { name: string; icon_key: string | null; icon_svg: string | null }[] = [];
     const seen = new Set<string>();
 
     // 1. Static 8 — her zaman önce gelir
     for (const key of STATIC_8) {
       const dbMatch = dbCategories.find((c) => c.name.toLowerCase() === key);
-      result.push({ name: key, icon_key: dbMatch?.icon_key ?? null });
+      result.push({ name: key, icon_key: dbMatch?.icon_key ?? null, icon_svg: dbMatch?.icon_svg ?? null });
       seen.add(key);
     }
 
     // 2. DB'den gelen (admin-ekledi), statik 8'de olmayan
     for (const c of dbCategories) {
       if (!seen.has(c.name.toLowerCase())) {
-        result.push({ name: c.name, icon_key: c.icon_key });
+        result.push({ name: c.name, icon_key: c.icon_key, icon_svg: c.icon_svg });
         seen.add(c.name.toLowerCase());
       }
     }
@@ -105,7 +105,7 @@ export class ToursService {
     // 3. Yayındaki turlardan gelen, yukarıda olmayan
     for (const r of tourRows) {
       if (!seen.has(r.category.toLowerCase())) {
-        result.push({ name: r.category, icon_key: null });
+        result.push({ name: r.category, icon_key: null, icon_svg: null });
         seen.add(r.category.toLowerCase());
       }
     }

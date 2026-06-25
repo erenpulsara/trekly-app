@@ -11,6 +11,9 @@ export class Category {
   @Column({ type: 'varchar', nullable: true })
   icon_key!: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  icon_svg!: string | null;
+
   @Column({ type: 'integer', default: 0 })
   order!: number;
 

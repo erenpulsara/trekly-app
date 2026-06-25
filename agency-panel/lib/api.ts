@@ -322,6 +322,7 @@ export interface AdminCategory {
   id: string;
   name: string;
   icon_key: string | null;
+  icon_svg: string | null;
   order: number;
   is_static: boolean;
   created_at: string;
@@ -331,7 +332,7 @@ export async function adminGetCategories(): Promise<AdminCategory[]> {
   return adminRequest<AdminCategory[]>('/admin/categories');
 }
 
-export async function adminCreateCategory(dto: { name: string; icon_key?: string }): Promise<AdminCategory> {
+export async function adminCreateCategory(dto: { name: string; icon_key?: string; icon_svg?: string }): Promise<AdminCategory> {
   return adminRequest<AdminCategory>('/admin/categories', {
     method: 'POST',
     body: JSON.stringify(dto),
@@ -347,6 +348,13 @@ export async function adminUpdateCategory(id: string, dto: { icon_key?: string; 
 
 export async function adminDeleteCategory(id: string): Promise<void> {
   return adminRequest<void>(`/admin/categories/${id}`, { method: 'DELETE' });
+}
+
+export async function adminUpdateCategoryIcon(id: string, icon_svg: string): Promise<AdminCategory> {
+  return adminRequest<AdminCategory>(`/admin/categories/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ icon_svg }),
+  });
 }
 
 // ── Admin Users ───────────────────────────────────────────────────────────

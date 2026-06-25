@@ -26,6 +26,7 @@ export async function getPublishedTours(params?: {
 export interface CategoryItem {
   name: string;
   icon_key: string | null;
+  icon_svg?: string | null;
 }
 
 export async function getCategories(): Promise<CategoryItem[]> {

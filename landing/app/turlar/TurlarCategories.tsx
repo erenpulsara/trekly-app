@@ -11,6 +11,16 @@ const sz = 26;
 
 const fallbackIcon = (a: boolean) => <IconInfo color={a ? CA : CD} size={sz} />;
 
+function SvgIcon({ svg, active }: { svg: string; active: boolean }) {
+  return (
+    <span
+      style={{ display: 'inline-flex', width: sz, height: sz, alignItems: 'center', justifyContent: 'center', opacity: active ? 1 : 0.55 }}
+      className="[&>svg]:w-full [&>svg]:h-full"
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
+}
+
 // Sabit 8 kategori — her zaman gösterilir
 const STATIC_CATEGORIES = [
   { key: 'trekking',        label: 'Trekking'       },
@@ -57,16 +67,16 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
     c => !staticKeys.has(c.name.toLowerCase())
   );
 
-  // İkon çözümleme: icon_key → CATEGORY_ICON_MAP → ICON_MAP[name] → autoMatchIcon → fallback
-  function resolveIcon(name: string, icon_key: string | null | undefined) {
+  // İkon çözümleme: icon_key → CATEGORY_ICON_MAP → ICON_MAP[name] → autoMatchIcon → icon_svg → fallback
+  function resolveIcon(name: string, icon_key: string | null | undefined, icon_svg?: string | null) {
     const ik = icon_key?.toLowerCase() ?? '';
     if (ik && CATEGORY_ICON_MAP[ik]) return (a: boolean) => CATEGORY_ICON_MAP[ik]({ color: a ? CA : CD, size: sz });
     const nk = name.toLowerCase();
     if (ICON_MAP[nk]) return ICON_MAP[nk];
     if (CATEGORY_ICON_MAP[nk]) return (a: boolean) => CATEGORY_ICON_MAP[nk]({ color: a ? CA : CD, size: sz });
-    // Anahtar kelime bazlı otomatik eşleme
     const auto = autoMatchIcon(name);
     if (auto) return (a: boolean) => auto({ color: a ? CA : CD, size: sz });
+    if (icon_svg) return (a: boolean) => <SvgIcon svg={icon_svg} active={a} />;
     return fallbackIcon;
   }
 
@@ -80,7 +90,7 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
     ...extraItems.map(c => ({
       key: c.name,
       label: c.name,
-      iconFn: resolveIcon(c.name, c.icon_key),
+      iconFn: resolveIcon(c.name, c.icon_key, c.icon_svg),
     })),
   ];
 
