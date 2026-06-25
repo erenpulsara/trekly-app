@@ -13,10 +13,10 @@ export class BlogPost {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   title: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', unique: true })
   slug: string;
 
   @Column({ type: 'text' })
@@ -25,13 +25,13 @@ export class BlogPost {
   @Column({ type: 'text', nullable: true })
   excerpt: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   cover_image: string | null;
 
   @Column({ type: 'varchar', default: 'draft' })
   status: BlogStatus;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   published_at: Date | null;
 
   @CreateDateColumn()
