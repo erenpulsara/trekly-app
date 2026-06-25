@@ -1,38 +1,37 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import Image from 'next/image';
 
 const SLIDES = [
-  { url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=80', position: 'center 40%' },
-  { url: 'https://images.unsplash.com/photo-1682687982502-1529b3b33f85?w=1600&q=80', position: 'center 50%' },
-  { url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80', position: 'center 35%' },
-  { url: 'https://images.unsplash.com/photo-1530866495561-507c9faab2ed?w=1600&q=80', position: 'center 50%' },
+  { url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=85', position: 'center 40%' },
+  { url: 'https://images.unsplash.com/photo-1682687982502-1529b3b33f85?w=1920&q=85', position: 'center 50%' },
+  { url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=85', position: 'center 35%' },
+  { url: 'https://images.unsplash.com/photo-1530866495561-507c9faab2ed?w=1920&q=85', position: 'center 50%' },
 ];
 
-const OVERLAY = 'linear-gradient(rgba(0,0,0,0.32) 0%, rgba(0,0,0,0.52) 60%, rgba(0,0,0,0.70) 100%)';
+const INTERVAL = 5000;
+const FADE_MS  = 1000;
 
 export default function TurlarHero({ children }: { children: React.ReactNode }) {
   const [current, setCurrent] = useState(0);
-  const [prev, setPrev] = useState<number | null>(null);
-  const nextRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      const next = (nextRef.current + 1) % SLIDES.length;
-      nextRef.current = next;
-      setPrev(nextRef.current === 0 ? SLIDES.length - 1 : nextRef.current - 1);
-      setCurrent(next);
-      const t = setTimeout(() => setPrev(null), 900);
-      return () => clearTimeout(t);
-    }, 5000);
-    return () => clearInterval(id);
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setCurrent(c => (c + 1) % SLIDES.length);
+    }, INTERVAL);
   }, []);
 
+  useEffect(() => {
+    startTimer();
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [startTimer]);
+
   const goTo = (i: number) => {
-    setPrev(current);
-    nextRef.current = i;
     setCurrent(i);
-    setTimeout(() => setPrev(null), 900);
+    startTimer();
   };
 
   return (
@@ -44,47 +43,79 @@ export default function TurlarHero({ children }: { children: React.ReactNode }) 
       alignItems: 'center',
       justifyContent: 'flex-end',
       paddingBottom: '40px',
+      overflow: 'hidden',
     }}>
-      {/* Prev slide fading out */}
-      {prev !== null && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `${OVERLAY}, url("${SLIDES[prev].url}")`,
-          backgroundSize: 'cover',
-          backgroundPosition: SLIDES[prev].position,
-          opacity: 0,
-          transition: 'opacity 0.9s ease',
-        }} />
-      )}
-
-      {/* Current slide */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: `${OVERLAY}, url("${SLIDES[current].url}")`,
-        backgroundSize: 'cover',
-        backgroundPosition: SLIDES[current].position,
-        opacity: 1,
-        transition: 'opacity 0.9s ease',
-      }} />
-
-      {/* Dots */}
-      <div style={{ position: 'absolute', bottom: 16, right: 32, display: 'flex', gap: 6, zIndex: 10 }}>
-        {SLIDES.map((_, i) => (
-          <button key={i} onClick={() => goTo(i)} style={{
-            width: i === current ? 20 : 6,
-            height: 6,
-            borderRadius: 3,
-            background: i === current ? '#FF5533' : 'rgba(255,255,255,0.45)',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 0,
-            transition: 'width 0.3s, background 0.3s',
+      {/* All slides live in DOM — opacity toggled for GPU-accelerated crossfade */}
+      {SLIDES.map((slide, i) => (
+        <div
+          key={i}
+          aria-hidden={i !== current}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            opacity: i === current ? 1 : 0,
+            transition: `opacity ${FADE_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+            willChange: 'opacity',
+            zIndex: i === current ? 1 : 0,
+          }}
+        >
+          <Image
+            src={slide.url}
+            alt=""
+            fill
+            priority={i === 0}
+            sizes="100vw"
+            quality={85}
+            style={{
+              objectFit: 'cover',
+              objectPosition: slide.position,
+            }}
+          />
+          {/* Gradient overlay per slide so it travels with the image */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.48) 55%, rgba(0,0,0,0.68) 100%)',
           }} />
+        </div>
+      ))}
+
+      {/* Dot nav */}
+      <div style={{
+        position: 'absolute',
+        bottom: 18,
+        right: 32,
+        display: 'flex',
+        gap: 6,
+        zIndex: 10,
+      }}>
+        {SLIDES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            aria-label={`Slayt ${i + 1}`}
+            style={{
+              width: i === current ? 22 : 7,
+              height: 7,
+              borderRadius: 4,
+              background: i === current ? '#FF5533' : 'rgba(255,255,255,0.45)',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              transition: 'width 0.35s cubic-bezier(0.4,0,0.2,1), background 0.25s',
+            }}
+          />
         ))}
       </div>
 
       {/* Content */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: '860px', width: '100%', padding: '0 32px' }}>
+      <div style={{
+        position: 'relative',
+        zIndex: 5,
+        maxWidth: '860px',
+        width: '100%',
+        padding: '0 32px',
+      }}>
         {children}
       </div>
     </div>

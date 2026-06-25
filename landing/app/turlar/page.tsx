@@ -82,16 +82,21 @@ export default async function TurlarPage({
           box-shadow: 0 2px 16px rgba(0,0,0,0.07);
           text-decoration: none;
           color: inherit;
-          transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s;
+          transition: transform 0.28s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.28s ease;
           display: flex;
           flex-direction: column;
+          will-change: transform;
+          backface-visibility: hidden;
         }
         .tr-card:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 20px 56px rgba(0,0,0,0.14);
+          transform: translateY(-5px);
+          box-shadow: 0 16px 48px rgba(0,0,0,0.13);
         }
-        .tr-thumb { transition: transform 0.5s ease; }
-        .tr-card:hover .tr-thumb { transform: scale(1.06); }
+        .tr-thumb {
+          transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: transform;
+        }
+        .tr-card:hover .tr-thumb { transform: scale(1.07); }
         .detail-btn {
           display: inline-block;
           border: 1.5px solid #FF5533;
@@ -212,18 +217,19 @@ export default async function TurlarPage({
           ) : (
             <>
               <div className="tr-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
-                {displayed.map((tour) => {
+                {displayed.map((tour, idx) => {
                   const photo = getCardPhoto(tour);
                   return (
                     <Link key={tour.id} href={`/tours/${tour.id}`} className="tr-card">
                       {/* Photo */}
-                      <div style={{ position: 'relative', height: '220px', overflow: 'hidden', background: '#C8C8C8', flexShrink: 0 }}>
+                      <div style={{ position: 'relative', height: '220px', overflow: 'hidden', background: '#D8D8D8', flexShrink: 0 }}>
                         <Image
                           src={photo}
                           alt={tour.name}
                           fill
+                          priority={idx < 3}
                           className="tr-thumb"
-                          sizes="(max-width: 960px) 50vw, 33vw"
+                          sizes="(max-width: 560px) 100vw, (max-width: 960px) 50vw, 33vw"
                           style={{ objectFit: 'cover' }}
                         />
                         {tour.category && (
