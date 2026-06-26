@@ -350,6 +350,7 @@ export interface AdminCategory {
   name: string;
   icon_key: string | null;
   icon_svg: string | null;
+  image_url: string | null;
   order: number;
   is_static: boolean;
   created_at: string;
@@ -359,18 +360,36 @@ export async function adminGetCategories(): Promise<AdminCategory[]> {
   return adminRequest<AdminCategory[]>('/admin/categories');
 }
 
-export async function adminCreateCategory(dto: { name: string; icon_key?: string; icon_svg?: string }): Promise<AdminCategory> {
+export async function adminCreateCategory(dto: { name: string; icon_key?: string; icon_svg?: string; image_url?: string }): Promise<AdminCategory> {
   return adminRequest<AdminCategory>('/admin/categories', {
     method: 'POST',
     body: JSON.stringify(dto),
   });
 }
 
-export async function adminUpdateCategory(id: string, dto: { icon_key?: string; name?: string }): Promise<AdminCategory> {
+export async function adminUpdateCategory(id: string, dto: { icon_key?: string; name?: string; image_url?: string }): Promise<AdminCategory> {
   return adminRequest<AdminCategory>(`/admin/categories/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(dto),
   });
+}
+
+export async function adminUploadMedia(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const token = getAdminToken();
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_URL}/media/upload`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  if (!res.ok) throw new ApiError(res.status, `Upload failed: HTTP ${res.status}`);
+  const data = (await res.json()) as { url: string };
+  return data.url;
 }
 
 export async function adminDeleteCategory(id: string): Promise<void> {

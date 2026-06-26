@@ -27,6 +27,7 @@ export interface CategoryItem {
   name: string;
   icon_key: string | null;
   icon_svg?: string | null;
+  image_url?: string | null;
 }
 
 export async function getCategories(): Promise<CategoryItem[]> {

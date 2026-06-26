@@ -15,8 +15,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { memoryStorage } from 'multer';
 import { MediaService } from './media.service';
 
-// Accepts either an agency JWT or a user JWT
-class AnyJwtGuard extends AuthGuard(['jwt-agency', 'jwt-user']) {}
+// Accepts agency, user, or admin JWT
+class AnyJwtGuard extends AuthGuard(['jwt-agency', 'jwt-user', 'jwt-admin']) {}
 
 @Controller('media')
 export class MediaController {

@@ -326,18 +326,19 @@ export class AdminService {
     return this.categoryRepo.find({ order: { order: 'ASC', created_at: 'ASC' } });
   }
 
-  async createCategory(dto: { name: string; icon_key?: string; icon_svg?: string; order?: number }) {
+  async createCategory(dto: { name: string; icon_key?: string; icon_svg?: string; order?: number; image_url?: string }) {
     const cat = this.categoryRepo.create({
       name: dto.name,
       icon_key: dto.icon_key ?? null,
       icon_svg: dto.icon_svg ?? null,
+      image_url: dto.image_url ?? null,
       order: dto.order ?? 0,
       is_static: false,
     });
     return this.categoryRepo.save(cat);
   }
 
-  async updateCategory(id: string, dto: { icon_key?: string; icon_svg?: string; order?: number; name?: string }) {
+  async updateCategory(id: string, dto: { icon_key?: string; icon_svg?: string; order?: number; name?: string; image_url?: string }) {
     const cat = await this.categoryRepo.findOne({ where: { id } });
     if (!cat) throw new NotFoundException('Kategori bulunamadı');
     Object.assign(cat, dto);

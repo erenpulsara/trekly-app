@@ -14,6 +14,9 @@ export class Category {
   @Column({ type: 'text', nullable: true })
   icon_svg!: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  image_url!: string | null;
+
   @Column({ type: 'integer', default: 0 })
   order!: number;
 

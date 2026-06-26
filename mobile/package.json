@@ -30,6 +30,7 @@
     "@babel/core": "^7.24.0",
     "@types/react": "^19.1.0",
     "babel-preset-expo": "^56.0.15",
+    "qrcode": "^1.5.4",
     "typescript": "~5.3.3"
   },
   "private": true
