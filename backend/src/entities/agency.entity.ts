@@ -33,6 +33,9 @@ export class Agency {
   @Column({ type: 'boolean', default: false })
   email_verified!: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  is_suspended!: boolean;
+
   @Column({ type: 'timestamptz', nullable: true })
   verified_at!: Date | null;
 

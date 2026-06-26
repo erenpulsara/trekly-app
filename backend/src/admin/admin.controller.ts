@@ -18,6 +18,11 @@ export class AdminController {
   @Patch('agencies/:id/verify')
   verifyAgency(@Param('id') id: string) { return this.adminService.verifyAgency(id); }
 
+  @Patch('agencies/:id/suspend')
+  suspendAgency(@Param('id') id: string, @Body() body: { suspend: boolean }) {
+    return this.adminService.suspendAgency(id, body.suspend);
+  }
+
   @Delete('agencies/:id')
   deleteAgency(@Param('id') id: string) { return this.adminService.deleteAgency(id); }
 

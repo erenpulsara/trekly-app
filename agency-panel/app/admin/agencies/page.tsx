@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { adminGetAgencies, adminDeleteAgency, adminVerifyAgency, AdminAgency, ApiError } from "@/lib/api";
+import { adminGetAgencies, adminDeleteAgency, adminVerifyAgency, adminSuspendAgency, AdminAgency, ApiError } from "@/lib/api";
 import Button from "@/components/Button";
 
 export default function AdminAgenciesPage() {
@@ -10,6 +10,7 @@ export default function AdminAgenciesPage() {
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
+  const [suspendingId, setSuspendingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "verified" | "pending">("all");
 
@@ -37,6 +38,22 @@ export default function AdminAgenciesPage() {
       alert(err instanceof ApiError ? err.message : "Onaylanamadı");
     } finally {
       setVerifyingId(null);
+    }
+  }
+
+  async function handleSuspend(id: string, name: string, currentlySuspended: boolean) {
+    const action = currentlySuspended ? "askıyı kaldır" : "askıya al";
+    if (!confirm(`"${name}" acentasını ${action}mak istediğinize emin misiniz?`)) return;
+    setSuspendingId(id);
+    try {
+      await adminSuspendAgency(id, !currentlySuspended);
+      setAgencies((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, is_suspended: !currentlySuspended } : a))
+      );
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "İşlem başarısız");
+    } finally {
+      setSuspendingId(null);
     }
   }
 
@@ -136,23 +153,31 @@ export default function AdminAgenciesPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map((agency) => (
-                <tr key={agency.id} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={agency.id} className={`hover:bg-gray-50/50 transition-colors ${agency.is_suspended ? "opacity-60" : ""}`}>
                   <td className="px-6 py-4 font-medium text-gray-900">{agency.name}</td>
                   <td className="px-6 py-4 text-gray-600">{agency.email}</td>
                   <td className="px-6 py-4 text-gray-600">{agency.phone ?? "—"}</td>
                   <td className="px-6 py-4 text-gray-600">{agency.tour_count}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                      agency.email_verified ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"
-                    }`}>
-                      {agency.email_verified ? "Doğrulanmış" : "Bekliyor"}
-                    </span>
+                    {agency.is_suspended ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
+                        Askıda
+                      </span>
+                    ) : agency.email_verified ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                        Doğrulanmış
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
+                        Bekliyor
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-gray-500 text-xs">
                     {new Date(agency.created_at).toLocaleDateString("tr-TR")}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                       {!agency.email_verified && (
                         <Button
                           variant="primary"
@@ -163,6 +188,14 @@ export default function AdminAgenciesPage() {
                           Doğrula
                         </Button>
                       )}
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        loading={suspendingId === agency.id}
+                        onClick={() => handleSuspend(agency.id, agency.name, agency.is_suspended ?? false)}
+                      >
+                        {agency.is_suspended ? "Askıyı Kaldır" : "Askıya Al"}
+                      </Button>
                       <Button
                         variant="danger"
                         size="sm"

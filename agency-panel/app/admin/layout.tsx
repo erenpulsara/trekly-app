@@ -38,7 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
           <NavLink href="/admin/agencies" current={pathname}>Acentalar</NavLink>
           <NavLink href="/admin/tours" current={pathname}>Turlar</NavLink>
-          <NavLink href="/admin/rezervasyonlar" current={pathname}>Rezervasyonlar</NavLink>
+          <NavLink href="/admin/bookings" current={pathname}>Rezervasyonlar</NavLink>
           <NavLink href="/admin/kullanicilar" current={pathname}>Kullanıcılar</NavLink>
           <NavLink href="/admin/blog" current={pathname}>Blog</NavLink>
           <NavLink href="/admin/kategoriler" current={pathname}>Kategoriler</NavLink>

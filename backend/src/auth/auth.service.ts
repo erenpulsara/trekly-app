@@ -169,6 +169,13 @@ export class AuthService {
       });
     }
 
+    if (agency.is_suspended) {
+      throw new ForbiddenException({
+        message: 'Hesabınız askıya alınmıştır. Destek için iletişime geçin.',
+        code: 'ACCOUNT_SUSPENDED',
+      });
+    }
+
     const access_token = this.signAgencyToken(agency.id, agency.email);
     const { password_hash: _ph, ...agencyData } = agency;
     return { access_token, ...agencyData };

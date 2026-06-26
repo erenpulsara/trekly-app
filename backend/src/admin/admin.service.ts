@@ -75,6 +75,20 @@ export class AdminService {
     return { message: 'Acenta onaylandı' };
   }
 
+  async suspendAgency(id: string, suspend: boolean) {
+    const agency = await this.agencyRepo.findOne({ where: { id } });
+    if (!agency) throw new NotFoundException('Acenta bulunamadı');
+    agency.is_suspended = suspend;
+    await this.agencyRepo.save(agency);
+    await this.log(
+      suspend ? 'warning' : 'info',
+      suspend ? 'Acenta Askıya Alındı' : 'Acenta Askısı Kaldırıldı',
+      `${agency.name} (${agency.email})`,
+      'admin',
+    );
+    return { message: suspend ? 'Acenta askıya alındı' : 'Askı kaldırıldı' };
+  }
+
   async deleteAgency(id: string) {
     const agency = await this.agencyRepo.findOne({ where: { id } });
     if (!agency) throw new NotFoundException('Acenta bulunamadı');
@@ -128,22 +142,24 @@ export class AdminService {
   // ── Bookings ──────────────────────────────────────────────────────────────
 
   async getAllBookings() {
-    return this.bookingRepo.find({
-      relations: ['tour', 'user'],
+    const bookings = await this.bookingRepo.find({
+      relations: ['tour', 'tour.agency', 'tour_date'],
       order: { created_at: 'DESC' },
-      select: {
-        id: true,
-        name: true,
-        surname: true,
-        email: true,
-        phone: true,
-        participant_count: true,
-        status: true,
-        created_at: true,
-        tour: { id: true, name: true, location_name: true },
-        user: { id: true, name: true, email: true },
-      },
     });
+    return bookings.map((b) => ({
+      id: b.id,
+      name: b.name,
+      surname: b.surname,
+      email: b.email,
+      phone: b.phone,
+      participant_count: b.participant_count,
+      notes: b.notes,
+      status: b.status,
+      created_at: b.created_at,
+      tour: b.tour ? { id: b.tour.id, name: b.tour.name } : null,
+      agency: b.tour?.agency ? { id: b.tour.agency.id, name: b.tour.agency.name } : null,
+      tour_date: b.tour_date ? { id: b.tour_date.id, date: b.tour_date.date } : null,
+    }));
   }
 
   // ── Blog ──────────────────────────────────────────────────────────────────

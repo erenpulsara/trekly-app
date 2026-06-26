@@ -215,6 +215,7 @@ export interface AdminAgency {
   description: string | null;
   logo_url: string | null;
   email_verified: boolean;
+  is_suspended: boolean;
   created_at: string;
   tour_count: number;
 }
@@ -263,6 +264,13 @@ export async function adminDeleteTour(id: string): Promise<void> {
   return adminRequest<void>(`/admin/tours/${id}`, { method: 'DELETE' });
 }
 
+export async function adminSuspendAgency(id: string, suspend: boolean): Promise<{ message: string }> {
+  return adminRequest<{ message: string }>(`/admin/agencies/${id}/suspend`, {
+    method: 'PATCH',
+    body: JSON.stringify({ suspend }),
+  });
+}
+
 // ── Admin Stats ───────────────────────────────────────────────────────────
 
 export interface AdminStats {
@@ -286,10 +294,12 @@ export interface AdminBooking {
   email: string;
   phone: string;
   participant_count: number;
+  notes: string | null;
   status: string;
   created_at: string;
-  tour: { id: string; name: string; location_name: string } | null;
-  user: { id: string; name: string; email: string } | null;
+  tour: { id: string; name: string } | null;
+  agency: { id: string; name: string } | null;
+  tour_date: { id: string; date: string } | null;
 }
 
 export async function adminGetBookings(): Promise<AdminBooking[]> {
