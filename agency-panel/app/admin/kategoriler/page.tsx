@@ -126,6 +126,8 @@ export default function AdminKategorilerPage() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingPhotoId, setEditingPhotoId] = useState<string | null>(null);
+  const [editingStaticKey, setEditingStaticKey] = useState<string | null>(null);
+  const [staticPendingUrl, setStaticPendingUrl] = useState<string | null>(null);
 
   useEffect(() => { load(); }, []);
 
@@ -149,6 +151,18 @@ export default function AdminKategorilerPage() {
     } catch (err) {
       alert(err instanceof ApiError ? err.message : "Eklenemedi");
     } finally { setSaving(false); }
+  }
+
+  async function handleSaveStaticPhoto() {
+    if (!editingStaticKey || !staticPendingUrl) return;
+    try {
+      await adminCreateCategory({ name: editingStaticKey, image_url: staticPendingUrl });
+      setEditingStaticKey(null);
+      setStaticPendingUrl(null);
+      await load();
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "Güncellenemedi");
+    }
   }
 
   async function handleUpdatePhoto(id: string, image_url: string) {
@@ -250,6 +264,29 @@ export default function AdminKategorilerPage() {
         </div>
       )}
 
+      {/* Static category photo modal */}
+      {editingStaticKey && (
+        <div className="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+              <h2 className="text-base font-bold text-gray-900">Fotoğraf Güncelle</h2>
+              <button onClick={() => { setEditingStaticKey(null); setStaticPendingUrl(null); }} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm font-medium text-gray-700 mb-3 capitalize">{editingStaticKey}</p>
+              <PhotoUploader
+                value={staticPendingUrl ?? getEffectivePhoto(editingStaticKey, null)}
+                onChange={(url) => setStaticPendingUrl(url)}
+              />
+            </div>
+            <div className="flex gap-3 px-6 pb-5">
+              <Button variant="secondary" size="sm" onClick={() => { setEditingStaticKey(null); setStaticPendingUrl(null); }} className="flex-1">İptal</Button>
+              <Button variant="primary" size="sm" onClick={handleSaveStaticPhoto} disabled={!staticPendingUrl} className="flex-1">Kaydet</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Photo edit modal */}
       {editingPhotoId && (() => {
         const cat = cats.find(c => c.id === editingPhotoId);
@@ -296,7 +333,13 @@ export default function AdminKategorilerPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   </div>
                   <span className="text-sm font-medium text-gray-700 flex-1 capitalize">{key}</span>
-                  <span className="text-xs text-gray-300">sabit</span>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => { setEditingStaticKey(key); setStaticPendingUrl(null); }}
+                  >
+                    Fotoğraf
+                  </Button>
                 </div>
               );
             })}
