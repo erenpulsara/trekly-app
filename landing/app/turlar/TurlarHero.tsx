@@ -43,42 +43,43 @@ export default function TurlarHero({ children }: { children: React.ReactNode }) 
       alignItems: 'center',
       justifyContent: 'flex-end',
       paddingBottom: '40px',
-      overflow: 'hidden',
     }}>
-      {/* All slides live in DOM — opacity toggled for GPU-accelerated crossfade */}
-      {SLIDES.map((slide, i) => (
-        <div
-          key={i}
-          aria-hidden={i !== current}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            opacity: i === current ? 1 : 0,
-            transition: `opacity ${FADE_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`,
-            willChange: 'opacity',
-            zIndex: i === current ? 1 : 0,
-          }}
-        >
-          <Image
-            src={slide.url}
-            alt=""
-            fill
-            priority={i === 0}
-            sizes="100vw"
-            quality={85}
+      {/* Background layer — overflow:hidden sadece buraya uygulanıyor,
+          üst container'dan kaldırıldı ki dropdownlar kırpılmasın */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0 }}>
+        {SLIDES.map((slide, i) => (
+          <div
+            key={i}
+            aria-hidden={i !== current}
             style={{
-              objectFit: 'cover',
-              objectPosition: slide.position,
+              position: 'absolute',
+              inset: 0,
+              opacity: i === current ? 1 : 0,
+              transition: `opacity ${FADE_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+              willChange: 'opacity',
+              zIndex: i === current ? 1 : 0,
             }}
-          />
-          {/* Gradient overlay per slide so it travels with the image */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.48) 55%, rgba(0,0,0,0.68) 100%)',
-          }} />
-        </div>
-      ))}
+          >
+            <Image
+              src={slide.url}
+              alt=""
+              fill
+              priority={i === 0}
+              sizes="100vw"
+              quality={85}
+              style={{
+                objectFit: 'cover',
+                objectPosition: slide.position,
+              }}
+            />
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.48) 55%, rgba(0,0,0,0.68) 100%)',
+            }} />
+          </div>
+        ))}
+      </div>
 
       {/* Dot nav */}
       <div style={{
