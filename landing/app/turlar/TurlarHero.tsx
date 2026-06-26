@@ -4,10 +4,13 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 
 const SLIDES = [
-  { url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=85', position: 'center 40%' },
-  { url: 'https://images.unsplash.com/photo-1682687982502-1529b3b33f85?w=1920&q=85', position: 'center 50%' },
-  { url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=85', position: 'center 35%' },
-  { url: 'https://images.unsplash.com/photo-1530866495561-507c9faab2ed?w=1920&q=85', position: 'center 50%' },
+  { url: '/hero/IMG_2281.jpg', position: 'center 50%' },
+  { url: '/hero/IMG_2279.jpg', position: 'center 50%' },
+  { url: '/hero/IMG_2278.jpg', position: 'center 50%' },
+  { url: '/hero/IMG_2280.jpg', position: 'center 50%' },
+  { url: '/hero/IMG_2282.jpg', position: 'center 50%' },
+  { url: '/hero/IMG_2285.jpg', position: 'center 50%' },
+  { url: '/hero/pexels-hero.jpg', position: 'center 50%' },
 ];
 
 const INTERVAL = 5000;

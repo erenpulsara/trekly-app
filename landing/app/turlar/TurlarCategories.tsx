@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import type { CategoryItem } from '@/lib/api';
@@ -49,12 +48,6 @@ interface Props {
 export default function TurlarCategories({ activeCategory, dynamicCategories }: Props) {
   const router = useRouter();
   const params = useSearchParams();
-  const isFirstRender = useRef(true);
-
-  useEffect(() => {
-    if (isFirstRender.current) { isFirstRender.current = false; return; }
-    document.getElementById('cat-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [params]);
 
   function navigate(categoryKey: string) {
     const q = new URLSearchParams();
