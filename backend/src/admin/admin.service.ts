@@ -7,6 +7,8 @@ import { Booking } from '../entities/booking.entity';
 import { BlogPost } from '../entities/blog-post.entity';
 import { Category } from '../entities/category.entity';
 import { User } from '../entities/user.entity';
+import { AuditLog, AuditLogLevel } from '../entities/audit-log.entity';
+import { PlatformSettings } from '../entities/platform-settings.entity';
 
 @Injectable()
 export class AdminService {
@@ -23,7 +25,18 @@ export class AdminService {
     private categoryRepo: Repository<Category>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    @InjectRepository(AuditLog)
+    private auditLogRepo: Repository<AuditLog>,
+    @InjectRepository(PlatformSettings)
+    private settingsRepo: Repository<PlatformSettings>,
   ) {}
+
+  private async log(level: AuditLogLevel, action: string, detail: string | null, user: string | null) {
+    try {
+      const entry = this.auditLogRepo.create({ level, action, detail, user });
+      await this.auditLogRepo.save(entry);
+    } catch { /* don't let logging failures block operations */ }
+  }
 
   // ── Stats ─────────────────────────────────────────────────────────────────
 
@@ -52,10 +65,21 @@ export class AdminService {
     }));
   }
 
+  async verifyAgency(id: string) {
+    const agency = await this.agencyRepo.findOne({ where: { id } });
+    if (!agency) throw new NotFoundException('Acenta bulunamadı');
+    agency.email_verified = true;
+    agency.verified_at = new Date();
+    await this.agencyRepo.save(agency);
+    await this.log('success', 'Acenta Onaylandı', `${agency.name} (${agency.email}) onaylandı`, 'admin');
+    return { message: 'Acenta onaylandı' };
+  }
+
   async deleteAgency(id: string) {
     const agency = await this.agencyRepo.findOne({ where: { id } });
     if (!agency) throw new NotFoundException('Acenta bulunamadı');
     await this.agencyRepo.remove(agency);
+    await this.log('warning', 'Acenta Silindi', `${agency.name} (${agency.email}) silindi`, 'admin');
     return { message: 'Acenta silindi' };
   }
 
@@ -83,6 +107,7 @@ export class AdminService {
     const tour = await this.tourRepo.findOne({ where: { id } });
     if (!tour) throw new NotFoundException('Tur bulunamadı');
     await this.tourRepo.remove(tour);
+    await this.log('warning', 'Tur Silindi', `"${tour.name}" turu silindi`, 'admin');
     return { message: 'Tur silindi' };
   }
 
@@ -122,7 +147,9 @@ export class AdminService {
       status: dto.status ?? 'draft',
       published_at: dto.status === 'published' ? new Date() : null,
     });
-    return this.blogRepo.save(post);
+    const saved = await this.blogRepo.save(post);
+    await this.log('info', 'Blog Yazısı Oluşturuldu', `"${dto.title}" ${dto.status === 'published' ? 'yayınlandı' : 'taslak olarak kaydedildi'}`, 'admin');
+    return saved;
   }
 
   async updateBlogPost(id: string, dto: Partial<{
@@ -133,6 +160,7 @@ export class AdminService {
     if (!post) throw new NotFoundException('Blog yazısı bulunamadı');
     if (dto.status === 'published' && post.status !== 'published') {
       (dto as any).published_at = new Date();
+      await this.log('success', 'Blog Yazısı Yayınlandı', `"${post.title}" yayına alındı`, 'admin');
     }
     Object.assign(post, dto);
     return this.blogRepo.save(post);
@@ -142,6 +170,7 @@ export class AdminService {
     const post = await this.blogRepo.findOne({ where: { id } });
     if (!post) throw new NotFoundException('Blog yazısı bulunamadı');
     await this.blogRepo.remove(post);
+    await this.log('warning', 'Blog Yazısı Silindi', `"${post.title}" silindi`, 'admin');
     return { message: 'Blog yazısı silindi' };
   }
 
@@ -157,6 +186,7 @@ export class AdminService {
     if (!user) throw new NotFoundException('Kullanıcı bulunamadı');
     user.is_banned = true;
     await this.userRepo.save(user);
+    await this.log('warning', 'Kullanıcı Banlandı', `${user.email} hesabı banlı olarak işaretlendi`, 'admin');
     return { message: 'Kullanıcı banlandı' };
   }
 
@@ -165,6 +195,7 @@ export class AdminService {
     if (!user) throw new NotFoundException('Kullanıcı bulunamadı');
     user.is_banned = false;
     await this.userRepo.save(user);
+    await this.log('success', 'Kullanıcı Aktifleştirildi', `${user.email} hesabı aktifleştirildi`, 'admin');
     return { message: 'Kullanıcı aktifleştirildi' };
   }
 
@@ -178,7 +209,6 @@ export class AdminService {
       this.tourRepo.count(),
     ]);
 
-    // Top 5 tours by booking count
     const topTours = await this.tourRepo
       .createQueryBuilder('tour')
       .leftJoin('tour.bookings', 'booking')
@@ -190,7 +220,6 @@ export class AdminService {
       .limit(5)
       .getRawMany();
 
-    // Top 5 agencies by tour count
     const topAgencies = await this.agencyRepo
       .createQueryBuilder('agency')
       .leftJoin('agency.tours', 'tour')
@@ -202,7 +231,63 @@ export class AdminService {
       .limit(5)
       .getRawMany();
 
-    return { totalBookings, totalUsers, totalAgencies, totalTours, topTours, topAgencies };
+    const monthlyRaw = await this.bookingRepo
+      .createQueryBuilder('booking')
+      .select("TO_CHAR(DATE_TRUNC('month', booking.created_at), 'YYYY-MM')", 'month')
+      .addSelect('COUNT(*)', 'count')
+      .where("booking.created_at >= NOW() - INTERVAL '12 months'")
+      .groupBy("DATE_TRUNC('month', booking.created_at)")
+      .orderBy("DATE_TRUNC('month', booking.created_at)", 'ASC')
+      .getRawMany();
+
+    const monthlyBookings = monthlyRaw.map((r) => ({
+      month: r.month as string,
+      count: Number(r.count),
+    }));
+
+    return { totalBookings, totalUsers, totalAgencies, totalTours, topTours, topAgencies, monthlyBookings };
+  }
+
+  // ── Audit Logs ────────────────────────────────────────────────────────────
+
+  async getAuditLogs() {
+    return this.auditLogRepo.find({
+      order: { created_at: 'DESC' },
+      take: 200,
+    });
+  }
+
+  // ── Settings ──────────────────────────────────────────────────────────────
+
+  async getSettings() {
+    let settings = await this.settingsRepo.findOne({ where: { id: 1 } });
+    if (!settings) {
+      settings = this.settingsRepo.create({
+        id: 1,
+        site_name: 'Trekly',
+        support_email: 'destek@trekly.com',
+        maintenance_mode: false,
+        new_registrations: true,
+        email_verification: true,
+        auto_approve_agencies: false,
+        commission_rate: '10.00',
+        min_booking_hours: 24,
+      });
+      await this.settingsRepo.save(settings);
+    }
+    return settings;
+  }
+
+  async updateSettings(dto: Partial<Omit<PlatformSettings, 'id'>>) {
+    let settings = await this.settingsRepo.findOne({ where: { id: 1 } });
+    if (!settings) {
+      settings = this.settingsRepo.create({ id: 1, ...dto } as PlatformSettings);
+    } else {
+      Object.assign(settings, dto);
+    }
+    const saved = await this.settingsRepo.save(settings);
+    await this.log('info', 'Platform Ayarları Güncellendi', 'Genel platform yapılandırması değiştirildi', 'admin');
+    return saved;
   }
 
   // ── Categories ────────────────────────────────────────────────────────────
@@ -235,5 +320,4 @@ export class AdminService {
     await this.categoryRepo.remove(cat);
     return { message: 'Kategori silindi' };
   }
-
 }

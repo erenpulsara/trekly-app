@@ -31,8 +31,10 @@ import { AdminModule } from './admin/admin.module';
         entities: [Agency, Tour, TourDate, User, Booking, UserPointsLog, VerificationToken, BlogPost, Category],
         synchronize: true, // Set to false and use migrations in production
         autoLoadEntities: true,
-        ssl: config.get<string>('DATABASE_URL')?.includes('cloudsql')
-          ? false // Cloud SQL proxy handles SSL
+        ssl: (config.get<string>('DATABASE_URL')?.includes('cloudsql') ||
+              config.get<string>('DATABASE_URL')?.includes('localhost') ||
+              config.get<string>('DATABASE_URL')?.includes('127.0.0.1'))
+          ? false
           : { rejectUnauthorized: false },
       }),
     }),

@@ -46,7 +46,7 @@ export default function TurlarHero({ children }: { children: React.ReactNode }) 
     }}>
       {/* Background layer — overflow:hidden sadece buraya uygulanıyor,
           üst container'dan kaldırıldı ki dropdownlar kırpılmasın */}
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0 }}>
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         {SLIDES.map((slide, i) => (
           <div
             key={i}

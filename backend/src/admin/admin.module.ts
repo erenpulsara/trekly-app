@@ -6,12 +6,14 @@ import { Booking } from '../entities/booking.entity';
 import { BlogPost } from '../entities/blog-post.entity';
 import { Category } from '../entities/category.entity';
 import { User } from '../entities/user.entity';
+import { AuditLog } from '../entities/audit-log.entity';
+import { PlatformSettings } from '../entities/platform-settings.entity';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Agency, Tour, Booking, BlogPost, Category, User]),
+    TypeOrmModule.forFeature([Agency, Tour, Booking, BlogPost, Category, User, AuditLog, PlatformSettings]),
   ],
   controllers: [AdminController],
   providers: [AdminService],

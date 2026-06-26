@@ -234,6 +234,10 @@ export async function adminGetAgencies(): Promise<AdminAgency[]> {
   return adminRequest<AdminAgency[]>('/admin/agencies');
 }
 
+export async function adminVerifyAgency(id: string): Promise<{ message: string }> {
+  return adminRequest<{ message: string }>(`/admin/agencies/${id}/verify`, { method: 'PATCH' });
+}
+
 export async function adminDeleteAgency(id: string): Promise<void> {
   return adminRequest<void>(`/admin/agencies/${id}`, { method: 'DELETE' });
 }
@@ -391,8 +395,51 @@ export interface AdminReports {
   totalTours: number;
   topTours: { id: string; name: string; bookings: number }[];
   topAgencies: { id: string; name: string; tours: number }[];
+  monthlyBookings: { month: string; count: number }[];
 }
 
 export async function adminGetReports(): Promise<AdminReports> {
   return adminRequest<AdminReports>('/admin/reports');
+}
+
+// ── Admin Audit Logs ──────────────────────────────────────────────────────
+
+export type AuditLogLevel = 'info' | 'success' | 'warning' | 'error';
+
+export interface AuditLog {
+  id: string;
+  level: AuditLogLevel;
+  action: string;
+  detail: string | null;
+  user: string | null;
+  created_at: string;
+}
+
+export async function adminGetAuditLogs(): Promise<AuditLog[]> {
+  return adminRequest<AuditLog[]>('/admin/audit-logs');
+}
+
+// ── Admin Settings ────────────────────────────────────────────────────────
+
+export interface PlatformSettings {
+  id: number;
+  site_name: string;
+  support_email: string;
+  maintenance_mode: boolean;
+  new_registrations: boolean;
+  email_verification: boolean;
+  auto_approve_agencies: boolean;
+  commission_rate: string;
+  min_booking_hours: number;
+}
+
+export async function adminGetSettings(): Promise<PlatformSettings> {
+  return adminRequest<PlatformSettings>('/admin/settings');
+}
+
+export async function adminUpdateSettings(dto: Partial<Omit<PlatformSettings, 'id'>>): Promise<PlatformSettings> {
+  return adminRequest<PlatformSettings>('/admin/settings', {
+    method: 'PATCH',
+    body: JSON.stringify(dto),
+  });
 }

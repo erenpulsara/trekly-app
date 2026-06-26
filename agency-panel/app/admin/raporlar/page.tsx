@@ -4,20 +4,11 @@ import { useEffect, useState } from "react";
 import { adminGetReports, AdminReports, ApiError } from "@/lib/api";
 import Button from "@/components/Button";
 
-const MONTHLY_DEMO = [
-  { month: "Oca", value: 14 },
-  { month: "Şub", value: 22 },
-  { month: "Mar", value: 31 },
-  { month: "Nis", value: 47 },
-  { month: "May", value: 68 },
-  { month: "Haz", value: 85 },
-  { month: "Tem", value: 92 },
-  { month: "Ağu", value: 88 },
-  { month: "Eyl", value: 73 },
-  { month: "Eki", value: 54 },
-  { month: "Kas", value: 39 },
-  { month: "Ara", value: 28 },
-];
+const TR_MONTHS: Record<string, string> = {
+  "01": "Oca", "02": "Şub", "03": "Mar", "04": "Nis",
+  "05": "May", "06": "Haz", "07": "Tem", "08": "Ağu",
+  "09": "Eyl", "10": "Eki", "11": "Kas", "12": "Ara",
+};
 
 function BarChart({ data }: { data: { month: string; value: number }[] }) {
   const max = Math.max(...data.map((d) => d.value), 1);
@@ -95,10 +86,19 @@ export default function AdminRaporlarPage() {
             ))}
           </div>
 
-          {/* Monthly Booking Chart (demo data — real monthly breakdown would need backend) */}
+          {/* Monthly Booking Chart */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
-            <h2 className="text-base font-semibold text-gray-800 mb-4">Aylık Rezervasyon Trendi (Demo)</h2>
-            <BarChart data={MONTHLY_DEMO} />
+            <h2 className="text-base font-semibold text-gray-800 mb-4">Aylık Rezervasyon Trendi (Son 12 Ay)</h2>
+            {reports.monthlyBookings.length === 0 ? (
+              <p className="text-sm text-gray-400">Henüz veri yok</p>
+            ) : (
+              <BarChart
+                data={reports.monthlyBookings.map((m) => ({
+                  month: TR_MONTHS[m.month.slice(5, 7)] ?? m.month,
+                  value: m.count,
+                }))}
+              />
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

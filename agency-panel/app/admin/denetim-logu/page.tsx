@@ -1,34 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { adminGetAuditLogs, AuditLog, AuditLogLevel, ApiError } from "@/lib/api";
+import Button from "@/components/Button";
 
-type LogLevel = "info" | "warning" | "error" | "success";
-
-interface AuditLog {
-  id: string;
-  level: LogLevel;
-  action: string;
-  detail: string;
-  user: string;
-  timestamp: string;
-}
-
-const DEMO_LOGS: AuditLog[] = [
-  { id: "1",  level: "success", action: "Kullanıcı Girişi",       detail: "admin@trekly.com başarıyla giriş yaptı",              user: "admin@trekly.com",        timestamp: "2026-06-25T09:12:00Z" },
-  { id: "2",  level: "info",    action: "Tur Oluşturuldu",        detail: 'Doğu Karadeniz Turu eklendi',                          user: "acenta@example.com",      timestamp: "2026-06-25T08:47:00Z" },
-  { id: "3",  level: "warning", action: "Kullanıcı Banlı",        detail: "kullanici123@gmail.com hesabı banlı olarak işaretlendi", user: "admin@trekly.com",       timestamp: "2026-06-24T17:30:00Z" },
-  { id: "4",  level: "error",   action: "Başarısız Giriş",        detail: "3 başarısız deneme — IP: 91.93.12.44",                 user: "unknown",                 timestamp: "2026-06-24T15:05:00Z" },
-  { id: "5",  level: "info",    action: "Blog Yazısı Yayınlandı", detail: '"Türkiye\'nin En İyi 10 Trekking Rotası" yayına alındı', user: "admin@trekly.com",       timestamp: "2026-06-24T13:22:00Z" },
-  { id: "6",  level: "success", action: "Acenta Onaylandı",       detail: "Doğa Turları Ltd. şirketi onaylandı",                  user: "admin@trekly.com",        timestamp: "2026-06-23T11:00:00Z" },
-  { id: "7",  level: "info",    action: "Rezervasyon Güncellendi","detail": "REZ-00234 onaylandı",                                 user: "acenta@example.com",      timestamp: "2026-06-23T10:15:00Z" },
-  { id: "8",  level: "warning", action: "Kategori Silindi",       detail: '"Kış Sporları" kategorisi kaldırıldı',                 user: "admin@trekly.com",        timestamp: "2026-06-22T16:40:00Z" },
-  { id: "9",  level: "success", action: "Şifre Sıfırlandı",      detail: "user@mail.com şifresini başarıyla sıfırladı",          user: "user@mail.com",           timestamp: "2026-06-22T09:05:00Z" },
-  { id: "10", level: "info",    action: "Tur Güncellendi",        detail: '"Likya Yolu" turu güncellendi',                        user: "acenta2@example.com",     timestamp: "2026-06-21T14:30:00Z" },
-  { id: "11", level: "error",   action: "Ödeme Hatası",           detail: "REZ-00198 işleminde ödeme gateaway hatası",            user: "system",                  timestamp: "2026-06-21T12:00:00Z" },
-  { id: "12", level: "info",    action: "Kullanıcı Kaydı",        detail: "yeni@kullanici.com sisteme kayıt oldu",                user: "yeni@kullanici.com",      timestamp: "2026-06-20T18:55:00Z" },
-];
-
-const LEVEL_CONFIG: Record<LogLevel, { label: string; badge: string; dot: string }> = {
+const LEVEL_CONFIG: Record<AuditLogLevel, { label: string; badge: string; dot: string }> = {
   info:    { label: "Bilgi",   badge: "bg-blue-50 text-blue-700",    dot: "bg-blue-500"   },
   success: { label: "Başarı",  badge: "bg-green-50 text-green-700",  dot: "bg-green-500"  },
   warning: { label: "Uyarı",   badge: "bg-yellow-50 text-yellow-700",dot: "bg-yellow-500" },
@@ -44,30 +20,54 @@ const FILTERS = [
 ] as const;
 
 export default function AdminDenetimLoguPage() {
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [level, setLevel] = useState<"all" | LogLevel>("all");
+  const [level, setLevel] = useState<"all" | AuditLogLevel>("all");
+
+  useEffect(() => { load(); }, []);
+
+  async function load() {
+    setLoading(true);
+    setError(null);
+    try {
+      setLogs(await adminGetAuditLogs());
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Yüklenemedi");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const filtered = useMemo(() => {
-    return DEMO_LOGS.filter((log) => {
+    return logs.filter((log) => {
       const q = search.toLowerCase();
       const matchSearch =
         !q ||
         log.action.toLowerCase().includes(q) ||
-        log.detail.toLowerCase().includes(q) ||
-        log.user.toLowerCase().includes(q);
+        (log.detail ?? "").toLowerCase().includes(q) ||
+        (log.user ?? "").toLowerCase().includes(q);
       const matchLevel = level === "all" || log.level === level;
       return matchSearch && matchLevel;
     });
-  }, [search, level]);
+  }, [logs, search, level]);
 
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Denetim Logu</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Platform etkinlik kaydı (demo verisi)</p>
+          <p className="text-sm text-gray-500 mt-0.5">Platform etkinlik kaydı</p>
         </div>
+        <Button variant="secondary" size="sm" onClick={load} loading={loading}>
+          Yenile
+        </Button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6 text-sm text-red-600">{error}</div>
+      )}
 
       {/* Search + filter */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -95,8 +95,12 @@ export default function AdminDenetimLoguPage() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 text-sm">Kayıt bulunamadı</div>
+      {loading && logs.length === 0 ? (
+        <div className="text-center py-16 text-gray-400 text-sm">Yükleniyor...</div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16 text-gray-400 text-sm">
+          {logs.length === 0 ? "Henüz kayıt yok. Admin işlemleri burada görünecek." : "Kayıt bulunamadı"}
+        </div>
       ) : (
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <table className="w-full text-sm">
@@ -121,10 +125,10 @@ export default function AdminDenetimLoguPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-900">{log.action}</td>
-                    <td className="px-6 py-4 text-gray-600 max-w-[300px] truncate">{log.detail}</td>
-                    <td className="px-6 py-4 text-gray-500 text-xs">{log.user}</td>
+                    <td className="px-6 py-4 text-gray-600 max-w-[300px] truncate">{log.detail ?? "—"}</td>
+                    <td className="px-6 py-4 text-gray-500 text-xs">{log.user ?? "—"}</td>
                     <td className="px-6 py-4 text-gray-500 text-xs">
-                      {new Date(log.timestamp).toLocaleString("tr-TR")}
+                      {new Date(log.created_at).toLocaleString("tr-TR")}
                     </td>
                   </tr>
                 );

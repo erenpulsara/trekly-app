@@ -15,6 +15,9 @@ export class AdminController {
   @Get('agencies')
   getAllAgencies() { return this.adminService.getAllAgencies(); }
 
+  @Patch('agencies/:id/verify')
+  verifyAgency(@Param('id') id: string) { return this.adminService.verifyAgency(id); }
+
   @Delete('agencies/:id')
   deleteAgency(@Param('id') id: string) { return this.adminService.deleteAgency(id); }
 
@@ -57,6 +60,17 @@ export class AdminController {
   // ── Reports ───────────────────────────────────────────────────────────────
   @Get('reports')
   getReports() { return this.adminService.getReports(); }
+
+  // ── Audit Logs ────────────────────────────────────────────────────────────
+  @Get('audit-logs')
+  getAuditLogs() { return this.adminService.getAuditLogs(); }
+
+  // ── Settings ──────────────────────────────────────────────────────────────
+  @Get('settings')
+  getSettings() { return this.adminService.getSettings(); }
+
+  @Patch('settings')
+  updateSettings(@Body() dto: any) { return this.adminService.updateSettings(dto); }
 
   // ── Categories ────────────────────────────────────────────────────────────
   @Get('categories')

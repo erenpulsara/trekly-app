@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { adminGetAgencies, adminDeleteAgency, AdminAgency, ApiError } from "@/lib/api";
+import { adminGetAgencies, adminDeleteAgency, adminVerifyAgency, AdminAgency, ApiError } from "@/lib/api";
 import Button from "@/components/Button";
 
 export default function AdminAgenciesPage() {
@@ -9,6 +9,7 @@ export default function AdminAgenciesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "verified" | "pending">("all");
 
@@ -23,6 +24,19 @@ export default function AdminAgenciesPage() {
       setError(err instanceof ApiError ? err.message : "Yüklenemedi");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleVerify(id: string, name: string) {
+    if (!confirm(`"${name}" acentasını onaylamak istediğinize emin misiniz?`)) return;
+    setVerifyingId(id);
+    try {
+      await adminVerifyAgency(id);
+      setAgencies((prev) => prev.map((a) => a.id === id ? { ...a, email_verified: true } : a));
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "Onaylanamadı");
+    } finally {
+      setVerifyingId(null);
     }
   }
 
@@ -138,14 +152,26 @@ export default function AdminAgenciesPage() {
                     {new Date(agency.created_at).toLocaleDateString("tr-TR")}
                   </td>
                   <td className="px-6 py-4">
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      loading={deletingId === agency.id}
-                      onClick={() => handleDelete(agency.id, agency.name)}
-                    >
-                      Sil
-                    </Button>
+                    <div className="flex gap-2">
+                      {!agency.email_verified && (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          loading={verifyingId === agency.id}
+                          onClick={() => handleVerify(agency.id, agency.name)}
+                        >
+                          Doğrula
+                        </Button>
+                      )}
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        loading={deletingId === agency.id}
+                        onClick={() => handleDelete(agency.id, agency.name)}
+                      >
+                        Sil
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}

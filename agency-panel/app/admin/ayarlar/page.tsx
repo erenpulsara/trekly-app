@@ -1,29 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { adminGetSettings, adminUpdateSettings, PlatformSettings, ApiError } from "@/lib/api";
 import Button from "@/components/Button";
-
-interface Settings {
-  siteName: string;
-  supportEmail: string;
-  maintenanceMode: boolean;
-  newRegistrations: boolean;
-  emailVerification: boolean;
-  autoApproveAgencies: boolean;
-  commissionRate: string;
-  minBookingHours: string;
-}
-
-const DEFAULT: Settings = {
-  siteName: "Trekly",
-  supportEmail: "destek@trekly.com",
-  maintenanceMode: false,
-  newRegistrations: true,
-  emailVerification: true,
-  autoApproveAgencies: false,
-  commissionRate: "10",
-  minBookingHours: "24",
-};
 
 function Toggle({
   checked,
@@ -59,20 +38,69 @@ function Toggle({
 }
 
 export default function AdminAyarlarPage() {
-  const [settings, setSettings] = useState<Settings>(DEFAULT);
+  const [settings, setSettings] = useState<PlatformSettings | null>(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function set<K extends keyof Settings>(key: K, value: Settings[K]) {
-    setSettings((prev) => ({ ...prev, [key]: value }));
+  useEffect(() => { load(); }, []);
+
+  async function load() {
+    setLoading(true);
+    setError(null);
+    try {
+      setSettings(await adminGetSettings());
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Ayarlar yüklenemedi");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function set<K extends keyof PlatformSettings>(key: K, value: PlatformSettings[K]) {
+    setSettings((prev) => prev ? { ...prev, [key]: value } : prev);
     setSaved(false);
   }
 
   async function handleSave() {
+    if (!settings) return;
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSaving(false);
-    setSaved(true);
+    setError(null);
+    try {
+      const updated = await adminUpdateSettings({
+        site_name: settings.site_name,
+        support_email: settings.support_email,
+        maintenance_mode: settings.maintenance_mode,
+        new_registrations: settings.new_registrations,
+        email_verification: settings.email_verification,
+        auto_approve_agencies: settings.auto_approve_agencies,
+        commission_rate: settings.commission_rate,
+        min_booking_hours: settings.min_booking_hours,
+      });
+      setSettings(updated);
+      setSaved(true);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Kaydedilemedi");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="p-8">
+        <div className="text-center py-16 text-gray-400 text-sm">Yükleniyor...</div>
+      </div>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <div className="p-8">
+        <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-sm text-red-600">{error ?? "Ayarlar yüklenemedi"}</div>
+      </div>
+    );
   }
 
   return (
@@ -92,6 +120,10 @@ export default function AdminAyarlarPage() {
         </div>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6 text-sm text-red-600">{error}</div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Genel */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
@@ -101,8 +133,8 @@ export default function AdminAyarlarPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Site Adı</label>
               <input
                 type="text"
-                value={settings.siteName}
-                onChange={(e) => set("siteName", e.target.value)}
+                value={settings.site_name}
+                onChange={(e) => set("site_name", e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange"
               />
             </div>
@@ -110,8 +142,8 @@ export default function AdminAyarlarPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Destek E-postası</label>
               <input
                 type="email"
-                value={settings.supportEmail}
-                onChange={(e) => set("supportEmail", e.target.value)}
+                value={settings.support_email}
+                onChange={(e) => set("support_email", e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange"
               />
             </div>
@@ -121,8 +153,8 @@ export default function AdminAyarlarPage() {
                 type="number"
                 min="0"
                 max="100"
-                value={settings.commissionRate}
-                onChange={(e) => set("commissionRate", e.target.value)}
+                value={settings.commission_rate}
+                onChange={(e) => set("commission_rate", e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange"
               />
             </div>
@@ -133,8 +165,8 @@ export default function AdminAyarlarPage() {
               <input
                 type="number"
                 min="1"
-                value={settings.minBookingHours}
-                onChange={(e) => set("minBookingHours", e.target.value)}
+                value={settings.min_booking_hours}
+                onChange={(e) => set("min_booking_hours", Number(e.target.value))}
                 className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange"
               />
             </div>
@@ -147,26 +179,26 @@ export default function AdminAyarlarPage() {
           <Toggle
             label="Bakım Modu"
             description="Etkinleştirildiğinde site bakım sayfası gösterir"
-            checked={settings.maintenanceMode}
-            onChange={(v) => set("maintenanceMode", v)}
+            checked={settings.maintenance_mode}
+            onChange={(v) => set("maintenance_mode", v)}
           />
           <Toggle
             label="Yeni Kayıtlar"
             description="Kullanıcı ve acenta kaydını etkinleştirir/devre dışı bırakır"
-            checked={settings.newRegistrations}
-            onChange={(v) => set("newRegistrations", v)}
+            checked={settings.new_registrations}
+            onChange={(v) => set("new_registrations", v)}
           />
           <Toggle
             label="E-posta Doğrulama"
             description="Kullanıcıların e-postalarını doğrulamasını zorunlu kılar"
-            checked={settings.emailVerification}
-            onChange={(v) => set("emailVerification", v)}
+            checked={settings.email_verification}
+            onChange={(v) => set("email_verification", v)}
           />
           <Toggle
             label="Acentaları Otomatik Onayla"
             description="Kapalıysa acentalar manuel inceleme bekler"
-            checked={settings.autoApproveAgencies}
-            onChange={(v) => set("autoApproveAgencies", v)}
+            checked={settings.auto_approve_agencies}
+            onChange={(v) => set("auto_approve_agencies", v)}
           />
         </div>
       </div>
