@@ -14,22 +14,36 @@ const STATIC_CATEGORIES = [
   { key: 'yamaç paraşütü', label: 'Yamaç Paraşütü' },
 ];
 
+const MONTHS = [
+  'Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
+  'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık',
+];
+
 interface Props {
   activeCategory: string;
+  activeLocation: string;
+  activeMonth: string;
   dynamicCategories: CategoryItem[];
+  locations: string[];
 }
 
-export default function TurlarSidebar({ activeCategory, dynamicCategories }: Props) {
+export default function TurlarSidebar({
+  activeCategory, activeLocation, activeMonth,
+  dynamicCategories, locations,
+}: Props) {
   const router = useRouter();
   const params = useSearchParams();
 
-  function navigate(key: string) {
+  function navigateTo(updates: { category?: string; location?: string; month?: string }) {
     const q = new URLSearchParams();
-    if (key) q.set('category', key);
-    const date = params.get('start_date');
-    const loc  = params.get('location');
-    if (date) q.set('start_date', date);
-    if (loc)  q.set('location',  loc);
+    const cat   = updates.category  !== undefined ? updates.category  : (params.get('category')   ?? '');
+    const loc   = updates.location  !== undefined ? updates.location  : (params.get('location')   ?? '');
+    const month = updates.month     !== undefined ? updates.month     : (params.get('month')      ?? '');
+    const date  = params.get('start_date') ?? '';
+    if (cat)   q.set('category',   cat);
+    if (loc)   q.set('location',   loc);
+    if (month) q.set('month',      month);
+    if (date)  q.set('start_date', date);
     router.push(`/turlar${q.toString() ? `?${q}` : ''}`);
   }
 
@@ -40,13 +54,14 @@ export default function TurlarSidebar({ activeCategory, dynamicCategories }: Pro
     ...extraCats.map(c => ({ key: c.name, label: c.name })),
   ];
 
-  const isAll = activeCategory === '';
+  const isAll = !activeCategory && !activeLocation && !activeMonth;
 
   return (
-    <aside style={{ width: '220px', flexShrink: 0 }}>
+    <aside className="turlar-sidebar" style={{ width: '230px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
       {/* Tüm Turlar */}
       <button
-        onClick={() => navigate('')}
+        onClick={() => router.push('/turlar')}
         style={{
           display: 'flex', alignItems: 'center', gap: '10px',
           width: '100%', padding: '13px 16px', borderRadius: '14px',
@@ -54,7 +69,6 @@ export default function TurlarSidebar({ activeCategory, dynamicCategories }: Pro
           background: isAll ? '#FF5533' : 'white',
           color: isAll ? 'white' : '#1A1A1A',
           fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer',
-          marginBottom: '14px',
           boxShadow: isAll ? '0 4px 16px rgba(255,85,51,0.3)' : '0 2px 10px rgba(0,0,0,0.06)',
           transition: 'all 0.18s ease', textAlign: 'left',
         }}
@@ -68,57 +82,110 @@ export default function TurlarSidebar({ activeCategory, dynamicCategories }: Pro
         Tüm Turlar
       </button>
 
-      {/* Category list */}
-      <div style={{
-        background: 'white', borderRadius: '16px', padding: '18px 14px',
-        boxShadow: '0 2px 12px rgba(0,0,0,0.05)', border: '1px solid #F0F0F0',
-      }}>
-        <p style={{
-          fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.18em',
-          textTransform: 'uppercase', color: '#BBBBBB', margin: '0 0 12px 4px',
-        }}>
-          Kategori
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          {allCats.map(({ key, label }) => {
-            const isActive = activeCategory === key;
+      {/* Kategori */}
+      <FilterCard label="Kategori">
+        {allCats.map(({ key, label }) => {
+          const isActive = activeCategory === key;
+          return (
+            <FilterRow
+              key={key}
+              label={label}
+              isActive={isActive}
+              onClick={() => navigateTo({ category: isActive ? '' : key })}
+            />
+          );
+        })}
+      </FilterCard>
+
+      {/* Lokasyon */}
+      {locations.length > 0 && (
+        <FilterCard label="Lokasyon">
+          {locations.map(loc => {
+            const isActive = activeLocation === loc;
             return (
-              <button
-                key={key}
-                onClick={() => navigate(isActive ? '' : key)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  padding: '8px 8px', borderRadius: '9px', border: 'none',
-                  background: isActive ? '#FFF4F1' : 'transparent',
-                  cursor: 'pointer', textAlign: 'left', width: '100%',
-                  transition: 'background 0.12s',
-                }}
-              >
-                <span style={{
-                  width: '17px', height: '17px', borderRadius: '4px', flexShrink: 0,
-                  border: `2px solid ${isActive ? '#FF5533' : '#D8D8D8'}`,
-                  background: isActive ? '#FF5533' : 'white',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 0.12s',
-                }}>
-                  {isActive && (
-                    <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                      <path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                </span>
-                <span style={{
-                  fontSize: '0.82rem',
-                  fontWeight: isActive ? 600 : 400,
-                  color: isActive ? '#FF5533' : '#4A4A4A',
-                }}>
-                  {label}
-                </span>
-              </button>
+              <FilterRow
+                key={loc}
+                label={loc}
+                isActive={isActive}
+                onClick={() => navigateTo({ location: isActive ? '' : loc })}
+              />
             );
           })}
-        </div>
-      </div>
+        </FilterCard>
+      )}
+
+      {/* Tarih */}
+      <FilterCard label="Tarih">
+        {MONTHS.map(month => {
+          const key = month.toLowerCase();
+          const isActive = activeMonth === key;
+          return (
+            <FilterRow
+              key={key}
+              label={month}
+              isActive={isActive}
+              onClick={() => navigateTo({ month: isActive ? '' : key })}
+            />
+          );
+        })}
+      </FilterCard>
+
     </aside>
+  );
+}
+
+function FilterCard({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{
+      background: 'white', borderRadius: '16px', padding: '16px 12px',
+      boxShadow: '0 2px 12px rgba(0,0,0,0.05)', border: '1px solid #F0F0F0',
+    }}>
+      <p style={{
+        fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.18em',
+        textTransform: 'uppercase', color: '#BBBBBB', margin: '0 0 10px 4px',
+      }}>
+        {label}
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function FilterRow({ label, isActive, onClick }: { label: string; isActive: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: '10px',
+        padding: '7px 8px', borderRadius: '8px', border: 'none',
+        background: isActive ? '#FFF4F1' : 'transparent',
+        cursor: 'pointer', textAlign: 'left', width: '100%',
+        transition: 'background 0.12s',
+      }}
+    >
+      <span style={{
+        width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0,
+        border: `2px solid ${isActive ? '#FF5533' : '#D0D0D0'}`,
+        background: isActive ? '#FF5533' : 'white',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'all 0.12s',
+      }}>
+        {isActive && (
+          <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+            <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
+      </span>
+      <span style={{
+        fontSize: '0.81rem',
+        fontWeight: isActive ? 600 : 400,
+        color: isActive ? '#FF5533' : '#4A4A4A',
+        lineHeight: 1.3,
+      }}>
+        {label}
+      </span>
+    </button>
   );
 }

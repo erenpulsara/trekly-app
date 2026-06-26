@@ -49,6 +49,7 @@ export default async function TurlarPage({
     category?: string;
     location?: string;
     start_date?: string;
+    month?: string;
     showAll?: string;
   };
 }) {
@@ -60,18 +61,39 @@ export default async function TurlarPage({
   const activeCategory = searchParams?.category ?? '';
   const activeLocation = searchParams?.location ?? '';
   const activeDate     = searchParams?.start_date ?? '';
+  const activeMonth    = searchParams?.month ?? '';
   const showAll        = searchParams?.showAll === 'true';
 
-  const [allTours, categories] = await Promise.all([
+  const MONTH_MAP: Record<string, number> = {
+    'ocak': 0, 'şubat': 1, 'mart': 2, 'nisan': 3, 'mayıs': 4, 'haziran': 5,
+    'temmuz': 6, 'ağustos': 7, 'eylül': 8, 'ekim': 9, 'kasım': 10, 'aralık': 11,
+  };
+
+  // Fetch all tours for location list (no category/location filter to get full list)
+  const [allTours, allToursForLocations, categories] = await Promise.all([
     getPublishedTours({
       category:   activeCategory || undefined,
       location:   activeLocation || undefined,
       start_date: activeDate || undefined,
     }),
+    getPublishedTours({}),
     getCategories(),
   ]);
 
-  const displayed = showAll ? allTours : allTours.slice(0, 9);
+  // Derive unique sorted locations from all published tours
+  const allLocations = [...new Set(
+    allToursForLocations.map(t => t.location_name).filter((l): l is string => Boolean(l))
+  )].sort((a, b) => a.localeCompare(b, 'tr'));
+
+  // Apply month filter client-side after backend fetch
+  const monthFiltered = activeMonth && MONTH_MAP[activeMonth] !== undefined
+    ? allTours.filter(t => {
+        if (!t.start_date) return false;
+        return new Date(t.start_date).getMonth() === MONTH_MAP[activeMonth];
+      })
+    : allTours;
+
+  const displayed = showAll ? monthFiltered : monthFiltered.slice(0, 9);
 
   return (
     <>
@@ -197,34 +219,38 @@ export default async function TurlarPage({
       </div>
 
       {/* Tour grid */}
-      <section className="tr-page-pad" style={{ background: '#FAFAFA', padding: '56px 48px 48px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', gap: '28px', alignItems: 'flex-start' }}>
+      <section className="tr-page-pad" style={{ background: '#FAFAFA', padding: '56px 48px 48px 24px' }}>
+        <div style={{ display: 'flex', gap: '28px', alignItems: 'flex-start' }}>
 
           {/* Sidebar */}
           <Suspense fallback={null}>
             <TurlarSidebar
               activeCategory={activeCategory}
+              activeLocation={activeLocation}
+              activeMonth={activeMonth}
               dynamicCategories={categories}
+              locations={allLocations}
             />
           </Suspense>
 
-          {/* Main content */}
+          {/* Main content — centered within remaining space */}
           <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ maxWidth: '980px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
             <h2 style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(1.4rem, 2.5vw, 1.9rem)', fontWeight: 400, color: '#1A1A1A', margin: 0 }}>
               {tt.upcomingTitle}
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {activeCategory && (
+              {(activeCategory || activeLocation || activeMonth) && (
                 <Link
-                  href={`/turlar${activeLocation ? `?location=${encodeURIComponent(activeLocation)}` : ''}${activeDate ? `${activeLocation ? '&' : '?'}start_date=${activeDate}` : ''}`}
+                  href="/turlar"
                   style={{ fontSize: '0.78rem', color: '#FF5533', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
                   ← Tüm Turlar
                 </Link>
               )}
               <p style={{ fontSize: '0.82rem', color: '#9A9A9A', margin: 0 }}>
-                {tt.found(allTours.length)}
+                {tt.found(monthFiltered.length)}
               </p>
             </div>
           </div>
@@ -323,10 +349,10 @@ export default async function TurlarPage({
                 })}
               </div>
 
-              {!showAll && allTours.length > 9 && (
+              {!showAll && monthFiltered.length > 9 && (
                 <div style={{ textAlign: 'center', marginTop: '48px' }}>
-                  <Link href={`/turlar?showAll=true${activeCategory ? `&category=${encodeURIComponent(activeCategory)}` : ''}${activeLocation ? `&location=${encodeURIComponent(activeLocation)}` : ''}${activeDate ? `&start_date=${activeDate}` : ''}`} className="tr-all-btn">
-                    {tt.seeAllBtn(allTours.length)}
+                  <Link href={`/turlar?showAll=true${activeCategory ? `&category=${encodeURIComponent(activeCategory)}` : ''}${activeLocation ? `&location=${encodeURIComponent(activeLocation)}` : ''}${activeDate ? `&start_date=${activeDate}` : ''}${activeMonth ? `&month=${encodeURIComponent(activeMonth)}` : ''}`} className="tr-all-btn">
+                    {tt.seeAllBtn(monthFiltered.length)}
                     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                     </svg>
@@ -335,6 +361,7 @@ export default async function TurlarPage({
               )}
             </>
           )}
+          </div>{/* end maxWidth centering wrapper */}
           </div>{/* end main content */}
         </div>
       </section>
