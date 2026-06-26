@@ -128,6 +128,8 @@ export default function AdminKategorilerPage() {
   const [editingPhotoId, setEditingPhotoId] = useState<string | null>(null);
   const [editingStaticKey, setEditingStaticKey] = useState<string | null>(null);
   const [staticPendingUrl, setStaticPendingUrl] = useState<string | null>(null);
+  const [editingCat, setEditingCat] = useState<{ id?: string; name: string; image_url: string | null } | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
 
   useEffect(() => { load(); }, []);
 
@@ -173,6 +175,28 @@ export default function AdminKategorilerPage() {
     } catch (err) {
       alert(err instanceof ApiError ? err.message : "Güncellenemedi");
     }
+  }
+
+  async function handleEditSave() {
+    if (!editingCat || !editingCat.name.trim()) return;
+    setEditSaving(true);
+    try {
+      if (editingCat.id) {
+        await adminUpdateCategory(editingCat.id, {
+          name: editingCat.name.trim(),
+          image_url: editingCat.image_url ?? undefined,
+        });
+      } else {
+        await adminCreateCategory({
+          name: editingCat.name.trim(),
+          image_url: editingCat.image_url ?? undefined,
+        });
+      }
+      setEditingCat(null);
+      await load();
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "Kaydedilemedi");
+    } finally { setEditSaving(false); }
   }
 
   async function handleDelete(id: string, name: string) {
@@ -264,6 +288,61 @@ export default function AdminKategorilerPage() {
         </div>
       )}
 
+      {/* Edit modal (name + photo) */}
+      {editingCat && (
+        <div className="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">Kategoriyi Düzenle</h2>
+              <button onClick={() => setEditingCat(null)} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+            </div>
+            <div className="p-6 flex flex-col gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kategori Adı</label>
+                <input
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange"
+                  value={editingCat.name}
+                  onChange={(e) => setEditingCat(prev => prev ? { ...prev, name: e.target.value } : null)}
+                  placeholder="Kategori adı"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fotoğraf</label>
+                <PhotoUploader
+                  value={editingCat.image_url ?? getEffectivePhoto(editingCat.name, null)}
+                  onChange={(url) => setEditingCat(prev => prev ? { ...prev, image_url: url } : null)}
+                />
+              </div>
+              {editingCat.name.trim() && (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  <div className="relative w-20 h-14 rounded-lg overflow-hidden flex-shrink-0">
+                    <Image
+                      src={editingCat.image_url ?? getEffectivePhoto(editingCat.name, null)}
+                      alt="Önizleme"
+                      fill
+                      style={{ objectFit: 'cover' }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <span className="absolute bottom-1 left-1.5 text-white text-[9px] font-bold uppercase leading-tight">
+                      {editingCat.name}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-700">Önizleme</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Sitede bu şekilde görünür</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3 px-6 py-5 border-t border-gray-100">
+              <Button variant="secondary" size="md" onClick={() => setEditingCat(null)} className="flex-1">İptal</Button>
+              <Button variant="primary" size="md" onClick={handleEditSave} loading={editSaving} disabled={!editingCat.name.trim()} className="flex-1">Kaydet</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Static category photo modal */}
       {editingStaticKey && (
         <div className="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4">
@@ -333,13 +412,22 @@ export default function AdminKategorilerPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   </div>
                   <span className="text-sm font-medium text-gray-700 flex-1 capitalize">{key}</span>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => { setEditingStaticKey(key); setStaticPendingUrl(null); }}
-                  >
-                    Fotoğraf
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setEditingCat({ name: key, image_url: null })}
+                    >
+                      Düzenle
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => { setEditingStaticKey(key); setStaticPendingUrl(null); }}
+                    >
+                      Fotoğraf
+                    </Button>
+                  </div>
                 </div>
               );
             })}
@@ -372,6 +460,13 @@ export default function AdminKategorilerPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setEditingCat({ id: cat.id, name: cat.name, image_url: cat.image_url })}
+                >
+                  Düzenle
+                </Button>
                 <Button
                   variant="secondary"
                   size="sm"
