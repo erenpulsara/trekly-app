@@ -297,7 +297,7 @@ export interface AdminBooking {
   notes: string | null;
   status: string;
   created_at: string;
-  tour: { id: string; name: string } | null;
+  tour: { id: string; name: string; location_name?: string } | null;
   agency: { id: string; name: string } | null;
   tour_date: { id: string; date: string } | null;
 }
