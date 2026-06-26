@@ -223,9 +223,11 @@ export interface AdminTour {
   id: string;
   name: string;
   location_name: string;
-  status: string;
+  status: 'draft' | 'published' | 'rejected';
   difficulty: string;
   price: string | null;
+  category: string | null;
+  admin_note: string | null;
   created_at: string;
   agency: { id: string; name: string; email: string };
 }
@@ -244,6 +246,17 @@ export async function adminDeleteAgency(id: string): Promise<void> {
 
 export async function adminGetTours(): Promise<AdminTour[]> {
   return adminRequest<AdminTour[]>('/admin/tours');
+}
+
+export async function adminUpdateTourStatus(
+  id: string,
+  status: 'draft' | 'published' | 'rejected',
+  admin_note?: string,
+): Promise<{ message: string; status: string; admin_note: string | null }> {
+  return adminRequest(`/admin/tours/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, admin_note }),
+  });
 }
 
 export async function adminDeleteTour(id: string): Promise<void> {

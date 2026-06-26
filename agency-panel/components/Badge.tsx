@@ -23,6 +23,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   // Tour status
   draft: "bg-status-draft-bg text-status-draft-text",
   published: "bg-status-published-bg text-status-published-text",
+  rejected: "bg-red-50 text-red-600",
   // Generic
   neutral: "bg-gray-100 text-gray-600",
   info: "bg-blue-50 text-blue-700",
@@ -39,6 +40,7 @@ const variantDots: Record<BadgeVariant, string> = {
   cancelled: "bg-red-500",
   draft: "bg-gray-400",
   published: "bg-emerald-500",
+  rejected: "bg-red-500",
   neutral: "bg-gray-400",
   info: "bg-blue-500",
 };

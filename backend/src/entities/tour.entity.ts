@@ -13,7 +13,7 @@ import { TourDate } from './tour-date.entity';
 import { Booking } from './booking.entity';
 
 export type TourDifficulty = 'easy' | 'medium' | 'hard' | 'extreme';
-export type TourStatus = 'draft' | 'published';
+export type TourStatus = 'draft' | 'published' | 'rejected';
 
 @Entity('tours')
 export class Tour {
@@ -63,10 +63,13 @@ export class Tour {
 
   @Column({
     type: 'enum',
-    enum: ['draft', 'published'],
+    enum: ['draft', 'published', 'rejected'],
     default: 'draft',
   })
   status!: TourStatus;
+
+  @Column({ type: 'text', nullable: true })
+  admin_note!: string | null;
 
   @Column({ type: 'integer', nullable: false })
   points!: number;

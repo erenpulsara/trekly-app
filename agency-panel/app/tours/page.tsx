@@ -161,7 +161,14 @@ export default function ToursPage() {
                             <Badge variant={tour.difficulty as Difficulty}>{t.diff[tour.difficulty as Difficulty] ?? tour.difficulty}</Badge>
                           </td>
                           <td className="px-6 py-4 hidden md:table-cell">
-                            <Badge variant={tour.status as TourStatus} showDot>{t.status[tour.status as TourStatus] ?? tour.status}</Badge>
+                            <div className="flex flex-col gap-1">
+                              <Badge variant={tour.status as TourStatus} showDot>{t.status[tour.status as TourStatus] ?? tour.status}</Badge>
+                              {tour.status === 'rejected' && tour.admin_note && (
+                                <p className="text-xs text-red-500 max-w-[200px]" title={tour.admin_note}>
+                                  ⚠ {tour.admin_note}
+                                </p>
+                              )}
+                            </div>
                           </td>
                           <td className="px-6 py-4 hidden xl:table-cell">
                             <div>

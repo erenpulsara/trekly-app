@@ -25,6 +25,11 @@ export class AdminController {
   @Get('tours')
   getAllTours() { return this.adminService.getAllTours(); }
 
+  @Patch('tours/:id/status')
+  updateTourStatus(@Param('id') id: string, @Body() dto: { status: 'draft' | 'published' | 'rejected'; admin_note?: string }) {
+    return this.adminService.updateTourStatus(id, dto.status, dto.admin_note);
+  }
+
   @Delete('tours/:id')
   deleteTour(@Param('id') id: string) { return this.adminService.deleteTour(id); }
 

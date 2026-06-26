@@ -97,10 +97,24 @@ export class AdminService {
         difficulty: true,
         price: true,
         category: true,
+        admin_note: true,
         created_at: true,
         agency: { id: true, name: true, email: true },
       },
     });
+  }
+
+  async updateTourStatus(id: string, status: 'draft' | 'published' | 'rejected', admin_note?: string) {
+    const tour = await this.tourRepo.findOne({ where: { id } });
+    if (!tour) throw new NotFoundException('Tur bulunamadı');
+    tour.status = status;
+    tour.admin_note = admin_note ?? null;
+    await this.tourRepo.save(tour);
+
+    const actionMap = { published: 'Tur Yayına Alındı', draft: 'Tur Yayından Kaldırıldı', rejected: 'Tur Geri Gönderildi' };
+    const levelMap: Record<string, any> = { published: 'success', draft: 'info', rejected: 'warning' };
+    await this.log(levelMap[status], actionMap[status], `"${tour.name}" — ${admin_note ?? ''}`, 'admin');
+    return { message: 'Tur güncellendi', status, admin_note: tour.admin_note };
   }
 
   async deleteTour(id: string) {

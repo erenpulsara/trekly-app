@@ -31,7 +31,7 @@ export interface Agency {
 }
 
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'extreme';
-export type TourStatus = 'draft' | 'published';
+export type TourStatus = 'draft' | 'published' | 'rejected';
 
 export interface TourDate {
   id: string;
@@ -55,6 +55,7 @@ export interface Tour {
   max_participants: number;
   photo_urls: string[];
   status: TourStatus;
+  admin_note?: string | null;
   points: number;
   dates: TourDate[];
   created_at: string;

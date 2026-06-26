@@ -31,6 +31,7 @@ export const agT = {
       cancelled: 'İptal Edildi',
       draft: 'Taslak',
       published: 'Yayında',
+      rejected: 'Geri Gönderildi',
     },
     login: {
       brandline: 'Doğa turlarınızı',
@@ -266,6 +267,7 @@ export const agT = {
       cancelled: 'Cancelled',
       draft: 'Draft',
       published: 'Published',
+      rejected: 'Sent Back',
     },
     login: {
       brandline: 'Manage your nature tours',
