@@ -1,10 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { Tour, Booking, User, PointsLog } from '../types';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://trekly-api-835377577547.europe-west1.run.app';
 
 async function getToken(): Promise<string | null> {
-  return AsyncStorage.getItem('auth_token');
+  return SecureStore.getItemAsync('auth_token');
 }
 
 async function request<T>(
