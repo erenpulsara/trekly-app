@@ -146,7 +146,13 @@ function FilterCard({ label, children }: { label: string; children: React.ReactN
       }}>
         {label}
       </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: '1px',
+        maxHeight: '320px',
+        overflowY: 'auto',
+        scrollbarWidth: 'thin',
+        scrollbarColor: '#E0E0E0 transparent',
+      }}>
         {children}
       </div>
     </div>
