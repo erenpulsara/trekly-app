@@ -75,6 +75,47 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
     ...extraItems.map(c => ({ key: c.name, label: c.name, photo: getPhoto(c.name, c.image_url) })),
   ];
 
+  // Inverted pyramid: top row gets ceil(n/2), bottom row gets floor(n/2) centered under top
+  const topCount  = Math.ceil(allCategories.length / 2);
+  const topRow    = allCategories.slice(0, topCount);
+  const bottomRow = allCategories.slice(topCount);
+
+  const renderCard = ({ key, label, photo }: { key: string; label: string; photo: string }) => {
+    const isActive = activeCategory === key;
+    return (
+      <button
+        key={key}
+        onClick={() => navigate(key)}
+        className={`cat-photo-card${isActive ? ' active' : ''}`}
+        style={{ width: '130px', height: '88px', flexShrink: 0 }}
+      >
+        <Image
+          src={photo}
+          alt={label}
+          fill
+          sizes="130px"
+          className="cat-photo-img"
+          style={{ objectFit: 'cover' }}
+        />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: isActive
+            ? 'linear-gradient(to top, rgba(255,85,51,0.75) 0%, rgba(0,0,0,0.25) 100%)'
+            : 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 100%)',
+        }} />
+        <span style={{
+          position: 'absolute', bottom: '8px', left: '8px', right: '8px',
+          color: 'white', fontSize: '0.62rem', fontWeight: 700,
+          textTransform: 'uppercase', letterSpacing: '0.04em',
+          lineHeight: 1.2, textAlign: 'left',
+          textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+        }}>
+          {label}
+        </span>
+      </button>
+    );
+  };
+
   return (
     <>
       <style>{`
@@ -84,7 +125,6 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
           overflow: hidden;
           cursor: pointer;
           transition: transform 0.25s cubic-bezier(0.34,1.4,0.64,1), box-shadow 0.25s ease;
-          flex-shrink: 0;
           border: 2.5px solid transparent;
         }
         .cat-photo-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.18); }
@@ -92,43 +132,17 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
         .cat-photo-img { transition: transform 0.45s cubic-bezier(0.4,0,0.2,1); }
         .cat-photo-card:hover .cat-photo-img { transform: scale(1.08); }
       `}</style>
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '20px 0', flexWrap: 'wrap', justifyContent: 'center' }}>
-        {allCategories.map(({ key, label, photo }) => {
-          const isActive = activeCategory === key;
-          return (
-            <button
-              key={key}
-              onClick={() => navigate(key)}
-              className={`cat-photo-card${isActive ? ' active' : ''}`}
-              style={{ width: '130px', height: '88px' }}
-            >
-              <Image
-                src={photo}
-                alt={label}
-                fill
-                sizes="130px"
-                className="cat-photo-img"
-                style={{ objectFit: 'cover' }}
-              />
-              {/* Dark overlay */}
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: isActive
-                  ? 'linear-gradient(to top, rgba(255,85,51,0.75) 0%, rgba(0,0,0,0.25) 100%)'
-                  : 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 100%)',
-              }} />
-              <span style={{
-                position: 'absolute', bottom: '8px', left: '8px', right: '8px',
-                color: 'white', fontSize: '0.62rem', fontWeight: 700,
-                textTransform: 'uppercase', letterSpacing: '0.04em',
-                lineHeight: 1.2, textAlign: 'left',
-                textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-              }}>
-                {label}
-              </span>
-            </button>
-          );
-        })}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '20px 0', alignItems: 'center' }}>
+        {/* Top row — wider */}
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          {topRow.map(renderCard)}
+        </div>
+        {/* Bottom row — centered under top (inverted pyramid) */}
+        {bottomRow.length > 0 && (
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            {bottomRow.map(renderCard)}
+          </div>
+        )}
       </div>
     </>
   );
