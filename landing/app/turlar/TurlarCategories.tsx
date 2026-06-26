@@ -108,7 +108,7 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
         }
         .cat-all-btn:hover, .cat-all-btn.active { border-color: #FF5533; color: #FF5533; background: #FFF4F1; }
       `}</style>
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '20px 0', overflowX: 'auto', scrollbarWidth: 'none' }}>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '20px 0', flexWrap: 'wrap', justifyContent: 'center' }}>
         {/* Tümü button */}
         <button
           onClick={() => navigate('')}
