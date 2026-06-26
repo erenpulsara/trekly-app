@@ -19,10 +19,8 @@ export class JwtAgencyStrategy extends PassportStrategy(Strategy, 'jwt-agency') 
     });
   }
 
-  validate(payload: AgencyJwtPayload): AgencyJwtPayload {
-    if (payload.type !== 'agency') {
-      throw new UnauthorizedException('Invalid token type');
-    }
+  validate(payload: AgencyJwtPayload): AgencyJwtPayload | null {
+    if (payload.type !== 'agency') return null;
     return payload;
   }
 }

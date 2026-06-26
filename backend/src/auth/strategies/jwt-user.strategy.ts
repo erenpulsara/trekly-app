@@ -19,10 +19,8 @@ export class JwtUserStrategy extends PassportStrategy(Strategy, 'jwt-user') {
     });
   }
 
-  validate(payload: UserJwtPayload): UserJwtPayload {
-    if (payload.type !== 'user') {
-      throw new UnauthorizedException('Invalid token type');
-    }
+  validate(payload: UserJwtPayload): UserJwtPayload | null {
+    if (payload.type !== 'user') return null;
     return payload;
   }
 }
