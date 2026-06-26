@@ -8,6 +8,7 @@ import type { Tour } from '@/lib/types';
 import { T, type Lang } from '@/lib/i18n';
 import TurlarSearchBar from './TurlarSearchBar';
 import TurlarCategories from './TurlarCategories';
+import TurlarSidebar from './TurlarSidebar';
 import TurlarHero from './TurlarHero';
 
 export const dynamic = 'force-dynamic';
@@ -133,6 +134,7 @@ export default async function TurlarPage({
           .tr-page-pad { padding: 48px 24px !important; }
           .searchbar-wrap { padding: 0 24px !important; }
           .footer-inner { flex-direction: column !important; gap: 20px !important; align-items: flex-start !important; }
+          .turlar-sidebar { display: none !important; }
         }
         @media (max-width: 560px) {
           .tr-grid { grid-template-columns: 1fr !important; }
@@ -196,15 +198,35 @@ export default async function TurlarPage({
 
       {/* Tour grid */}
       <section className="tr-page-pad" style={{ background: '#FAFAFA', padding: '56px 48px 48px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', gap: '28px', alignItems: 'flex-start' }}>
 
+          {/* Sidebar */}
+          <Suspense fallback={null}>
+            <TurlarSidebar
+              activeCategory={activeCategory}
+              dynamicCategories={categories}
+            />
+          </Suspense>
+
+          {/* Main content */}
+          <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
             <h2 style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(1.4rem, 2.5vw, 1.9rem)', fontWeight: 400, color: '#1A1A1A', margin: 0 }}>
               {tt.upcomingTitle}
             </h2>
-            <p style={{ fontSize: '0.82rem', color: '#9A9A9A', margin: 0 }}>
-              {tt.found(allTours.length)}
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {activeCategory && (
+                <Link
+                  href={`/turlar${activeLocation ? `?location=${encodeURIComponent(activeLocation)}` : ''}${activeDate ? `${activeLocation ? '&' : '?'}start_date=${activeDate}` : ''}`}
+                  style={{ fontSize: '0.78rem', color: '#FF5533', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  ← Tüm Turlar
+                </Link>
+              )}
+              <p style={{ fontSize: '0.82rem', color: '#9A9A9A', margin: 0 }}>
+                {tt.found(allTours.length)}
+              </p>
+            </div>
           </div>
 
           {displayed.length === 0 ? (
@@ -313,6 +335,7 @@ export default async function TurlarPage({
               )}
             </>
           )}
+          </div>{/* end main content */}
         </div>
       </section>
 

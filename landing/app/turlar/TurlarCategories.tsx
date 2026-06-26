@@ -98,31 +98,8 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
         .cat-photo-card.active { border-color: #FF5533; box-shadow: 0 0 0 3px rgba(255,85,51,0.18); }
         .cat-photo-img { transition: transform 0.45s cubic-bezier(0.4,0,0.2,1); }
         .cat-photo-card:hover .cat-photo-img { transform: scale(1.08); }
-        .cat-all-btn {
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          gap: 6px; padding: 10px 16px; border-radius: 14px; border: 2px solid #E5E7EB;
-          background: white; cursor: pointer; transition: all 0.15s ease;
-          font-size: 0.7rem; font-weight: 600; color: #6B7280;
-          text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
-          flex-shrink: 0;
-        }
-        .cat-all-btn:hover, .cat-all-btn.active { border-color: #FF5533; color: #FF5533; background: #FFF4F1; }
       `}</style>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '20px 0', flexWrap: 'wrap', justifyContent: 'center' }}>
-        {/* Tümü button */}
-        <button
-          onClick={() => navigate('')}
-          className={`cat-all-btn${activeCategory === '' ? ' active' : ''}`}
-        >
-          <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-            <rect x="14" y="3" width="7" height="7" rx="1.5"/>
-            <rect x="3" y="14" width="7" height="7" rx="1.5"/>
-            <rect x="14" y="14" width="7" height="7" rx="1.5"/>
-          </svg>
-          Tümü
-        </button>
-
         {allCategories.map(({ key, label, photo }) => {
           const isActive = activeCategory === key;
           return (
