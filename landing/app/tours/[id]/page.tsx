@@ -165,21 +165,21 @@ export default async function TourDetailPage({ params }: { params: { id: string 
         </div>
       </nav>
 
-      {/* Photo Gallery */}
-      <div style={{ maxWidth: '1100px', margin: '24px auto 0', padding: '0 40px' }}>
-        <PhotoGallery
-          photos={tour.photo_urls ?? []}
-          tourName={tour.name}
-          gradient={PH_GRADIENT[tour.difficulty]}
-        />
-      </div>
+      {/* ── 2-column layout: Gallery+Content (left) | Sidebar (right) ── */}
+      <div style={{ maxWidth: '1100px', margin: '24px auto 0', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: '40px', alignItems: 'start' }}>
 
-      {/* Body */}
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 40px 80px', display: 'grid', gridTemplateColumns: '1fr 360px', gap: '48px', alignItems: 'start' }}>
-
-        {/* Left column */}
+        {/* Left column: Gallery then content */}
         <div>
-          <h1 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', fontWeight: 800, color: '#1A1A1A', letterSpacing: '-0.03em', lineHeight: 1.2, marginBottom: '10px' }}>
+          {/* Photo Gallery */}
+          <PhotoGallery
+            photos={tour.photo_urls ?? []}
+            tourName={tour.name}
+            gradient={PH_GRADIENT[tour.difficulty]}
+            height={400}
+          />
+
+          {/* Title + Location */}
+          <h1 style={{ fontSize: 'clamp(1.4rem, 2.5vw, 2.2rem)', fontWeight: 800, color: '#1A1A1A', letterSpacing: '-0.03em', lineHeight: 1.2, marginBottom: '8px', marginTop: '28px' }}>
             {tour.name}
           </h1>
           <p style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem', color: '#5A5A5A', marginBottom: '28px' }}>
@@ -211,7 +211,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
           {tour.important_notes && <CollapsibleSection title="Önemli Notlar" content={tour.important_notes} />}
         </div>
 
-        {/* Right sidebar */}
+        {/* Right column: Sidebar (sticky — stays beside gallery then floats as user scrolls) */}
         <div style={{ position: 'sticky', top: '80px' }}>
           <div style={{ border: '1px solid #E8E8E8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.09)', padding: '0 20px' }}>
 

@@ -7,9 +7,10 @@ interface Props {
   photos: string[];
   tourName: string;
   gradient: string;
+  height?: number;
 }
 
-export default function PhotoGallery({ photos, tourName, gradient }: Props) {
+export default function PhotoGallery({ photos, tourName, gradient, height = 480 }: Props) {
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   const close = useCallback(() => setLightbox(null), []);
@@ -35,7 +36,7 @@ export default function PhotoGallery({ photos, tourName, gradient }: Props) {
   }, [lightbox, close, prev, next]);
 
   if (photos.length === 0) {
-    return <div style={{ height: '480px', borderRadius: '16px', background: gradient }} />;
+    return <div style={{ height: `${height}px`, borderRadius: '16px', background: gradient }} />;
   }
 
   const smallPhotos = photos.slice(1, 5);
@@ -60,7 +61,7 @@ export default function PhotoGallery({ photos, tourName, gradient }: Props) {
         display: 'grid',
         gridTemplateColumns: hasSmalls ? '3fr 2fr' : '1fr',
         gap: '6px',
-        height: '480px',
+        height: `${height}px`,
         borderRadius: '16px',
         overflow: 'hidden',
       }}>
