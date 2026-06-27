@@ -136,11 +136,24 @@ export class ToursService {
     });
     if (!tour) throw new NotFoundException('Tour not found');
 
-    const booking_count = await this.bookingRepo
-      .createQueryBuilder('b')
-      .where('b.tour_id = :id', { id })
-      .andWhere("b.status != 'cancelled'")
-      .getCount();
+    const [mobileCount, webCountRow] = await Promise.all([
+      this.bookingRepo
+        .createQueryBuilder('b')
+        .select('COALESCE(SUM(b.participant_count), 0)', 'total')
+        .where('b.tour_id = :id', { id })
+        .andWhere("b.status != 'cancelled'")
+        .getRawOne<{ total: string }>(),
+      this.webBookingRepo
+        .createQueryBuilder('wb')
+        .select('COALESCE(SUM(wb.participant_count), 0)', 'total')
+        .where('wb.tour_id = :id', { id })
+        .andWhere("wb.status != 'cancelled'")
+        .getRawOne<{ total: string }>(),
+    ]);
+
+    const booking_count =
+      parseInt(mobileCount?.total ?? '0', 10) +
+      parseInt(webCountRow?.total ?? '0', 10);
 
     return { ...this.withProxyUrls(tour), booking_count };
   }
@@ -149,14 +162,24 @@ export class ToursService {
     const tour = await this.tourRepo.findOne({ where: { id: tourId, status: 'published' } });
     if (!tour) throw new NotFoundException('Tour not found');
 
-    const existingCount = await this.webBookingRepo
-      .createQueryBuilder('wb')
-      .select('COALESCE(SUM(wb.participant_count), 0)', 'total')
-      .where('wb.tour_id = :id', { id: tourId })
-      .andWhere("wb.status != 'cancelled'")
-      .getRawOne<{ total: string }>();
+    const [mobileCount, webCountRow] = await Promise.all([
+      this.bookingRepo
+        .createQueryBuilder('b')
+        .select('COALESCE(SUM(b.participant_count), 0)', 'total')
+        .where('b.tour_id = :id', { id: tourId })
+        .andWhere("b.status != 'cancelled'")
+        .getRawOne<{ total: string }>(),
+      this.webBookingRepo
+        .createQueryBuilder('wb')
+        .select('COALESCE(SUM(wb.participant_count), 0)', 'total')
+        .where('wb.tour_id = :id', { id: tourId })
+        .andWhere("wb.status != 'cancelled'")
+        .getRawOne<{ total: string }>(),
+    ]);
 
-    const booked = parseInt(existingCount?.total ?? '0', 10);
+    const booked =
+      parseInt(mobileCount?.total ?? '0', 10) +
+      parseInt(webCountRow?.total ?? '0', 10);
     const requested = dto.participant_count ?? 1;
 
     if (booked + requested > tour.max_participants) {
