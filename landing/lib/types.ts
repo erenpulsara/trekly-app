@@ -41,4 +41,5 @@ export interface Tour {
   contact_phone?: string | null;
   tags?: string[];
   booking_count?: number;
+  organizer?: string | null;
 }

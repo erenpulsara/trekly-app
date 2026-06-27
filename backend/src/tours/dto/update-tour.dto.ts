@@ -130,4 +130,8 @@ export class UpdateTourDto {
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
+
+  @IsOptional()
+  @IsString()
+  organizer?: string;
 }

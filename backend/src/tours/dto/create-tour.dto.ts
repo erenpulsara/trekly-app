@@ -129,4 +129,8 @@ export class CreateTourDto {
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
+
+  @IsOptional()
+  @IsString()
+  organizer?: string;
 }

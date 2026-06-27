@@ -76,6 +76,7 @@ export interface Tour {
   program?: string | null;
   important_notes?: string | null;
   tags?: string[];
+  organizer?: string | null;
 }
 
 export interface CreateTourPayload {
@@ -105,6 +106,7 @@ export interface CreateTourPayload {
   program?: string;
   important_notes?: string;
   tags?: string[];
+  organizer?: string;
 }
 
 export type UpdateTourPayload = Partial<CreateTourPayload>;

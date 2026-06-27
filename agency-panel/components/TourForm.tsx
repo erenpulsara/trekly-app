@@ -31,6 +31,7 @@ interface FormValues {
   price: string;
   start_date: string;
   end_date: string;
+  organizer: string;
   guide_name: string;
   guide_instagram: string;
   tursab_no: string;
@@ -110,6 +111,7 @@ export default function TourForm({ mode, tour }: TourFormProps) {
     price: tour?.price?.toString() ?? "",
     start_date: tour?.start_date ?? "",
     end_date: tour?.end_date ?? "",
+    organizer: tour?.organizer ?? "",
     guide_name: tour?.guide_name ?? "",
     guide_instagram: tour?.guide_instagram ?? "",
     tursab_no: tour?.tursab_no ?? "",
@@ -162,6 +164,7 @@ export default function TourForm({ mode, tour }: TourFormProps) {
         price: values.price ? parseFloat(values.price) : undefined,
         start_date: values.start_date || undefined,
         end_date: values.end_date || undefined,
+        organizer: values.organizer.trim() || undefined,
         guide_name: values.guide_name.trim() || undefined,
         guide_instagram: values.guide_instagram.trim() || undefined,
         tursab_no: values.tursab_no.trim() || undefined,
@@ -294,6 +297,7 @@ export default function TourForm({ mode, tour }: TourFormProps) {
           <Input label={tx.startDate} type="date" value={values.start_date} onChange={set("start_date")} hint={tx.optional} />
           <Input label={tx.endDate} type="date" value={values.end_date} onChange={set("end_date")} hint={tx.optional} />
         </div>
+        <Input label="Düzenleyen" value={values.organizer} onChange={set("organizer")} placeholder="örn. Trekly Outdoor, Ali Yılmaz" hint={tx.optional} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <Input label={tx.guideName} value={values.guide_name} onChange={set("guide_name")} placeholder={tx.guideNamePlaceholder} hint={tx.optional} />
           <Input label="Rehber Instagram URL" value={values.guide_instagram} onChange={set("guide_instagram")} placeholder="https://instagram.com/rehber" hint={tx.optional} />

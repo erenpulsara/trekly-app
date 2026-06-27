@@ -119,6 +119,9 @@ export class Tour {
   @Column({ type: 'text', nullable: true })
   important_notes!: string | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  organizer!: string | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   created_at!: Date;
 
