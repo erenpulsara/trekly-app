@@ -92,6 +92,10 @@ export class UpdateTourDto {
 
   @IsOptional()
   @IsString()
+  guide_instagram?: string;
+
+  @IsOptional()
+  @IsString()
   tursab_no?: string;
 
   @IsOptional()
