@@ -7,6 +7,7 @@ import { getTour } from '@/lib/api';
 import type { TourDifficulty } from '@/lib/types';
 import BookingForm from './BookingForm';
 import CollapsibleSection from './CollapsibleSection';
+import PhotoGallery from './PhotoGallery';
 
 const AGENCY_URL = process.env.NEXT_PUBLIC_AGENCY_URL ?? 'https://acenta.treklyapp.com';
 
@@ -73,9 +74,6 @@ export default async function TourDetailPage({ params }: { params: { id: string 
   statCards.push({ icon: '⭐', label: 'Puan', val: `${tour.points} pt`, bg: '#F7F7F7', color: '#FF5533' });
   statCards.push({ icon: '⚡', label: 'Zorluk', val: DIFF_LABEL[tour.difficulty], bg: dc.bg, color: dc.text });
 
-  const hasMultiplePhotos = tour.photo_urls.length > 1;
-  const extraCount = tour.photo_urls.length - 5;
-
   return (
     <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", background: '#fff', minHeight: '100vh' }}>
 
@@ -88,59 +86,13 @@ export default async function TourDetailPage({ params }: { params: { id: string 
         </div>
       </nav>
 
-      {/* Photo Gallery — large cover + 2×2 small grid */}
+      {/* Photo Gallery */}
       <div style={{ maxWidth: '1100px', margin: '24px auto 0', padding: '0 40px' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: hasMultiplePhotos ? '3fr 2fr' : '1fr',
-          gap: '6px',
-          height: '480px',
-          borderRadius: '16px',
-          overflow: 'hidden',
-        }}>
-          {/* Cover photo */}
-          <div style={{ position: 'relative', background: PH_GRADIENT[tour.difficulty] }}>
-            {tour.photo_urls[0] && (
-              <Image
-                src={tour.photo_urls[0]}
-                alt={tour.name}
-                fill
-                priority
-                style={{ objectFit: 'cover', objectPosition: 'center 40%' }}
-              />
-            )}
-          </div>
-
-          {/* 2×2 small photos */}
-          {hasMultiplePhotos && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '6px' }}>
-              {[1, 2, 3, 4].map((idx) => {
-                const url = tour.photo_urls[idx];
-                const showOverlay = idx === 4 && extraCount > 0;
-                return (
-                  <div key={idx} style={{ position: 'relative', background: '#E0E0E0' }}>
-                    {url ? (
-                      <>
-                        <Image src={url} alt="" fill style={{ objectFit: 'cover' }} />
-                        {showOverlay && (
-                          <div style={{
-                            position: 'absolute', inset: 0,
-                            background: 'rgba(0,0,0,0.45)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          }}>
-                            <span style={{ color: 'white', fontWeight: 800, fontSize: '1.5rem' }}>+{extraCount}</span>
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <div style={{ position: 'absolute', inset: 0, background: '#EFEFEF' }} />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <PhotoGallery
+          photos={tour.photo_urls}
+          tourName={tour.name}
+          gradient={PH_GRADIENT[tour.difficulty]}
+        />
       </div>
 
       {/* Body */}
