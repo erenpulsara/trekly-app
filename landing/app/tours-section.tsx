@@ -107,8 +107,12 @@ function TourCard({ tour, index }: { tour: Tour; index: number }) {
         </p>
 
         <div className="card-stats-row">
-          <span className="card-stat-chip">⛰ {tour.altitude_meters.toLocaleString()}m</span>
-          <span className="card-stat-chip">📏 {Number(tour.distance_km).toFixed(1)}km</span>
+          {tour.altitude_meters != null && tour.altitude_meters > 0 && (
+            <span className="card-stat-chip">⛰ {tour.altitude_meters.toLocaleString()}m</span>
+          )}
+          {tour.distance_km != null && Number(tour.distance_km) > 0 && (
+            <span className="card-stat-chip">📏 {Number(tour.distance_km).toFixed(1)}km</span>
+          )}
           <span className="card-stat-chip">👥 max {tour.max_participants}</span>
         </div>
 
