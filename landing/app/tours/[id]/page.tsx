@@ -210,7 +210,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
 
         {/* Right column: alignSelf stretch so it's as tall as the left column; sticky card travels the full height */}
         <div style={{ alignSelf: 'stretch' }}>
-          <div style={{ position: 'sticky', top: '80px' }}>
+          <div style={{ position: 'sticky', top: '80px', maxHeight: 'calc(100vh - 100px)', overflowY: 'auto', borderRadius: '16px' }}>
             <div style={{ border: '1px solid #E8E8E8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.09)', padding: '0 20px' }}>
 
               {(tour as any).agency_name && (
