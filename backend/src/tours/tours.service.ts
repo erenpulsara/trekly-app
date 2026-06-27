@@ -120,13 +120,20 @@ export class ToursService {
     return result;
   }
 
-  async findOnePublished(id: string): Promise<Tour> {
+  async findOnePublished(id: string): Promise<Tour & { booking_count: number }> {
     const tour = await this.tourRepo.findOne({
       where: { id, status: 'published' },
       relations: ['dates'],
     });
     if (!tour) throw new NotFoundException('Tour not found');
-    return this.withProxyUrls(tour);
+
+    const booking_count = await this.bookingRepo
+      .createQueryBuilder('b')
+      .where('b.tour_id = :id', { id })
+      .andWhere("b.status != 'cancelled'")
+      .getCount();
+
+    return { ...this.withProxyUrls(tour), booking_count };
   }
 
   // ── Agency ───────────────────────────────────────────────────────────────

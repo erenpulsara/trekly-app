@@ -38,4 +38,5 @@ export interface Tour {
   tursab_no?: string | null;
   contact_phone?: string | null;
   tags?: string[];
+  booking_count?: number;
 }

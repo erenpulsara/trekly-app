@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 
+import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -28,17 +29,35 @@ const PH_GRADIENT: Record<TourDifficulty, string> = {
 
 function fmtDate(s: string) {
   return new Date(s).toLocaleDateString('tr-TR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    day: 'numeric', month: 'long', year: 'numeric',
   });
+}
+
+function DetailSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div style={{ marginBottom: '28px' }}>
+      <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '12px', letterSpacing: '-0.02em', color: '#1A1A1A' }}>{title}</h2>
+      <hr style={{ border: 'none', borderTop: '1px solid #F0F0F0', marginBottom: '14px' }} />
+      {children}
+    </div>
+  );
+}
+
+function SidebarRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid #F5F5F5' }}>
+      <span style={{ fontSize: '0.75rem', color: '#AAAAAA', fontWeight: 600 }}>{label}</span>
+      <span style={{ fontSize: '0.82rem', color: '#1A1A1A', fontWeight: 500 }}>{value}</span>
+    </div>
+  );
 }
 
 export default async function TourDetailPage({ params }: { params: { id: string } }) {
   const tour = await getTour(params.id);
   if (!tour) notFound();
 
-  const upcoming = tour.dates
-    .filter((d) => new Date(d.date) >= new Date())
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const remaining = Math.max(0, tour.max_participants - (tour.booking_count ?? 0));
+  const isFull = remaining === 0;
 
   const dc = DIFF_COLOR[tour.difficulty];
 
@@ -117,51 +136,125 @@ export default async function TourDetailPage({ params }: { params: { id: string 
           <hr style={{ border: 'none', borderTop: '1px solid #E8E8E8', marginBottom: '28px' }} />
 
           {tour.description && (
-            <>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '14px', letterSpacing: '-0.02em' }}>Tur Hakkında</h2>
-              <p style={{ fontSize: '0.95rem', color: '#5A5A5A', lineHeight: 1.8, whiteSpace: 'pre-line' }}>{tour.description}</p>
-            </>
+            <DetailSection title="Tur Hakkında">
+              <p style={{ fontSize: '0.95rem', color: '#5A5A5A', lineHeight: 1.8, whiteSpace: 'pre-line', margin: 0 }}>{tour.description}</p>
+            </DetailSection>
+          )}
+
+          {tour.program && (
+            <DetailSection title="Program">
+              <p style={{ fontSize: '0.92rem', color: '#5A5A5A', lineHeight: 1.8, whiteSpace: 'pre-line', margin: 0 }}>{tour.program}</p>
+            </DetailSection>
+          )}
+
+          {tour.meeting_points && (
+            <DetailSection title="Buluşma Noktaları">
+              <p style={{ fontSize: '0.92rem', color: '#5A5A5A', lineHeight: 1.75, whiteSpace: 'pre-line', margin: 0 }}>{tour.meeting_points}</p>
+            </DetailSection>
+          )}
+
+          {tour.accommodation && (
+            <DetailSection title="Konaklama">
+              <p style={{ fontSize: '0.92rem', color: '#5A5A5A', lineHeight: 1.75, whiteSpace: 'pre-line', margin: 0 }}>{tour.accommodation}</p>
+            </DetailSection>
+          )}
+
+          {tour.transportation && (
+            <DetailSection title="Ulaşım">
+              <p style={{ fontSize: '0.92rem', color: '#5A5A5A', lineHeight: 1.75, whiteSpace: 'pre-line', margin: 0 }}>{tour.transportation}</p>
+            </DetailSection>
+          )}
+
+          {tour.important_notes && (
+            <DetailSection title="Önemli Notlar">
+              <p style={{ fontSize: '0.92rem', color: '#5A5A5A', lineHeight: 1.75, whiteSpace: 'pre-line', margin: 0 }}>{tour.important_notes}</p>
+            </DetailSection>
           )}
         </div>
 
         {/* Right sidebar */}
-        <div style={{ position: 'sticky', top: '80px' }}>
-          <div style={{ border: '1px solid #E8E8E8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.09)' }}>
-            <div style={{ padding: '24px', borderBottom: '1px solid #E8E8E8' }}>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '16px' }}>Yaklaşan Turlar</h3>
+        <div style={{ position: 'sticky', top: '80px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-              {upcoming.length === 0 ? (
-                <p style={{ fontSize: '0.875rem', color: '#909090', textAlign: 'center', padding: '20px 0' }}>Yaklaşan tarih yok</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {upcoming.slice(0, 6).map((d) => (
-                    <div key={d.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: '#F7F7F7', borderRadius: '10px' }}>
-                      <div>
-                        <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>{fmtDate(d.date)}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#909090', marginTop: '2px' }}>
-                          {d.available_slots > 0 ? `${d.available_slots} kontenjan kaldı` : 'Doldu'}
-                        </div>
-                      </div>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: d.available_slots > 0 ? '#22C55E' : '#EF4444', flexShrink: 0 }} />
-                    </div>
-                  ))}
+          {/* Fiyat + Kapasite */}
+          <div style={{ border: '1px solid #E8E8E8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.09)' }}>
+            <div style={{ padding: '24px' }}>
+
+              {/* Fiyat */}
+              {tour.price != null && tour.price > 0 && (
+                <div style={{ marginBottom: '20px' }}>
+                  <span style={{ fontSize: '0.7rem', color: '#AAAAAA', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>Fiyat</span>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#FF5533', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                    ₺{Number(tour.price).toLocaleString('tr-TR')}
+                    <span style={{ fontSize: '0.82rem', fontWeight: 500, color: '#AAAAAA', marginLeft: '4px' }}>/ kişi</span>
+                  </div>
                 </div>
               )}
-            </div>
 
-            <div style={{ padding: '20px 24px', background: '#FFF9F8' }}>
-              <p style={{ fontSize: '0.82rem', color: '#5A5A5A', textAlign: 'center', lineHeight: 1.65 }}>
+              {/* Tarih aralığı */}
+              {(tour.start_date || tour.end_date) && (
+                <div style={{ background: '#F7F7F7', borderRadius: '10px', padding: '14px 16px', marginBottom: '16px' }}>
+                  <span style={{ fontSize: '0.65rem', color: '#AAAAAA', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Tarih</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    {tour.start_date && (
+                      <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1A1A1A' }}>{fmtDate(tour.start_date)}</span>
+                    )}
+                    {tour.start_date && tour.end_date && (
+                      <span style={{ color: '#AAAAAA', fontSize: '0.85rem' }}>→</span>
+                    )}
+                    {tour.end_date && (
+                      <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1A1A1A' }}>{fmtDate(tour.end_date)}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Kapasite */}
+              <div style={{ background: isFull ? '#FFF0F0' : '#F0FFF4', borderRadius: '10px', padding: '14px 16px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '0.65rem', color: '#AAAAAA', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>Kontenjan</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: isFull ? '#EF4444' : '#16A34A' }}>
+                    {isFull ? 'Doldu' : `${remaining} yer kaldı`}
+                  </span>
+                </div>
+                {/* Progress bar */}
+                <div style={{ height: '6px', background: '#E8E8E8', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%',
+                    borderRadius: '3px',
+                    background: isFull ? '#EF4444' : remaining <= 3 ? '#F97316' : '#22C55E',
+                    width: `${Math.min(100, ((tour.max_participants - remaining) / tour.max_participants) * 100)}%`,
+                    transition: 'width 0.4s ease',
+                  }} />
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#AAAAAA', marginTop: '6px' }}>
+                  {tour.max_participants - remaining} / {tour.max_participants} kişi
+                </div>
+              </div>
+
+              {/* App store CTA */}
+              <p style={{ fontSize: '0.82rem', color: '#5A5A5A', textAlign: 'center', lineHeight: 1.65, marginBottom: '12px' }}>
                 Rezervasyon için <strong style={{ color: '#1A1A1A' }}>Trekly mobil uygulamasını</strong> indirin.
               </p>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
                 {['App Store', 'Google Play'].map((s) => (
-                  <div key={s} style={{ flex: 1, padding: '9px', border: '1px solid #E8E8E8', borderRadius: '8px', textAlign: 'center', fontSize: '0.75rem', color: '#5A5A5A', fontWeight: 500, background: 'white' }}>
+                  <div key={s} style={{ flex: 1, padding: '9px', border: '1px solid #E8E8E8', borderRadius: '8px', textAlign: 'center', fontSize: '0.75rem', color: '#5A5A5A', fontWeight: 500, background: 'white', cursor: 'pointer' }}>
                     {s}
                   </div>
                 ))}
               </div>
             </div>
           </div>
+
+          {/* Rehber bilgisi */}
+          {(tour.guide_name || tour.tursab_no || tour.contact_phone) && (
+            <div style={{ border: '1px solid #E8E8E8', borderRadius: '16px', padding: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+              <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1A1A1A', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Rehber Bilgisi</h3>
+              {tour.guide_name && <SidebarRow label="Rehber" value={tour.guide_name} />}
+              {tour.tursab_no && <SidebarRow label="TURSAB No" value={tour.tursab_no} />}
+              {tour.contact_phone && <SidebarRow label="İletişim" value={tour.contact_phone} />}
+              {tour.target_location && <SidebarRow label="Hedef" value={tour.target_location} />}
+            </div>
+          )}
         </div>
       </div>
 

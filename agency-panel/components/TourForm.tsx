@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import { Input, Select, Textarea, ProvinceSelect } from "./FormControls";
 import Button from "./Button";
 import PhotoUploader from "./PhotoUploader";
-import DatesManager, { PendingDate } from "./DatesManager";
-import { createTour, updateTour, addTourDate, deleteTourDate } from "@/lib/api";
+import { createTour, updateTour } from "@/lib/api";
 import { useLang } from "@/lib/LangContext";
-import type { Difficulty, Tour, TourDate, TourStatus } from "@/lib/types";
+import type { Difficulty, Tour, TourStatus } from "@/lib/types";
 
 interface TourFormProps {
   mode: "create" | "edit";
@@ -126,9 +125,6 @@ export default function TourForm({ mode, tour }: TourFormProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [existingDates, setExistingDates] = useState<TourDate[]>(tour?.dates ?? []);
-  const [pendingDates, setPendingDates] = useState<PendingDate[]>([]);
-  const [removingDateId, setRemovingDateId] = useState<string | null>(null);
 
   const set = (field: keyof FormValues) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -136,19 +132,6 @@ export default function TourForm({ mode, tour }: TourFormProps) {
     setValues((prev) => ({ ...prev, [field]: e.target.value }));
     if (errors[field as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
-
-  const handleRemoveExistingDate = async (dateId: string) => {
-    if (!tour) return;
-    setRemovingDateId(dateId);
-    try {
-      await deleteTourDate(tour.id, dateId);
-      setExistingDates((prev) => prev.filter((d) => d.id !== dateId));
-    } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : tx.dateRemoveError);
-    } finally {
-      setRemovingDateId(null);
     }
   };
 
@@ -189,15 +172,10 @@ export default function TourForm({ mode, tour }: TourFormProps) {
         tags: values.tags.length > 0 ? values.tags : undefined,
       };
 
-      let savedTour: Tour;
       if (mode === "create") {
-        savedTour = await createTour(payload);
+        await createTour(payload);
       } else {
-        savedTour = await updateTour(tour!.id, payload);
-      }
-
-      if (pendingDates.length > 0) {
-        await Promise.all(pendingDates.map((d) => addTourDate(savedTour.id, { date: d.date, available_slots: d.available_slots })));
+        await updateTour(tour!.id, payload);
       }
 
       router.push("/tours");
@@ -337,19 +315,6 @@ export default function TourForm({ mode, tour }: TourFormProps) {
       <section className="bg-white rounded-2xl shadow-card p-6">
         <h2 className="text-base font-bold font-display text-text-primary border-b border-gray-100 pb-3 mb-5">{tx.photos}</h2>
         <PhotoUploader value={values.photo_urls} onChange={(urls) => setValues((prev) => ({ ...prev, photo_urls: urls }))} />
-      </section>
-
-      {/* Tour Dates */}
-      <section className="bg-white rounded-2xl shadow-card p-6">
-        <h2 className="text-base font-bold font-display text-text-primary border-b border-gray-100 pb-3 mb-5">{tx.tourDates}</h2>
-        <DatesManager
-          existingDates={existingDates}
-          pendingDates={pendingDates}
-          onAddPending={(d) => setPendingDates((prev) => [...prev, d])}
-          onRemovePending={(id) => setPendingDates((prev) => prev.filter((d) => d.id !== id))}
-          onRemoveExisting={mode === "edit" ? handleRemoveExistingDate : undefined}
-          removingDateId={removingDateId}
-        />
       </section>
 
       {submitError && (
