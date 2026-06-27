@@ -116,15 +116,24 @@ function TourCard({ tour, index }: { tour: Tour; index: number }) {
           <span className="card-stat-chip">👥 max {tour.max_participants}</span>
         </div>
 
-        <p className="card-points">
-          <span>★ {tour.points} puan</span> kazan
-        </p>
-
-        {next ? (
+        {/* Date range */}
+        {tour.start_date ? (
+          <p style={{ fontSize: '0.8rem', color: '#5A5A5A', margin: '4px 0 0', fontWeight: 500 }}>
+            📅 {fmtDate(tour.start_date)}{tour.end_date ? ` – ${fmtDate(tour.end_date)}` : ''}
+          </p>
+        ) : next ? (
           <p className="card-free">{fmtDate(next.date)} — {next.available_slots} kontenjan</p>
         ) : (
           <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '2px' }}>
             Tarih bekleniyor
+          </p>
+        )}
+
+        {/* Price */}
+        {tour.price != null && Number(tour.price) > 0 && (
+          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FF5533', margin: '4px 0 0' }}>
+            ₺{Number(tour.price).toLocaleString('tr-TR')}
+            <span style={{ fontSize: '0.72rem', fontWeight: 400, color: '#AAAAAA', marginLeft: '3px' }}>/ kişi</span>
           </p>
         )}
       </div>

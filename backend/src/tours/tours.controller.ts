@@ -1,6 +1,7 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ToursService } from './tours.service';
 import { TourQueryDto } from './dto/tour-query.dto';
+import { CreateWebBookingDto } from './dto/create-web-booking.dto';
 
 @Controller('tours')
 export class ToursController {
@@ -19,5 +20,10 @@ export class ToursController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.toursService.findOnePublished(id);
+  }
+
+  @Post(':id/web-booking')
+  createWebBooking(@Param('id') id: string, @Body() dto: CreateWebBookingDto) {
+    return this.toursService.createWebBooking(id, dto);
   }
 }

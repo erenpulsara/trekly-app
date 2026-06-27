@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getTour } from '@/lib/api';
 import type { TourDifficulty } from '@/lib/types';
+import BookingForm from './BookingForm';
 
 const AGENCY_URL = process.env.NEXT_PUBLIC_AGENCY_URL ?? 'https://acenta.treklyapp.com';
 
@@ -231,17 +232,13 @@ export default async function TourDetailPage({ params }: { params: { id: string 
                 </div>
               </div>
 
-              {/* App store CTA */}
-              <p style={{ fontSize: '0.82rem', color: '#5A5A5A', textAlign: 'center', lineHeight: 1.65, marginBottom: '12px' }}>
-                Rezervasyon için <strong style={{ color: '#1A1A1A' }}>Trekly mobil uygulamasını</strong> indirin.
-              </p>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {['App Store', 'Google Play'].map((s) => (
-                  <div key={s} style={{ flex: 1, padding: '9px', border: '1px solid #E8E8E8', borderRadius: '8px', textAlign: 'center', fontSize: '0.75rem', color: '#5A5A5A', fontWeight: 500, background: 'white', cursor: 'pointer' }}>
-                    {s}
-                  </div>
-                ))}
-              </div>
+              {/* Booking form */}
+              <BookingForm
+                tourId={tour.id}
+                maxParticipants={tour.max_participants}
+                isFull={isFull}
+                price={tour.price}
+              />
             </div>
           </div>
 

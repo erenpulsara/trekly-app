@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -9,10 +10,12 @@ import { Repository } from 'typeorm';
 import { Tour } from '../entities/tour.entity';
 import { TourDate } from '../entities/tour-date.entity';
 import { Booking } from '../entities/booking.entity';
+import { WebBooking } from '../entities/web-booking.entity';
 import { Category } from '../entities/category.entity';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
 import { CreateTourDateDto } from './dto/create-tour-date.dto';
+import { CreateWebBookingDto } from './dto/create-web-booking.dto';
 import { TourQueryDto } from './dto/tour-query.dto';
 import { calculatePoints } from '../common/points.calculator';
 import { MediaService } from '../media/media.service';
@@ -26,6 +29,8 @@ export class ToursService {
     private tourDateRepo: Repository<TourDate>,
     @InjectRepository(Booking)
     private bookingRepo: Repository<Booking>,
+    @InjectRepository(WebBooking)
+    private webBookingRepo: Repository<WebBooking>,
     @InjectRepository(Category)
     private categoryRepo: Repository<Category>,
     private readonly mediaService: MediaService,
@@ -70,6 +75,8 @@ export class ToursService {
         { search: query.search, searchPattern: `%${query.search}%` },
       );
     }
+
+    qb.orderBy('tour.created_at', 'DESC');
 
     return (await qb.getMany()).map((t) => this.withProxyUrls(t));
   }
@@ -134,6 +141,36 @@ export class ToursService {
       .getCount();
 
     return { ...this.withProxyUrls(tour), booking_count };
+  }
+
+  async createWebBooking(tourId: string, dto: CreateWebBookingDto): Promise<WebBooking> {
+    const tour = await this.tourRepo.findOne({ where: { id: tourId, status: 'published' } });
+    if (!tour) throw new NotFoundException('Tour not found');
+
+    const existingCount = await this.webBookingRepo
+      .createQueryBuilder('wb')
+      .select('COALESCE(SUM(wb.participant_count), 0)', 'total')
+      .where('wb.tour_id = :id', { id: tourId })
+      .andWhere("wb.status != 'cancelled'")
+      .getRawOne<{ total: string }>();
+
+    const booked = parseInt(existingCount?.total ?? '0', 10);
+    const requested = dto.participant_count ?? 1;
+
+    if (booked + requested > tour.max_participants) {
+      throw new BadRequestException('Kontenjan yetersiz');
+    }
+
+    const booking = this.webBookingRepo.create({
+      tour_id: tourId,
+      full_name: dto.full_name,
+      email: dto.email,
+      phone: dto.phone,
+      participant_count: requested,
+      notes: dto.notes ?? null,
+    });
+
+    return this.webBookingRepo.save(booking);
   }
 
   // ── Agency ───────────────────────────────────────────────────────────────
@@ -211,10 +248,11 @@ export class ToursService {
     const difficulty = dto.difficulty ?? tour.difficulty;
     const points = calculatePoints(altitude, Number(distance), difficulty);
 
-    Object.assign(tour, {
-      ...dto,
-      points,
-    });
+    // Only assign fields explicitly sent in the request — undefined means "don't touch"
+    const defined = Object.fromEntries(
+      Object.entries(dto as Record<string, unknown>).filter(([, v]) => v !== undefined),
+    );
+    Object.assign(tour, { ...defined, points });
 
     return this.tourRepo.save(tour);
   }
