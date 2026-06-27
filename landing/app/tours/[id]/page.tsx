@@ -165,13 +165,11 @@ export default async function TourDetailPage({ params }: { params: { id: string 
         </div>
       </nav>
 
-      {/* ── 2-column layout: Gallery+Content (left) | Sidebar (right) ── */}
-      {/* Right column has no align-self so it stretches to the full row height, giving the sticky card a tall containing block */}
-      <div style={{ maxWidth: '1100px', margin: '24px auto 0', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: '40px' }}>
+      {/* ── 2-column layout ── */}
+      <div style={{ maxWidth: '1100px', margin: '24px auto 0', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: '40px', alignItems: 'start' }}>
 
-        {/* Left column: Gallery then content — align-self start so only its own height contributes to row height */}
-        <div style={{ alignSelf: 'start' }}>
-          {/* Photo Gallery */}
+        {/* Left column */}
+        <div>
           <PhotoGallery
             photos={tour.photo_urls ?? []}
             tourName={tour.name}
@@ -179,7 +177,6 @@ export default async function TourDetailPage({ params }: { params: { id: string 
             height={400}
           />
 
-          {/* Title + Location */}
           <h1 style={{ fontSize: 'clamp(1.4rem, 2.5vw, 2.2rem)', fontWeight: 800, color: '#1A1A1A', letterSpacing: '-0.03em', lineHeight: 1.2, marginBottom: '8px', marginTop: '28px' }}>
             {tour.name}
           </h1>
@@ -191,7 +188,6 @@ export default async function TourDetailPage({ params }: { params: { id: string 
             {tour.location_name}
           </p>
 
-          {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(88px, 1fr))', gap: '12px', marginBottom: '32px' }}>
             {statCards.map((s) => (
               <div key={s.label} style={{ background: s.bg, borderRadius: '10px', padding: '16px 12px', textAlign: 'center' }}>
@@ -210,41 +206,10 @@ export default async function TourDetailPage({ params }: { params: { id: string 
           {tour.accommodation && <CollapsibleSection title="Konaklama" content={tour.accommodation} />}
           {tour.transportation && <CollapsibleSection title="Ulaşım" content={tour.transportation} />}
           {tour.important_notes && <CollapsibleSection title="Önemli Notlar" content={tour.important_notes} />}
-
-          {/* İlginizi Çekebilir — inside left column so the grid row stays tall enough for the sticky sidebar */}
-          {relatedTours.length > 0 && (
-            <div style={{ marginTop: '56px', paddingTop: '40px', borderTop: '2px solid #F0F0F0' }}>
-              <style>{`
-                .related-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
-                .related-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.13) !important; }
-              `}</style>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <div>
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1A1A1A', letterSpacing: '-0.02em', margin: 0 }}>
-                    İlginizi Çekebilir
-                  </h2>
-                  <p style={{ fontSize: '0.82rem', color: '#9A9A9A', marginTop: '3px', marginBottom: 0 }}>
-                    Benzer turlar ve öneriler
-                  </p>
-                </div>
-                <Link href="/turlar" style={{ fontSize: '0.82rem', fontWeight: 700, color: '#FF5533', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  Tüm Turlar
-                  <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-                {relatedTours.map((t) => (
-                  <RelatedTourCard key={t.id} tour={t} />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Right column: no align-self → stretches to full row height, giving sticky child a tall containing block */}
-        <div>
+        {/* Right column: alignSelf stretch so it's as tall as the left column; sticky card travels the full height */}
+        <div style={{ alignSelf: 'stretch' }}>
           <div style={{ position: 'sticky', top: '80px' }}>
             <div style={{ border: '1px solid #E8E8E8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.09)', padding: '0 20px' }}>
 
@@ -350,6 +315,39 @@ export default async function TourDetailPage({ params }: { params: { id: string 
           </div>
         </div>
       </div>
+
+      {/* İlginizi Çekebilir */}
+      {relatedTours.length > 0 && (
+        <section style={{ background: '#FAFAFA', padding: '56px 0' }}>
+          <style>{`
+            .related-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+            .related-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.13) !important; }
+          `}</style>
+          <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 40px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px' }}>
+              <div>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1A1A1A', letterSpacing: '-0.02em', margin: 0 }}>
+                  İlginizi Çekebilir
+                </h2>
+                <p style={{ fontSize: '0.85rem', color: '#9A9A9A', marginTop: '4px', marginBottom: 0 }}>
+                  Benzer turlar ve öneriler
+                </p>
+              </div>
+              <Link href="/turlar" style={{ fontSize: '0.85rem', fontWeight: 700, color: '#FF5533', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                Tüm Turlar
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
+              {relatedTours.map((t) => (
+                <RelatedTourCard key={t.id} tour={t} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <footer className="footer">
         <span className="footer-logo">Trekly</span>
