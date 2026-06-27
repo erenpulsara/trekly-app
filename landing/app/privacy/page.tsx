@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", background: '#fff', minHeight: '100vh' }}>
+    <div style={{ background: '#fff', minHeight: '100vh' }}>
       <nav className="navbar">
         <Link href="/" className="logo">Trekly</Link>
         <div className="nav-links">

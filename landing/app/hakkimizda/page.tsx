@@ -253,7 +253,7 @@ export default function HakkimizdaPage() {
 
       <style>{`
         .hk {
-          font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+          font-family: inherit;
           overflow-x: hidden;
           -webkit-font-smoothing: antialiased;
           color: #1A1A1A;

@@ -155,7 +155,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
   statCards.push({ icon: '⚡', label: 'Zorluk', val: DIFF_LABEL[tour.difficulty], bg: dc.bg, color: dc.text });
 
   return (
-    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", background: '#fff', minHeight: '100vh' }}>
+    <div style={{ background: '#fff', minHeight: '100vh' }}>
 
       {/* Navbar */}
       <nav className="navbar">
