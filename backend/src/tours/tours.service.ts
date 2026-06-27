@@ -19,6 +19,7 @@ import { CreateWebBookingDto } from './dto/create-web-booking.dto';
 import { TourQueryDto } from './dto/tour-query.dto';
 import { calculatePoints } from '../common/points.calculator';
 import { MediaService } from '../media/media.service';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class ToursService {
@@ -35,6 +36,7 @@ export class ToursService {
     private categoryRepo: Repository<Category>,
     private readonly mediaService: MediaService,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   // ── Public ───────────────────────────────────────────────────────────────
@@ -337,8 +339,19 @@ export class ToursService {
     if (booking.tour.agency_id !== agencyId)
       throw new ForbiddenException('Not your booking');
 
+    const prev = booking.status;
     (booking as any).status = status;
-    return this.bookingRepo.save(booking);
+    await this.bookingRepo.save(booking);
+
+    const guestName = `${booking.name} ${booking.surname}`.trim();
+    const tourName = booking.tour.name;
+    if (prev !== 'confirmed' && status === 'confirmed') {
+      void this.emailService.sendBookingConfirmed(booking.email, guestName, tourName);
+    } else if (prev !== 'cancelled' && status === 'cancelled') {
+      void this.emailService.sendBookingCancelled(booking.email, guestName, tourName);
+    }
+
+    return booking;
   }
 
   async getAllAgencyWebBookings(agencyId: string): Promise<WebBooking[]> {
@@ -363,8 +376,18 @@ export class ToursService {
     if (booking.tour.agency_id !== agencyId)
       throw new ForbiddenException('Not your booking');
 
+    const prev = booking.status;
     (booking as any).status = status;
-    return this.webBookingRepo.save(booking);
+    await this.webBookingRepo.save(booking);
+
+    const tourName = booking.tour.name;
+    if (prev !== 'confirmed' && status === 'confirmed') {
+      void this.emailService.sendBookingConfirmed(booking.email, booking.full_name, tourName);
+    } else if (prev !== 'cancelled' && status === 'cancelled') {
+      void this.emailService.sendBookingCancelled(booking.email, booking.full_name, tourName);
+    }
+
+    return booking;
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

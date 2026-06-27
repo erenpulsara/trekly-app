@@ -87,6 +87,69 @@ export class EmailService {
     }
   }
 
+  async sendBookingConfirmed(to: string, guestName: string, tourName: string): Promise<void> {
+    try {
+      await this.transporter.sendMail({
+        from: this.from,
+        to,
+        subject: 'Trekly - Rezervasyonunuz Onaylandı!',
+        html: `
+          <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:480px;margin:0 auto;padding:40px 20px;">
+            <div style="background:#1A1A2E;padding:24px 32px;border-radius:12px 12px 0 0;">
+              <span style="font-size:20px;font-weight:800;color:#FF5533;">Trekly</span>
+            </div>
+            <div style="background:#fff;padding:36px 32px;border:1px solid #E8E8E8;border-top:none;">
+              <h2 style="margin:0 0 12px;font-size:22px;font-weight:800;color:#1A1A1A;">Rezervasyonunuz Onaylandı ✅</h2>
+              <p style="margin:0 0 16px;font-size:15px;color:#5A5A5A;line-height:1.7;">Merhaba <strong>${guestName}</strong>,</p>
+              <p style="margin:0 0 16px;font-size:15px;color:#5A5A5A;line-height:1.7;">
+                <strong>${tourName}</strong> turu için rezervasyonunuz acente tarafından onaylandı.
+              </p>
+              <p style="margin:0 0 24px;font-size:15px;color:#5A5A5A;line-height:1.7;">
+                Herhangi bir sorunuz olursa lütfen bizimle iletişime geçin.
+              </p>
+              <p style="margin:0;font-size:13px;color:#909090;">İyi yolculuklar dileriz! 🏔️</p>
+            </div>
+            <div style="background:#F7F7F7;padding:16px 32px;border-radius:0 0 12px 12px;border:1px solid #E8E8E8;border-top:none;">
+              <p style="margin:0;font-size:12px;color:#BBBBBB;">© ${new Date().getFullYear()} Trekly. Tüm hakları saklıdır.</p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      this.logger.error(`Booking confirmed email failed to ${to}: ${err}`);
+    }
+  }
+
+  async sendBookingCancelled(to: string, guestName: string, tourName: string): Promise<void> {
+    try {
+      await this.transporter.sendMail({
+        from: this.from,
+        to,
+        subject: 'Trekly - Rezervasyon İptali',
+        html: `
+          <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:480px;margin:0 auto;padding:40px 20px;">
+            <div style="background:#1A1A2E;padding:24px 32px;border-radius:12px 12px 0 0;">
+              <span style="font-size:20px;font-weight:800;color:#FF5533;">Trekly</span>
+            </div>
+            <div style="background:#fff;padding:36px 32px;border:1px solid #E8E8E8;border-top:none;">
+              <h2 style="margin:0 0 12px;font-size:22px;font-weight:800;color:#1A1A1A;">Rezervasyon İptal Edildi</h2>
+              <p style="margin:0 0 16px;font-size:15px;color:#5A5A5A;line-height:1.7;">Merhaba <strong>${guestName}</strong>,</p>
+              <p style="margin:0 0 16px;font-size:15px;color:#5A5A5A;line-height:1.7;">
+                Üzgünüz, <strong>${tourName}</strong> turu için rezervasyonunuz iptal edildi.
+              </p>
+              <p style="margin:0;font-size:13px;color:#909090;">Başka sorularınız için bizimle iletişime geçebilirsiniz.</p>
+            </div>
+            <div style="background:#F7F7F7;padding:16px 32px;border-radius:0 0 12px 12px;border:1px solid #E8E8E8;border-top:none;">
+              <p style="margin:0;font-size:12px;color:#BBBBBB;">© ${new Date().getFullYear()} Trekly. Tüm hakları saklıdır.</p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      this.logger.error(`Booking cancelled email failed to ${to}: ${err}`);
+    }
+  }
+
   async sendAgencyWelcome(to: string, agencyName: string): Promise<void> {
     try {
       await this.transporter.sendMail({

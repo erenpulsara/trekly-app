@@ -10,9 +10,10 @@ import { ToursService } from './tours.service';
 import { ToursController } from './tours.controller';
 import { AgencyToursController } from './agency-tours.controller';
 import { MediaModule } from '../media/media.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Tour, TourDate, Booking, WebBooking, Category]), ConfigModule, MediaModule],
+  imports: [TypeOrmModule.forFeature([Tour, TourDate, Booking, WebBooking, Category]), ConfigModule, MediaModule, EmailModule],
   controllers: [ToursController, AgencyToursController],
   providers: [ToursService],
   exports: [ToursService],
