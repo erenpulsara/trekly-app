@@ -6,7 +6,7 @@ import AuthGuard from "@/components/AuthGuard";
 import Sidebar from "@/components/Sidebar";
 import StatCard from "@/components/StatCard";
 import Badge from "@/components/Badge";
-import { getDashboardStats } from "@/lib/api";
+import { getDashboardStats, updateBookingStatus } from "@/lib/api";
 import { useLang } from "@/lib/LangContext";
 import type { DashboardStats, BookingStatus } from "@/lib/types";
 
@@ -27,6 +27,26 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  async function handleQuickStatus(bookingId: string, status: BookingStatus) {
+    setUpdatingId(bookingId);
+    try {
+      const updated = await updateBookingStatus(bookingId, { status });
+      setStats((prev) =>
+        prev
+          ? {
+              ...prev,
+              recent_bookings: prev.recent_bookings.map((b) =>
+                b.id === bookingId ? { ...b, status: updated.status } : b
+              ),
+            }
+          : prev
+      );
+    } finally {
+      setUpdatingId(null);
+    }
+  }
 
   useEffect(() => {
     getDashboardStats()
@@ -77,8 +97,8 @@ export default function DashboardPage() {
             <div className="animate-slide-up" style={{ animationDelay: "240ms", animationFillMode: "both" }}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-display font-bold text-text-primary">{tx.recentBookings}</h2>
-                <Link href="/tours" className="text-sm font-semibold font-body text-brand-orange hover:text-brand-orange-dark transition-colors">
-                  {tx.viewAllTours}
+                <Link href="/rezervasyonlar" className="text-sm font-semibold font-body text-brand-orange hover:text-brand-orange-dark transition-colors">
+                  Tümünü Gör
                 </Link>
               </div>
 
@@ -117,6 +137,7 @@ export default function DashboardPage() {
                           <th className="px-6 py-3.5 text-left text-xs font-bold font-body text-text-secondary uppercase tracking-wider hidden sm:table-cell">{tx.participants}</th>
                           <th className="px-6 py-3.5 text-left text-xs font-bold font-body text-text-secondary uppercase tracking-wider hidden md:table-cell">{tx.date}</th>
                           <th className="px-6 py-3.5 text-left text-xs font-bold font-body text-text-secondary uppercase tracking-wider">{tx.status}</th>
+                          <th className="px-6 py-3.5 text-left text-xs font-bold font-body text-text-secondary uppercase tracking-wider">İşlem</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">
@@ -139,6 +160,35 @@ export default function DashboardPage() {
                               <Badge variant={booking.status as BookingStatus} showDot>
                                 {t.status[booking.status as BookingStatus] ?? booking.status}
                               </Badge>
+                            </td>
+                            <td className="px-6 py-4">
+                              {booking.status === "pending" && (
+                                <div className="flex gap-1.5">
+                                  <button
+                                    disabled={updatingId === booking.id}
+                                    onClick={() => handleQuickStatus(booking.id, "confirmed")}
+                                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-green-50 text-green-600 hover:bg-green-100 disabled:opacity-40 transition-colors"
+                                  >
+                                    {updatingId === booking.id ? "..." : "Onayla"}
+                                  </button>
+                                  <button
+                                    disabled={updatingId === booking.id}
+                                    onClick={() => handleQuickStatus(booking.id, "cancelled")}
+                                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-40 transition-colors"
+                                  >
+                                    {updatingId === booking.id ? "..." : "İptal"}
+                                  </button>
+                                </div>
+                              )}
+                              {booking.status === "confirmed" && (
+                                <button
+                                  disabled={updatingId === booking.id}
+                                  onClick={() => handleQuickStatus(booking.id, "completed")}
+                                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 disabled:opacity-40 transition-colors"
+                                >
+                                  {updatingId === booking.id ? "..." : "Tamamlandı"}
+                                </button>
+                              )}
                             </td>
                           </tr>
                         ))}

@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   Request,
@@ -15,6 +16,7 @@ import { AgencyJwtPayload } from '../auth/strategies/jwt-agency.strategy';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
 import { CreateTourDateDto } from './dto/create-tour-date.dto';
+import { UpdateBookingStatusDto, UpdateWebBookingStatusDto } from './dto/update-booking-status.dto';
 
 interface AgencyRequest {
   user: AgencyJwtPayload;
@@ -81,5 +83,35 @@ export class AgencyToursController {
   @Get('tours/:id/bookings')
   getTourBookings(@Request() req: AgencyRequest, @Param('id') id: string) {
     return this.toursService.getTourBookings(req.user.sub, id);
+  }
+
+  @Get('bookings')
+  getAllBookings(@Request() req: AgencyRequest) {
+    return this.toursService.getAllAgencyBookings(req.user.sub);
+  }
+
+  @Put('bookings/:id/status')
+  updateBookingStatus(
+    @Request() req: AgencyRequest,
+    @Param('id') id: string,
+    @Body() dto: UpdateBookingStatusDto,
+  ) {
+    return this.toursService.updateAgencyBookingStatus(req.user.sub, id, dto.status);
+  }
+
+  // ── Web Bookings ──────────────────────────────────────────────────────────
+
+  @Get('web-bookings')
+  getWebBookings(@Request() req: AgencyRequest) {
+    return this.toursService.getAllAgencyWebBookings(req.user.sub);
+  }
+
+  @Patch('web-bookings/:id')
+  updateWebBookingStatus(
+    @Request() req: AgencyRequest,
+    @Param('id') id: string,
+    @Body() dto: UpdateWebBookingStatusDto,
+  ) {
+    return this.toursService.updateAgencyWebBookingStatus(req.user.sub, id, dto.status);
   }
 }

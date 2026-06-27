@@ -15,6 +15,7 @@ export const agT = {
     nav: {
       dashboard: 'Genel Bakış',
       tours: 'Turlar',
+      rezervasyonlar: 'Rezervasyonlar',
       profile: 'Profil',
       logout: 'Çıkış Yap',
     },
@@ -251,6 +252,7 @@ export const agT = {
     nav: {
       dashboard: 'Overview',
       tours: 'Tours',
+      rezervasyonlar: 'Reservations',
       profile: 'Profile',
       logout: 'Log Out',
     },

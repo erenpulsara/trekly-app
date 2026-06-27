@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Tour } from '../entities/tour.entity';
 import { TourDate } from '../entities/tour-date.entity';
 import { Booking } from '../entities/booking.entity';
@@ -305,6 +305,66 @@ export class ToursService {
       relations: ['user', 'tour_date'],
       order: { created_at: 'DESC' },
     });
+  }
+
+  // ── Agency Booking Management ─────────────────────────────────────────────
+
+  async getAllAgencyBookings(agencyId: string): Promise<Booking[]> {
+    const tours = await this.tourRepo.find({
+      where: { agency_id: agencyId },
+      select: ['id'],
+    });
+    const tourIds = tours.map((t) => t.id);
+    if (!tourIds.length) return [];
+
+    return this.bookingRepo.find({
+      where: { tour_id: In(tourIds) },
+      relations: ['tour'],
+      order: { created_at: 'DESC' },
+    });
+  }
+
+  async updateAgencyBookingStatus(
+    agencyId: string,
+    bookingId: string,
+    status: string,
+  ): Promise<Booking> {
+    const booking = await this.bookingRepo.findOne({
+      where: { id: bookingId },
+      relations: ['tour'],
+    });
+    if (!booking) throw new NotFoundException('Booking not found');
+    if (booking.tour.agency_id !== agencyId)
+      throw new ForbiddenException('Not your booking');
+
+    (booking as any).status = status;
+    return this.bookingRepo.save(booking);
+  }
+
+  async getAllAgencyWebBookings(agencyId: string): Promise<WebBooking[]> {
+    return this.webBookingRepo
+      .createQueryBuilder('wb')
+      .leftJoinAndSelect('wb.tour', 'tour')
+      .where('tour.agency_id = :agencyId', { agencyId })
+      .orderBy('wb.created_at', 'DESC')
+      .getMany();
+  }
+
+  async updateAgencyWebBookingStatus(
+    agencyId: string,
+    webBookingId: string,
+    status: string,
+  ): Promise<WebBooking> {
+    const booking = await this.webBookingRepo.findOne({
+      where: { id: webBookingId },
+      relations: ['tour'],
+    });
+    if (!booking) throw new NotFoundException('Web booking not found');
+    if (booking.tour.agency_id !== agencyId)
+      throw new ForbiddenException('Not your booking');
+
+    (booking as any).status = status;
+    return this.webBookingRepo.save(booking);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

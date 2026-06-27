@@ -145,3 +145,18 @@ export interface DashboardStats {
   total_bookings: number;
   recent_bookings: Booking[];
 }
+
+export type WebBookingStatus = 'pending' | 'confirmed' | 'cancelled';
+
+export interface WebBooking {
+  id: string;
+  tour_id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  participant_count: number;
+  notes?: string | null;
+  status: WebBookingStatus;
+  created_at: string;
+  tour?: { id: string; name: string };
+}

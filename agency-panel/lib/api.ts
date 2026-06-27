@@ -10,6 +10,8 @@ import type {
   Tour,
   UpdateBookingStatusPayload,
   UpdateTourPayload,
+  WebBooking,
+  WebBookingStatus,
 } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
@@ -129,6 +131,25 @@ export async function updateBookingStatus(
 ): Promise<Booking> {
   return request<Booking>(`/agency/bookings/${bookingId}/status`, {
     method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getAllBookings(): Promise<Booking[]> {
+  return request<Booking[]>('/agency/bookings');
+}
+
+// Web bookings
+export async function getWebBookings(): Promise<WebBooking[]> {
+  return request<WebBooking[]>('/agency/web-bookings');
+}
+
+export async function updateWebBookingStatus(
+  id: string,
+  payload: { status: WebBookingStatus },
+): Promise<WebBooking> {
+  return request<WebBooking>(`/agency/web-bookings/${id}`, {
+    method: 'PATCH',
     body: JSON.stringify(payload),
   });
 }
