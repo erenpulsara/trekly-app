@@ -8,6 +8,7 @@ import type { Tour, TourDifficulty } from '@/lib/types';
 import BookingForm from './BookingForm';
 import CollapsibleSection from './CollapsibleSection';
 import PhotoGallery from './PhotoGallery';
+import StickyCard from './StickyCard';
 
 const AGENCY_URL = process.env.NEXT_PUBLIC_AGENCY_URL ?? 'https://acenta.treklyapp.com';
 
@@ -166,10 +167,10 @@ export default async function TourDetailPage({ params }: { params: { id: string 
       </nav>
 
       {/* ── 2-column layout ── */}
-      <div style={{ maxWidth: '1100px', margin: '24px auto 0', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: '40px', alignItems: 'start' }}>
+      <div style={{ maxWidth: '1100px', margin: '24px auto 0', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: '40px' }}>
 
         {/* Left column */}
-        <div>
+        <div style={{ alignSelf: 'start' }}>
           <PhotoGallery
             photos={tour.photo_urls ?? []}
             tourName={tour.name}
@@ -208,10 +209,9 @@ export default async function TourDetailPage({ params }: { params: { id: string 
           {tour.important_notes && <CollapsibleSection title="Önemli Notlar" content={tour.important_notes} />}
         </div>
 
-        {/* Right column: spacer keeps grid column width; card is fixed so it never scrolls */}
-        <div>
-          <div style={{ position: 'fixed', top: '80px', right: 'max(40px, calc((100vw - 1100px) / 2 + 40px))', width: '340px', zIndex: 50 }}>
-            <div style={{ border: '1px solid #E8E8E8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.09)', padding: '0 20px' }}>
+        {/* Right column */}
+        <StickyCard>
+          <div style={{ border: '1px solid #E8E8E8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.09)', padding: '0 20px' }}>
 
               {(tour as any).agency_name && (
                 <InfoRow
@@ -312,8 +312,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
                 />
               </div>
             </div>
-          </div>
-        </div>
+        </StickyCard>
       </div>
 
       {/* İlginizi Çekebilir */}
