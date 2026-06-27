@@ -14,9 +14,9 @@ export interface Tour {
   location_name: string;
   latitude: number | null;
   longitude: number | null;
-  altitude_meters: number;
+  altitude_meters?: number | null;
   difficulty: TourDifficulty;
-  distance_km: number;
+  distance_km?: number | null;
   max_participants: number;
   photo_urls: string[];
   status: 'draft' | 'published';

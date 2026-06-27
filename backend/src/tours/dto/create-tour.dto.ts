@@ -39,18 +39,20 @@ export class CreateTourDto {
   @Type(() => Number)
   longitude?: number;
 
+  @IsOptional()
   @IsInt()
   @Min(0)
   @Type(() => Number)
-  altitude_meters!: number;
+  altitude_meters?: number;
 
   @IsEnum(['easy', 'medium', 'hard', 'extreme'])
   difficulty!: TourDifficulty;
 
+  @IsOptional()
   @IsNumber()
   @IsPositive()
   @Type(() => Number)
-  distance_km!: number;
+  distance_km?: number;
 
   @IsInt()
   @IsPositive()

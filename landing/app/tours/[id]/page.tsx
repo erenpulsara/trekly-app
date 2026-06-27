@@ -97,15 +97,19 @@ export default async function TourDetailPage({ params }: { params: { id: string 
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
             {[
-              { icon: '⛰', label: 'İrtifa', val: `${tour.altitude_meters.toLocaleString()}m` },
-              { icon: '📏', label: 'Mesafe', val: `${Number(tour.distance_km).toFixed(1)}km` },
+              (tour.altitude_meters != null && tour.altitude_meters > 0)
+                ? { icon: '⛰', label: 'İrtifa', val: `${tour.altitude_meters.toLocaleString()}m` }
+                : null,
+              (tour.distance_km != null && Number(tour.distance_km) > 0)
+                ? { icon: '📏', label: 'Mesafe', val: `${Number(tour.distance_km).toFixed(1)}km` }
+                : null,
               { icon: '👥', label: 'Max Kişi', val: `${tour.max_participants}` },
               { icon: '⭐', label: 'Puan', val: `${tour.points} pt`, accent: true },
-            ].map((s) => (
-              <div key={s.label} style={{ background: '#F7F7F7', borderRadius: '10px', padding: '16px 12px', textAlign: 'center' }}>
-                <div style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{s.icon}</div>
-                <div style={{ fontSize: '0.68rem', color: '#909090', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{s.label}</div>
-                <div style={{ fontSize: '1rem', fontWeight: 700, color: s.accent ? '#FF5533' : '#1A1A1A' }}>{s.val}</div>
+            ].filter(Boolean).map((s) => (
+              <div key={s!.label} style={{ background: '#F7F7F7', borderRadius: '10px', padding: '16px 12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{s!.icon}</div>
+                <div style={{ fontSize: '0.68rem', color: '#909090', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{s!.label}</div>
+                <div style={{ fontSize: '1rem', fontWeight: 700, color: s!.accent ? '#FF5533' : '#1A1A1A' }}>{s!.val}</div>
               </div>
             ))}
           </div>

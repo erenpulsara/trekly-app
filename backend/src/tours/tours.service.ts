@@ -153,8 +153,8 @@ export class ToursService {
 
   async createTour(agencyId: string, dto: CreateTourDto): Promise<Tour> {
     const points = calculatePoints(
-      dto.altitude_meters,
-      Number(dto.distance_km),
+      dto.altitude_meters ?? 0,
+      Number(dto.distance_km ?? 0),
       dto.difficulty,
     );
 
@@ -165,9 +165,9 @@ export class ToursService {
       location_name: dto.location_name,
       latitude: dto.latitude ?? null,
       longitude: dto.longitude ?? null,
-      altitude_meters: dto.altitude_meters,
+      altitude_meters: dto.altitude_meters ?? null,
       difficulty: dto.difficulty,
-      distance_km: dto.distance_km,
+      distance_km: dto.distance_km ?? null,
       max_participants: dto.max_participants,
       photo_urls: dto.photo_urls ?? [],
       points,
@@ -199,8 +199,8 @@ export class ToursService {
     const tour = await this.findOwnedTour(agencyId, tourId);
 
     // Recalculate points if relevant fields changed
-    const altitude = dto.altitude_meters ?? tour.altitude_meters;
-    const distance = dto.distance_km ?? Number(tour.distance_km);
+    const altitude = dto.altitude_meters ?? tour.altitude_meters ?? 0;
+    const distance = dto.distance_km ?? Number(tour.distance_km ?? 0);
     const difficulty = dto.difficulty ?? tour.difficulty;
     const points = calculatePoints(altitude, Number(distance), difficulty);
 

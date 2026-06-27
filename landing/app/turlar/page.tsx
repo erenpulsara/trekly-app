@@ -323,9 +323,13 @@ export default async function TurlarPage({
 
                         {/* Info grid */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 12px' }}>
-                          <InfoRow icon="⛰️" label={tt.altitude} value={`${tour.altitude_meters.toLocaleString()}m`} />
+                          {tour.altitude_meters != null && tour.altitude_meters > 0 && (
+                            <InfoRow icon="⛰️" label={tt.altitude} value={`${tour.altitude_meters.toLocaleString()}m`} />
+                          )}
                           <InfoRow icon="📍" label={tt.location} value={tour.location_name} />
-                          <InfoRow icon="📏" label={tt.distance} value={`${Number(tour.distance_km).toFixed(1)} km`} />
+                          {tour.distance_km != null && Number(tour.distance_km) > 0 && (
+                            <InfoRow icon="📏" label={tt.distance} value={`${Number(tour.distance_km).toFixed(1)} km`} />
+                          )}
                           {(tour.start_date || tour.end_date) && (
                             <InfoRow
                               icon="📅"

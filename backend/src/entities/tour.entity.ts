@@ -42,8 +42,8 @@ export class Tour {
   @Column({ type: 'decimal', nullable: true })
   longitude!: number | null;
 
-  @Column({ type: 'integer', nullable: false })
-  altitude_meters!: number;
+  @Column({ type: 'integer', nullable: true })
+  altitude_meters!: number | null;
 
   @Column({
     type: 'enum',
@@ -52,8 +52,8 @@ export class Tour {
   })
   difficulty!: TourDifficulty;
 
-  @Column({ type: 'decimal', nullable: false })
-  distance_km!: number;
+  @Column({ type: 'decimal', nullable: true })
+  distance_km!: number | null;
 
   @Column({ type: 'integer', nullable: false })
   max_participants!: number;

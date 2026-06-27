@@ -48,8 +48,6 @@ interface FormErrors {
   name?: string;
   description?: string;
   location_name?: string;
-  altitude_meters?: string;
-  distance_km?: string;
   max_participants?: string;
 }
 
@@ -92,8 +90,6 @@ export default function TourForm({ mode, tour }: TourFormProps) {
     if (!values.name.trim()) errors.name = tx.nameRequired;
     if (!values.description.trim()) errors.description = tx.descRequired;
     if (!values.location_name.trim()) errors.location_name = tx.locationRequired;
-    if (!values.altitude_meters || parseInt(values.altitude_meters) < 0) errors.altitude_meters = tx.altMin;
-    if (!values.distance_km || parseFloat(values.distance_km) <= 0) errors.distance_km = tx.distMin;
     if (!values.max_participants || parseInt(values.max_participants) < 1) errors.max_participants = tx.participantsMin;
     return errors;
   }
@@ -171,9 +167,9 @@ export default function TourForm({ mode, tour }: TourFormProps) {
         location_name: values.location_name.trim(),
         latitude: values.latitude ? parseFloat(values.latitude) : undefined,
         longitude: values.longitude ? parseFloat(values.longitude) : undefined,
-        altitude_meters: parseInt(values.altitude_meters),
+        altitude_meters: values.altitude_meters ? parseInt(values.altitude_meters) : undefined,
         difficulty: values.difficulty,
-        distance_km: parseFloat(values.distance_km),
+        distance_km: values.distance_km ? parseFloat(values.distance_km) : undefined,
         max_participants: parseInt(values.max_participants),
         photo_urls: values.photo_urls,
         status: values.status,
@@ -300,8 +296,8 @@ export default function TourForm({ mode, tour }: TourFormProps) {
           <Input label={tx.longitude} type="number" step="any" value={values.longitude} onChange={set("longitude")} placeholder={tx.lngPlaceholder} hint={tx.optional} />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <Input label={tx.altitude} required type="number" min={0} value={values.altitude_meters} onChange={set("altitude_meters")} error={errors.altitude_meters} placeholder={tx.altitudePlaceholder} />
-          <Input label={tx.distance} required type="number" min={0.1} step={0.1} value={values.distance_km} onChange={set("distance_km")} error={errors.distance_km} placeholder={tx.distancePlaceholder} />
+          <Input label={tx.altitude} type="number" min={0} value={values.altitude_meters} onChange={set("altitude_meters")} placeholder={tx.altitudePlaceholder} hint={tx.optional} />
+          <Input label={tx.distance} type="number" min={0.1} step={0.1} value={values.distance_km} onChange={set("distance_km")} placeholder={tx.distancePlaceholder} hint={tx.optional} />
           <Input label={tx.maxParticipants} required type="number" min={1} value={values.max_participants} onChange={set("max_participants")} error={errors.max_participants} placeholder={tx.maxParticipantsPlaceholder} />
         </div>
       </section>
