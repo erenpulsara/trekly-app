@@ -29,9 +29,7 @@ function RelatedTourCard({ tour }: { tour: Tour }) {
   const isFull = remaining === 0;
 
   return (
-    <Link href={`/tours/${tour.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', borderRadius: '14px', border: '1px solid #EFEFEF', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', transition: 'transform 0.18s, box-shadow 0.18s' }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'none'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.06)'; }}
+    <Link href={`/tours/${tour.id}`} className="related-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', borderRadius: '14px', border: '1px solid #EFEFEF', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
     >
       {/* Photo */}
       <div style={{ position: 'relative', height: '180px', background: PH_GRADIENT[tour.difficulty], overflow: 'hidden' }}>
@@ -343,6 +341,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
       {/* İlginizi Çekebilir */}
       {relatedTours.length > 0 && (
         <section style={{ background: '#FAFAFA', padding: '56px 0' }}>
+          <style>{`.related-card { transition: transform 0.18s, box-shadow 0.18s; } .related-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.13) !important; }`}</style>
           <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 40px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px' }}>
               <div>
