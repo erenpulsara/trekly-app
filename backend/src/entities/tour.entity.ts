@@ -61,6 +61,9 @@ export class Tour {
   @Column({ type: 'text', array: true, default: '{}' })
   photo_urls!: string[];
 
+  @Column({ type: 'text', array: true, nullable: true, default: '{}' })
+  tags!: string[];
+
   @Column({
     type: 'enum',
     enum: ['draft', 'published', 'rejected'],

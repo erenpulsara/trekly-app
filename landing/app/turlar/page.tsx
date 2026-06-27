@@ -51,6 +51,7 @@ export default async function TurlarPage({
     start_date?: string;
     month?: string;
     showAll?: string;
+    search?: string;
   };
 }) {
   const lang: Lang = cookies().get('lang')?.value === 'en' ? 'en' : 'tr';
@@ -62,6 +63,7 @@ export default async function TurlarPage({
   const activeLocation = searchParams?.location ?? '';
   const activeDate     = searchParams?.start_date ?? '';
   const activeMonth    = searchParams?.month ?? '';
+  const activeSearch   = searchParams?.search ?? '';
   const showAll        = searchParams?.showAll === 'true';
 
   const MONTH_MAP: Record<string, number> = {
@@ -75,6 +77,7 @@ export default async function TurlarPage({
       category:   activeCategory || undefined,
       location:   activeLocation || undefined,
       start_date: activeDate || undefined,
+      search:     activeSearch || undefined,
     }),
     getPublishedTours({}),
     getCategories(),
@@ -228,6 +231,7 @@ export default async function TurlarPage({
               activeCategory={activeCategory}
               activeLocation={activeLocation}
               activeMonth={activeMonth}
+              activeSearch={activeSearch}
               dynamicCategories={categories}
               locations={allLocations}
             />

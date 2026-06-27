@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { CategoryItem } from '@/lib/api';
 
@@ -23,28 +24,39 @@ interface Props {
   activeCategory: string;
   activeLocation: string;
   activeMonth: string;
+  activeSearch: string;
   dynamicCategories: CategoryItem[];
   locations: string[];
 }
 
 export default function TurlarSidebar({
-  activeCategory, activeLocation, activeMonth,
+  activeCategory, activeLocation, activeMonth, activeSearch,
   dynamicCategories, locations,
 }: Props) {
   const router = useRouter();
   const params = useSearchParams();
+  const [searchInput, setSearchInput] = useState(activeSearch);
 
-  function navigateTo(updates: { category?: string; location?: string; month?: string }) {
+  useEffect(() => { setSearchInput(activeSearch); }, [activeSearch]);
+
+  function navigateTo(updates: { category?: string; location?: string; month?: string; search?: string }) {
     const q = new URLSearchParams();
-    const cat   = updates.category  !== undefined ? updates.category  : (params.get('category')   ?? '');
-    const loc   = updates.location  !== undefined ? updates.location  : (params.get('location')   ?? '');
-    const month = updates.month     !== undefined ? updates.month     : (params.get('month')      ?? '');
-    const date  = params.get('start_date') ?? '';
-    if (cat)   q.set('category',   cat);
-    if (loc)   q.set('location',   loc);
-    if (month) q.set('month',      month);
-    if (date)  q.set('start_date', date);
+    const cat    = updates.category !== undefined ? updates.category : (params.get('category')  ?? '');
+    const loc    = updates.location !== undefined ? updates.location : (params.get('location')  ?? '');
+    const month  = updates.month    !== undefined ? updates.month    : (params.get('month')     ?? '');
+    const search = updates.search   !== undefined ? updates.search   : (params.get('search')    ?? '');
+    const date   = params.get('start_date') ?? '';
+    if (cat)    q.set('category',   cat);
+    if (loc)    q.set('location',   loc);
+    if (month)  q.set('month',      month);
+    if (date)   q.set('start_date', date);
+    if (search) q.set('search',     search);
     router.push(`/turlar${q.toString() ? `?${q}` : ''}`);
+  }
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    navigateTo({ search: searchInput.trim() });
   }
 
   const staticKeys = new Set(STATIC_CATEGORIES.map(s => s.key.toLowerCase()));
@@ -54,10 +66,42 @@ export default function TurlarSidebar({
     ...extraCats.map(c => ({ key: c.name, label: c.name })),
   ];
 
-  const isAll = !activeCategory && !activeLocation && !activeMonth;
+  const isAll = !activeCategory && !activeLocation && !activeMonth && !activeSearch;
 
   return (
     <aside className="turlar-sidebar" style={{ width: '230px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+      {/* Arama */}
+      <form onSubmit={handleSearch} style={{ position: 'relative' }}>
+        <input
+          type="text"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Tur veya etiket ara..."
+          style={{
+            width: '100%', padding: '10px 38px 10px 14px',
+            borderRadius: '12px', border: '1.5px solid #EAEAEA',
+            background: 'white', fontSize: '0.82rem', color: '#1A1A1A',
+            outline: 'none', boxSizing: 'border-box',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+            transition: 'border-color 0.15s',
+          }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = '#FF5533')}
+          onBlur={(e) => (e.currentTarget.style.borderColor = '#EAEAEA')}
+        />
+        <button
+          type="submit"
+          style={{
+            position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+            background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
+            color: activeSearch ? '#FF5533' : '#BBBBBB', display: 'flex', alignItems: 'center',
+          }}
+        >
+          <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path strokeLinecap="round" d="m21 21-4.35-4.35"/>
+          </svg>
+        </button>
+      </form>
 
       {/* Tüm Turlar */}
       <button

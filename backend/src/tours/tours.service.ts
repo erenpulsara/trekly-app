@@ -64,6 +64,13 @@ export class ToursService {
       qb.andWhere('tour.start_date >= :start_date', { start_date: query.start_date });
     }
 
+    if (query.search) {
+      qb.andWhere(
+        '(tour.name ILIKE :searchPattern OR :search = ANY(tour.tags))',
+        { search: query.search, searchPattern: `%${query.search}%` },
+      );
+    }
+
     return (await qb.getMany()).map((t) => this.withProxyUrls(t));
   }
 
@@ -178,6 +185,7 @@ export class ToursService {
       transportation: dto.transportation ?? null,
       program: dto.program ?? null,
       important_notes: dto.important_notes ?? null,
+      tags: dto.tags ?? [],
     });
 
     return this.tourRepo.save(tour);

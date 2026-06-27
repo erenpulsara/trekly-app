@@ -21,4 +21,8 @@ export class TourQueryDto {
   @IsOptional()
   @IsDateString()
   start_date?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

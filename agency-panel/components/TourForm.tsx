@@ -41,6 +41,7 @@ interface FormValues {
   accommodation: string;
   transportation: string;
   important_notes: string;
+  tags: string[];
 }
 
 interface FormErrors {
@@ -122,8 +123,10 @@ export default function TourForm({ mode, tour }: TourFormProps) {
     accommodation: tour?.accommodation ?? "",
     transportation: tour?.transportation ?? "",
     important_notes: tour?.important_notes ?? "",
+    tags: tour?.tags ?? [],
   });
 
+  const [tagInput, setTagInput] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -187,6 +190,7 @@ export default function TourForm({ mode, tour }: TourFormProps) {
         accommodation: values.accommodation.trim() || undefined,
         transportation: values.transportation.trim() || undefined,
         important_notes: values.important_notes.trim() || undefined,
+        tags: values.tags.length > 0 ? values.tags : undefined,
       };
 
       let savedTour: Tour;
@@ -234,6 +238,63 @@ export default function TourForm({ mode, tour }: TourFormProps) {
           }}
           error={errors.location_name}
         />
+
+        {/* Etiket */}
+        <div>
+          <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+            Etiket <span style={{ fontSize: '0.72rem', color: '#9CA3AF', fontWeight: 400 }}>(isteğe bağlı)</span>
+          </label>
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: '6px',
+            padding: '8px 10px', borderRadius: '10px',
+            border: '1px solid #E5E7EB', background: 'white',
+            minHeight: '42px', alignItems: 'center',
+          }}>
+            {values.tags.map(tag => (
+              <span key={tag} style={{
+                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                background: '#FFF4F1', color: '#FF5533',
+                border: '1px solid rgba(255,85,51,0.25)',
+                borderRadius: '6px', padding: '3px 8px',
+                fontSize: '0.78rem', fontWeight: 600,
+              }}>
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => setValues(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 0 2px', color: '#FF5533', lineHeight: 1, fontSize: '1rem' }}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            <input
+              type="text"
+              value={tagInput}
+              placeholder={values.tags.length === 0 ? 'Etiket yaz, Enter ile ekle...' : ''}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                  e.preventDefault();
+                  const val = tagInput.trim().replace(/,$/, '');
+                  if (val && !values.tags.includes(val)) {
+                    setValues(prev => ({ ...prev, tags: [...prev.tags, val] }));
+                  }
+                  setTagInput('');
+                }
+              }}
+              style={{
+                border: 'none', outline: 'none', padding: '4px',
+                fontSize: '0.82rem', color: '#374151', background: 'transparent',
+                flex: '1 1 120px', minWidth: '120px',
+              }}
+            />
+          </div>
+          <p style={{ fontSize: '0.72rem', color: '#9CA3AF', margin: '4px 0 0 2px' }}>
+            SEO etiketi (örn: Ramazan Bayramı Turu, Yılbaşı Turu) — Enter ile ekle
+          </p>
+        </div>
+
         <div className="grid grid-cols-2 gap-5">
           <Input label={tx.latitude} type="number" step="any" value={values.latitude} onChange={set("latitude")} placeholder={tx.latPlaceholder} hint={tx.optional} />
           <Input label={tx.longitude} type="number" step="any" value={values.longitude} onChange={set("longitude")} placeholder={tx.lngPlaceholder} hint={tx.optional} />

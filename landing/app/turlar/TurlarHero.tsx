@@ -4,13 +4,13 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 
 const SLIDES = [
-  { url: '/hero/IMG_2281.jpg',   position: 'center 55%' }, // windsurfing - su seviyesi
-  { url: '/hero/IMG_2279.jpg',   position: 'center 35%' }, // kite surf plajı - uçurtmalar gökyüzünde
+  { url: '/hero/IMG_2281.jpg',   position: 'center 62%' }, // windsurfing - su ve yelkenler
+  { url: '/hero/IMG_2279.jpg',   position: 'center 38%' }, // kite surf plajı - uçurtmalar gökyüzünde
   { url: '/hero/IMG_2278.jpg',   position: 'center 55%' }, // gece kamp ateşi - ateş + yıldızlar
-  { url: '/hero/IMG_2280.jpg',   position: 'center 38%' }, // Kapadokya koşu - balonlar görünsün
-  { url: '/hero/IMG_2282.jpg',   position: 'center 42%' }, // karlı zirveler trekking
-  { url: '/hero/IMG_2285.jpg',   position: 'center 52%' }, // dağ zirvesi yürüyüşü
-  { url: '/hero/pexels-hero.jpg', position: 'center 72%' }, // bisikletçiler alt kesimde - aşağı kaydır
+  { url: '/hero/IMG_2280.jpg',   position: 'center 40%' }, // Kapadokya koşu - balonlar görünsün
+  { url: '/hero/IMG_2282.jpg',   position: 'center 45%' }, // karlı zirveler trekking
+  { url: '/hero/IMG_2285.jpg',   position: 'center 55%' }, // dağ zirvesi yürüyüşü
+  { url: '/hero/pexels-hero.jpg', position: 'center 70%' }, // bisikletçiler alt kesimde
 ];
 
 const INTERVAL = 5000;
@@ -40,7 +40,8 @@ export default function TurlarHero({ children }: { children: React.ReactNode }) 
   return (
     <div style={{
       position: 'relative',
-      minHeight: '526px',
+      height: '65vh',
+      minHeight: '540px',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

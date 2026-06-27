@@ -121,4 +121,9 @@ export class UpdateTourDto {
   @IsOptional()
   @IsString()
   important_notes?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }

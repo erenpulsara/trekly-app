@@ -37,4 +37,5 @@ export interface Tour {
   important_notes?: string | null;
   tursab_no?: string | null;
   contact_phone?: string | null;
+  tags?: string[];
 }

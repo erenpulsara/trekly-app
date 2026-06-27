@@ -7,6 +7,7 @@ export async function getPublishedTours(params?: {
   location?: string;
   category?: string;
   start_date?: string;
+  search?: string;
 }): Promise<Tour[]> {
   try {
     const url = new URL(`${API_URL}/tours`);
@@ -14,6 +15,7 @@ export async function getPublishedTours(params?: {
     if (params?.location) url.searchParams.set('location', params.location);
     if (params?.category) url.searchParams.set('category', params.category);
     if (params?.start_date) url.searchParams.set('start_date', params.start_date);
+    if (params?.search) url.searchParams.set('search', params.search);
 
     const res = await fetch(url.toString(), { next: { revalidate: 30 } });
     if (!res.ok) return [];

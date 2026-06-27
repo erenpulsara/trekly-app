@@ -118,4 +118,9 @@ export class CreateTourDto {
   @IsOptional()
   @IsString()
   important_notes?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }
