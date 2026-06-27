@@ -1,12 +1,12 @@
 export const dynamic = 'force-dynamic';
 
-import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getTour } from '@/lib/api';
 import type { TourDifficulty } from '@/lib/types';
 import BookingForm from './BookingForm';
+import CollapsibleSection from './CollapsibleSection';
 
 const AGENCY_URL = process.env.NEXT_PUBLIC_AGENCY_URL ?? 'https://acenta.treklyapp.com';
 
@@ -34,16 +34,6 @@ function fmtDate(s: string) {
   });
 }
 
-function DetailSection({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div style={{ marginBottom: '28px' }}>
-      <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '12px', letterSpacing: '-0.02em', color: '#1A1A1A' }}>{title}</h2>
-      <hr style={{ border: 'none', borderTop: '1px solid #F0F0F0', marginBottom: '14px' }} />
-      {children}
-    </div>
-  );
-}
-
 function InfoRow({ icon, label, value, href }: { icon: React.ReactNode; label: string; value: string; href?: string }) {
   const val = href ? (
     <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: '#FF5533', fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none' }}>{value}</a>
@@ -69,8 +59,22 @@ export default async function TourDetailPage({ params }: { params: { id: string 
 
   const remaining = Math.max(0, tour.max_participants - (tour.booking_count ?? 0));
   const isFull = remaining === 0;
-
   const dc = DIFF_COLOR[tour.difficulty];
+
+  // Build stat cards
+  const statCards: { icon: string; label: string; val: string; bg: string; color: string }[] = [];
+  if (tour.altitude_meters != null && tour.altitude_meters > 0) {
+    statCards.push({ icon: '⛰', label: 'İrtifa', val: `${tour.altitude_meters.toLocaleString()}m`, bg: '#F7F7F7', color: '#1A1A1A' });
+  }
+  if (tour.distance_km != null && Number(tour.distance_km) > 0) {
+    statCards.push({ icon: '📏', label: 'Mesafe', val: `${Number(tour.distance_km).toFixed(1)}km`, bg: '#F7F7F7', color: '#1A1A1A' });
+  }
+  statCards.push({ icon: '👥', label: 'Max Kişi', val: `${tour.max_participants}`, bg: '#F7F7F7', color: '#1A1A1A' });
+  statCards.push({ icon: '⭐', label: 'Puan', val: `${tour.points} pt`, bg: '#F7F7F7', color: '#FF5533' });
+  statCards.push({ icon: '⚡', label: 'Zorluk', val: DIFF_LABEL[tour.difficulty], bg: dc.bg, color: dc.text });
+
+  const hasMultiplePhotos = tour.photo_urls.length > 1;
+  const extraCount = tour.photo_urls.length - 5;
 
   return (
     <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", background: '#fff', minHeight: '100vh' }}>
@@ -84,34 +88,66 @@ export default async function TourDetailPage({ params }: { params: { id: string 
         </div>
       </nav>
 
-      {/* Hero photo */}
-      <div style={{ position: 'relative', height: '420px', background: PH_GRADIENT[tour.difficulty] }}>
-        {tour.photo_urls[0] && (
-          <Image src={tour.photo_urls[0]} alt={tour.name} fill priority style={{ objectFit: 'cover', objectPosition: 'center 40%' }} />
-        )}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%)' }} />
-      </div>
+      {/* Photo Gallery — large cover + 2×2 small grid */}
+      <div style={{ maxWidth: '1100px', margin: '24px auto 0', padding: '0 40px' }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: hasMultiplePhotos ? '3fr 2fr' : '1fr',
+          gap: '6px',
+          height: '480px',
+          borderRadius: '16px',
+          overflow: 'hidden',
+        }}>
+          {/* Cover photo */}
+          <div style={{ position: 'relative', background: PH_GRADIENT[tour.difficulty] }}>
+            {tour.photo_urls[0] && (
+              <Image
+                src={tour.photo_urls[0]}
+                alt={tour.name}
+                fill
+                priority
+                style={{ objectFit: 'cover', objectPosition: 'center 40%' }}
+              />
+            )}
+          </div>
 
-      {/* Extra photos strip */}
-      {tour.photo_urls.length > 1 && (
-        <div style={{ background: '#111', display: 'flex', gap: '3px', padding: '3px', overflowX: 'auto' }}>
-          {tour.photo_urls.slice(1, 6).map((url, i) => (
-            <div key={i} style={{ flexShrink: 0, position: 'relative', width: '110px', height: '65px', borderRadius: '4px', overflow: 'hidden' }}>
-              <Image src={url} alt="" fill style={{ objectFit: 'cover' }} />
+          {/* 2×2 small photos */}
+          {hasMultiplePhotos && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '6px' }}>
+              {[1, 2, 3, 4].map((idx) => {
+                const url = tour.photo_urls[idx];
+                const showOverlay = idx === 4 && extraCount > 0;
+                return (
+                  <div key={idx} style={{ position: 'relative', background: '#E0E0E0' }}>
+                    {url ? (
+                      <>
+                        <Image src={url} alt="" fill style={{ objectFit: 'cover' }} />
+                        {showOverlay && (
+                          <div style={{
+                            position: 'absolute', inset: 0,
+                            background: 'rgba(0,0,0,0.45)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            <span style={{ color: 'white', fontWeight: 800, fontSize: '1.5rem' }}>+{extraCount}</span>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div style={{ position: 'absolute', inset: 0, background: '#EFEFEF' }} />
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          ))}
+          )}
         </div>
-      )}
+      </div>
 
       {/* Body */}
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 40px 80px', display: 'grid', gridTemplateColumns: '1fr 360px', gap: '48px', alignItems: 'start' }}>
 
-        {/* Left */}
+        {/* Left column */}
         <div>
-          <span style={{ display: 'inline-block', background: dc.bg, color: dc.text, borderRadius: '6px', padding: '4px 12px', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '14px' }}>
-            {DIFF_LABEL[tour.difficulty]}
-          </span>
-
           <h1 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', fontWeight: 800, color: '#1A1A1A', letterSpacing: '-0.03em', lineHeight: 1.2, marginBottom: '10px' }}>
             {tour.name}
           </h1>
@@ -124,22 +160,13 @@ export default async function TourDetailPage({ params }: { params: { id: string 
             {tour.location_name}
           </p>
 
-          {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
-            {[
-              (tour.altitude_meters != null && tour.altitude_meters > 0)
-                ? { icon: '⛰', label: 'İrtifa', val: `${tour.altitude_meters.toLocaleString()}m` }
-                : null,
-              (tour.distance_km != null && Number(tour.distance_km) > 0)
-                ? { icon: '📏', label: 'Mesafe', val: `${Number(tour.distance_km).toFixed(1)}km` }
-                : null,
-              { icon: '👥', label: 'Max Kişi', val: `${tour.max_participants}` },
-              { icon: '⭐', label: 'Puan', val: `${tour.points} pt`, accent: true },
-            ].filter(Boolean).map((s) => (
-              <div key={s!.label} style={{ background: '#F7F7F7', borderRadius: '10px', padding: '16px 12px', textAlign: 'center' }}>
-                <div style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{s!.icon}</div>
-                <div style={{ fontSize: '0.68rem', color: '#909090', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{s!.label}</div>
-                <div style={{ fontSize: '1rem', fontWeight: 700, color: s!.accent ? '#FF5533' : '#1A1A1A' }}>{s!.val}</div>
+          {/* Stats grid with Zorluk */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(88px, 1fr))', gap: '12px', marginBottom: '32px' }}>
+            {statCards.map((s) => (
+              <div key={s.label} style={{ background: s.bg, borderRadius: '10px', padding: '16px 12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{s.icon}</div>
+                <div style={{ fontSize: '0.68rem', color: '#909090', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{s.label}</div>
+                <div style={{ fontSize: '1rem', fontWeight: 700, color: s.color }}>{s.val}</div>
               </div>
             ))}
           </div>
@@ -147,39 +174,27 @@ export default async function TourDetailPage({ params }: { params: { id: string 
           <hr style={{ border: 'none', borderTop: '1px solid #E8E8E8', marginBottom: '28px' }} />
 
           {tour.description && (
-            <DetailSection title="Tur Hakkında">
-              <p style={{ fontSize: '0.95rem', color: '#5A5A5A', lineHeight: 1.8, whiteSpace: 'pre-line', margin: 0 }}>{tour.description}</p>
-            </DetailSection>
+            <CollapsibleSection title="Tur Hakkında" content={tour.description} />
           )}
 
           {tour.program && (
-            <DetailSection title="Program">
-              <p style={{ fontSize: '0.92rem', color: '#5A5A5A', lineHeight: 1.8, whiteSpace: 'pre-line', margin: 0 }}>{tour.program}</p>
-            </DetailSection>
+            <CollapsibleSection title="Program" content={tour.program} />
           )}
 
           {tour.meeting_points && (
-            <DetailSection title="Buluşma Noktaları">
-              <p style={{ fontSize: '0.92rem', color: '#5A5A5A', lineHeight: 1.75, whiteSpace: 'pre-line', margin: 0 }}>{tour.meeting_points}</p>
-            </DetailSection>
+            <CollapsibleSection title="Buluşma Noktaları" content={tour.meeting_points} />
           )}
 
           {tour.accommodation && (
-            <DetailSection title="Konaklama">
-              <p style={{ fontSize: '0.92rem', color: '#5A5A5A', lineHeight: 1.75, whiteSpace: 'pre-line', margin: 0 }}>{tour.accommodation}</p>
-            </DetailSection>
+            <CollapsibleSection title="Konaklama" content={tour.accommodation} />
           )}
 
           {tour.transportation && (
-            <DetailSection title="Ulaşım">
-              <p style={{ fontSize: '0.92rem', color: '#5A5A5A', lineHeight: 1.75, whiteSpace: 'pre-line', margin: 0 }}>{tour.transportation}</p>
-            </DetailSection>
+            <CollapsibleSection title="Ulaşım" content={tour.transportation} />
           )}
 
           {tour.important_notes && (
-            <DetailSection title="Önemli Notlar">
-              <p style={{ fontSize: '0.92rem', color: '#5A5A5A', lineHeight: 1.75, whiteSpace: 'pre-line', margin: 0 }}>{tour.important_notes}</p>
-            </DetailSection>
+            <CollapsibleSection title="Önemli Notlar" content={tour.important_notes} />
           )}
         </div>
 
@@ -216,12 +231,6 @@ export default async function TourDetailPage({ params }: { params: { id: string 
               icon={<svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
               label="Kapasite"
               value={`${tour.max_participants} Kişi`}
-            />
-
-            <InfoRow
-              icon={<svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
-              label="Zorluk Seviyesi"
-              value={DIFF_LABEL[tour.difficulty]}
             />
 
             {tour.start_date && (
@@ -276,7 +285,9 @@ export default async function TourDetailPage({ params }: { params: { id: string 
             {/* Kontenjan */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 0', borderBottom: '1px solid #F0F0F0' }}>
               <div style={{ width: '36px', height: '36px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
-                <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '0.65rem', color: '#AAAAAA', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '5px' }}>Kontenjan</div>
