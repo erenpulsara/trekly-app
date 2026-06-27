@@ -217,7 +217,6 @@ export default async function TourDetailPage({ params }: { params: { id: string 
                     {isFull ? 'Doldu' : `${remaining} yer kaldı`}
                   </span>
                 </div>
-                {/* Progress bar */}
                 <div style={{ height: '6px', background: '#E8E8E8', borderRadius: '3px', overflow: 'hidden' }}>
                   <div style={{
                     height: '100%',
@@ -232,7 +231,18 @@ export default async function TourDetailPage({ params }: { params: { id: string 
                 </div>
               </div>
 
-              {/* Booking form */}
+              {/* Rehber bilgisi — rezervasyon butonunun üstünde */}
+              {(tour.guide_name || tour.tursab_no || tour.contact_phone || tour.target_location) && (
+                <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #F0F0F0' }}>
+                  <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#AAAAAA', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Rehber Bilgisi</h3>
+                  {tour.guide_name && <SidebarRow label="Rehber" value={tour.guide_name} />}
+                  {tour.tursab_no && <SidebarRow label="TURSAB No" value={tour.tursab_no} />}
+                  {tour.contact_phone && <SidebarRow label="İletişim" value={tour.contact_phone} />}
+                  {tour.target_location && <SidebarRow label="Hedef" value={tour.target_location} />}
+                </div>
+              )}
+
+              {/* Maceraya Katıl dropdown */}
               <BookingForm
                 tourId={tour.id}
                 maxParticipants={tour.max_participants}
@@ -241,17 +251,6 @@ export default async function TourDetailPage({ params }: { params: { id: string 
               />
             </div>
           </div>
-
-          {/* Rehber bilgisi */}
-          {(tour.guide_name || tour.tursab_no || tour.contact_phone) && (
-            <div style={{ border: '1px solid #E8E8E8', borderRadius: '16px', padding: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-              <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1A1A1A', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Rehber Bilgisi</h3>
-              {tour.guide_name && <SidebarRow label="Rehber" value={tour.guide_name} />}
-              {tour.tursab_no && <SidebarRow label="TURSAB No" value={tour.tursab_no} />}
-              {tour.contact_phone && <SidebarRow label="İletişim" value={tour.contact_phone} />}
-              {tour.target_location && <SidebarRow label="Hedef" value={tour.target_location} />}
-            </div>
-          )}
         </div>
       </div>
 
