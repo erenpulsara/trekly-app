@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Agency } from './entities/agency.entity';
 import { Tour } from './entities/tour.entity';
@@ -21,6 +22,7 @@ import { AdminModule } from './admin/admin.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 100 }]),
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
