@@ -93,6 +93,9 @@ export class Tour {
   guide_name!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
+  guide_instagram!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
   tursab_no!: string | null;
 
   @Column({ type: 'text', nullable: true })

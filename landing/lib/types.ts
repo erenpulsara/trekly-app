@@ -29,6 +29,8 @@ export interface Tour {
   start_date?: string | null;
   end_date?: string | null;
   guide_name?: string | null;
+  guide_instagram?: string | null;
+  agency_name?: string | null;
   target_location?: string | null;
   meeting_points?: string | null;
   accommodation?: string | null;

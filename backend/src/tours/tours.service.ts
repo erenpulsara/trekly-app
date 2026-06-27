@@ -132,7 +132,7 @@ export class ToursService {
   async findOnePublished(id: string): Promise<Tour & { booking_count: number }> {
     const tour = await this.tourRepo.findOne({
       where: { id, status: 'published' },
-      relations: ['dates'],
+      relations: ['dates', 'agency'],
     });
     if (!tour) throw new NotFoundException('Tour not found');
 
@@ -155,7 +155,10 @@ export class ToursService {
       parseInt(mobileCount?.total ?? '0', 10) +
       parseInt(webCountRow?.total ?? '0', 10);
 
-    return { ...this.withProxyUrls(tour), booking_count };
+    const result = this.withProxyUrls(tour) as Tour & { booking_count: number; agency_name: string | null };
+    result.booking_count = booking_count;
+    result.agency_name = (tour.agency as any)?.name ?? null;
+    return result;
   }
 
   async createWebBooking(tourId: string, dto: CreateWebBookingDto): Promise<WebBooking> {
@@ -246,6 +249,7 @@ export class ToursService {
       start_date: dto.start_date ?? null,
       end_date: dto.end_date ?? null,
       guide_name: dto.guide_name ?? null,
+      guide_instagram: (dto as any).guide_instagram ?? null,
       tursab_no: dto.tursab_no ?? null,
       meeting_points: dto.meeting_points ?? null,
       target_location: dto.target_location ?? null,

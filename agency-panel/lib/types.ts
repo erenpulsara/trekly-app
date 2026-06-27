@@ -66,6 +66,7 @@ export interface Tour {
   start_date?: string | null;
   end_date?: string | null;
   guide_name?: string | null;
+  guide_instagram?: string | null;
   tursab_no?: string | null;
   meeting_points?: string | null;
   target_location?: string | null;

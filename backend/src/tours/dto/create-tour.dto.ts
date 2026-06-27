@@ -91,6 +91,10 @@ export class CreateTourDto {
 
   @IsOptional()
   @IsString()
+  guide_instagram?: string;
+
+  @IsOptional()
+  @IsString()
   tursab_no?: string;
 
   @IsOptional()

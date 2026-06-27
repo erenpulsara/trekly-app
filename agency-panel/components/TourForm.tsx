@@ -32,6 +32,7 @@ interface FormValues {
   start_date: string;
   end_date: string;
   guide_name: string;
+  guide_instagram: string;
   tursab_no: string;
   contact_phone: string;
   target_location: string;
@@ -110,6 +111,7 @@ export default function TourForm({ mode, tour }: TourFormProps) {
     start_date: tour?.start_date ?? "",
     end_date: tour?.end_date ?? "",
     guide_name: tour?.guide_name ?? "",
+    guide_instagram: tour?.guide_instagram ?? "",
     tursab_no: tour?.tursab_no ?? "",
     contact_phone: tour?.contact_phone ?? "",
     target_location: tour?.target_location ?? "",
@@ -161,6 +163,7 @@ export default function TourForm({ mode, tour }: TourFormProps) {
         start_date: values.start_date || undefined,
         end_date: values.end_date || undefined,
         guide_name: values.guide_name.trim() || undefined,
+        guide_instagram: values.guide_instagram.trim() || undefined,
         tursab_no: values.tursab_no.trim() || undefined,
         contact_phone: values.contact_phone.trim() || undefined,
         target_location: values.target_location.trim() || undefined,
@@ -293,6 +296,7 @@ export default function TourForm({ mode, tour }: TourFormProps) {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <Input label={tx.guideName} value={values.guide_name} onChange={set("guide_name")} placeholder={tx.guideNamePlaceholder} hint={tx.optional} />
+          <Input label="Rehber Instagram URL" value={values.guide_instagram} onChange={set("guide_instagram")} placeholder="https://instagram.com/rehber" hint={tx.optional} />
           <Input label={tx.tursabNo} value={values.tursab_no} onChange={set("tursab_no")} placeholder={tx.tursabNoPlaceholder} hint={tx.optional} />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
