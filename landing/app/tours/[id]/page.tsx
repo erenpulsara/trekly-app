@@ -208,9 +208,9 @@ export default async function TourDetailPage({ params }: { params: { id: string 
           {tour.important_notes && <CollapsibleSection title="Önemli Notlar" content={tour.important_notes} />}
         </div>
 
-        {/* Right column: alignSelf stretch so it's as tall as the left column; sticky card travels the full height */}
-        <div style={{ alignSelf: 'stretch' }}>
-          <div style={{ position: 'sticky', top: '80px', maxHeight: 'calc(100vh - 100px)', overflowY: 'auto', borderRadius: '16px' }}>
+        {/* Right column: spacer keeps grid column width; card is fixed so it never scrolls */}
+        <div>
+          <div style={{ position: 'fixed', top: '80px', right: 'max(40px, calc((100vw - 1100px) / 2 + 40px))', width: '340px', zIndex: 50 }}>
             <div style={{ border: '1px solid #E8E8E8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.09)', padding: '0 20px' }}>
 
               {(tour as any).agency_name && (
