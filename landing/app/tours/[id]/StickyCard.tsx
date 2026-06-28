@@ -2,6 +2,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 
 const TOP_OFFSET = 88;
+const MOBILE_BREAKPOINT = 768;
 
 export default function StickyCard({ children }: { children: ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -12,26 +13,32 @@ export default function StickyCard({ children }: { children: ReactNode }) {
     const card = cardRef.current;
     if (!container || !card) return;
 
+    const reset = () => {
+      card.style.position = 'relative';
+      card.style.top = '0';
+      card.style.bottom = '';
+      card.style.left = '';
+      card.style.width = '';
+    };
+
     const update = () => {
+      if (window.innerWidth < MOBILE_BREAKPOINT) {
+        reset();
+        return;
+      }
+
       const cRect = container.getBoundingClientRect();
       const cardH = card.offsetHeight;
 
       if (cRect.top > TOP_OFFSET) {
-        // Above sticky zone — natural flow
-        card.style.position = 'relative';
-        card.style.top = '0';
-        card.style.bottom = '';
-        card.style.left = '';
-        card.style.width = '';
+        reset();
       } else if (cRect.bottom < TOP_OFFSET + cardH) {
-        // Below sticky zone — pin to container bottom
         card.style.position = 'absolute';
         card.style.top = 'auto';
         card.style.bottom = '0';
         card.style.left = '0';
         card.style.width = '100%';
       } else {
-        // In sticky zone — fix to viewport
         card.style.position = 'fixed';
         card.style.top = `${TOP_OFFSET}px`;
         card.style.bottom = '';

@@ -50,9 +50,14 @@ export default function HomePage() {
           backdrop-filter: blur(4px);
         }
         .lp-hero-btn-secondary:hover { border-color: rgba(255,255,255,0.7); color: white; transform: translateY(-2px); }
+        @media (max-width: 768px) {
+          .lp-hero-content { padding: 0 24px !important; }
+          .lp-hero-subtitle { white-space: normal !important; }
+        }
         @media (max-width: 540px) {
           .lp-hero-btns { flex-direction: column !important; align-items: center !important; }
-          .lp-hero-title { font-size: 3rem !important; }
+          .lp-hero-title { font-size: 2.6rem !important; }
+          .lp-hero-content { padding: 0 20px !important; }
         }
       `}</style>
 
@@ -73,7 +78,7 @@ export default function HomePage() {
 
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.7) 100%)', zIndex: 1 }} />
 
-        <div style={{
+        <div className="lp-hero-content" style={{
           position: 'absolute',
           inset: 0,
           zIndex: 2,
@@ -100,7 +105,7 @@ export default function HomePage() {
             <em style={{ color: '#FF5533', fontStyle: 'italic' }}>{tx.hero.title2}</em><br />
             {tx.hero.title3}
           </h1>
-          <p style={{
+          <p className="lp-hero-subtitle" style={{
             fontSize: 'clamp(0.9rem, 1.2vw, 1.05rem)',
             color: 'rgba(255,255,255,0.55)',
             lineHeight: 1.85,

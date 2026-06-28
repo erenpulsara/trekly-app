@@ -156,6 +156,14 @@ export default async function TourDetailPage({ params }: { params: { id: string 
 
   return (
     <div style={{ background: '#fff', minHeight: '100vh' }}>
+      <style>{`
+        .td-grid { display: grid; grid-template-columns: 1fr 340px; gap: 40px; max-width: 1100px; margin: 24px auto 0; padding: 0 40px 80px; }
+        @media (max-width: 768px) {
+          .td-grid { grid-template-columns: 1fr !important; padding: 0 16px 60px !important; gap: 24px !important; }
+          .navbar { padding: 0 16px !important; }
+          .td-related-pad { padding: 40px 16px !important; }
+        }
+      `}</style>
 
       {/* Navbar */}
       <nav className="navbar">
@@ -167,7 +175,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
       </nav>
 
       {/* ── 2-column layout ── */}
-      <div style={{ maxWidth: '1100px', margin: '24px auto 0', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: '40px' }}>
+      <div className="td-grid">
 
         {/* Left column */}
         <div style={{ alignSelf: 'start' }}>
@@ -322,7 +330,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
             .related-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
             .related-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.13) !important; }
           `}</style>
-          <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 40px' }}>
+          <div className="td-related-pad" style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 40px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px' }}>
               <div>
                 <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1A1A1A', letterSpacing: '-0.02em', margin: 0 }}>
