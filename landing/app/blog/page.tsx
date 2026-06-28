@@ -24,10 +24,18 @@ export default async function BlogPage() {
       <style>{`
         .blog-card { transition: box-shadow 0.2s, transform 0.2s; }
         .blog-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.1); transform: translateY(-3px); }
+        .blog-header-pad { padding: 56px 48px 48px; }
+        .blog-list-pad { padding: 56px 48px 80px; }
+        .blog-footer-pad { padding: 24px 48px; }
+        @media (max-width: 768px) {
+          .blog-header-pad { padding: 40px 20px 32px !important; }
+          .blog-list-pad { padding: 32px 20px 60px !important; }
+          .blog-footer-pad { padding: 20px !important; }
+        }
       `}</style>
 
       <main style={{ minHeight: '100vh', background: '#FAFAFA' }}>
-        <div style={{ background: 'white', borderBottom: '1px solid #EAEAEA', padding: '56px 48px 48px' }}>
+        <div className="blog-header-pad" style={{ background: 'white', borderBottom: '1px solid #EAEAEA', padding: '56px 48px 48px' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
             <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#FF5533', margin: '0 0 12px' }}>
               Trekly Blog
@@ -38,7 +46,7 @@ export default async function BlogPage() {
           </div>
         </div>
 
-        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '56px 48px 80px' }}>
+        <div className="blog-list-pad" style={{ maxWidth: '1100px', margin: '0 auto', padding: '56px 48px 80px' }}>
           {posts.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '80px 0', color: '#9A9A9A' }}>
               <p style={{ fontSize: '1.1rem', marginBottom: '8px' }}>Henüz blog yazısı yok.</p>
@@ -99,7 +107,7 @@ export default async function BlogPage() {
         </div>
       </main>
 
-      <footer style={{ background: '#1A1A1A', color: 'white', padding: '24px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+      <footer className="blog-footer-pad" style={{ background: '#1A1A1A', color: 'white', padding: '24px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>© {new Date().getFullYear()} Trekly</span>
         <Link href="/turlar" style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', textDecoration: 'none' }}>Turları Keşfet →</Link>
       </footer>

@@ -20,7 +20,6 @@ export default function IletisimPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Şimdilik mailto fallback
     const subject = encodeURIComponent(form.konu || 'İletişim Formu');
     const body = encodeURIComponent(`Ad Soyad: ${form.name}\nMail: ${form.email}\nKonu: ${form.konu}\n\n${form.message}`);
     window.location.href = `mailto:hello@treklyapp.com?subject=${subject}&body=${body}`;
@@ -29,6 +28,19 @@ export default function IletisimPage() {
 
   return (
     <>
+      <style>{`
+        .il-outer { padding: 72px 48px 80px; }
+        .il-grid  { max-width: 1060px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+        .il-title { white-space: nowrap; }
+        .il-footer { padding: 24px 48px; }
+        @media (max-width: 768px) {
+          .il-outer  { padding: 40px 20px 60px !important; }
+          .il-grid   { grid-template-columns: 1fr !important; gap: 40px !important; }
+          .il-title  { white-space: normal !important; font-size: 1.8rem !important; }
+          .il-footer { padding: 20px 20px !important; }
+        }
+      `}</style>
+
       <LandingNav navLinks={[
         { label: 'Hakkımızda', href: '/hakkimizda' },
         { label: 'Etkinlikler', href: '/turlar' },
@@ -37,15 +49,15 @@ export default function IletisimPage() {
       ]} />
 
       <main style={{ minHeight: '100vh', background: '#FAFAFA' }}>
-        <div style={{ background: 'white', borderBottom: '1px solid #EAEAEA', padding: '72px 48px 80px' }}>
-          <div style={{ maxWidth: '1060px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'start' }}>
+        <div className="il-outer" style={{ background: 'white', borderBottom: '1px solid #EAEAEA' }}>
+          <div className="il-grid">
 
             {/* Left */}
             <div>
               <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#FF5533', margin: '0 0 20px' }}>
                 İletişim
               </p>
-              <h1 style={{
+              <h1 className="il-title" style={{
                 fontFamily: '"Cormorant Garamond", serif',
                 fontSize: 'clamp(1.8rem, 3.2vw, 2.8rem)',
                 fontWeight: 400,
@@ -53,7 +65,6 @@ export default function IletisimPage() {
                 lineHeight: 1.15,
                 letterSpacing: '-0.02em',
                 margin: '0 0 32px',
-                whiteSpace: 'nowrap',
               }}>
                 Doğayı Keşfetmenin En{' '}
                 <em style={{ color: '#FF5533', fontStyle: 'italic' }}>Düzenli</em>{' '}
@@ -174,7 +185,7 @@ export default function IletisimPage() {
         </div>
       </main>
 
-      <footer style={{ background: '#1A1A1A', color: 'white', padding: '24px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+      <footer className="il-footer" style={{ background: '#1A1A1A', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>© {new Date().getFullYear()} Trekly</span>
         <Link href="/turlar" style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', textDecoration: 'none' }}>Turları Keşfet →</Link>
       </footer>

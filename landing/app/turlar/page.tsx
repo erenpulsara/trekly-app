@@ -160,9 +160,14 @@ export default async function TurlarPage({
           .searchbar-wrap { padding: 0 24px !important; }
           .footer-inner { flex-direction: column !important; gap: 20px !important; align-items: flex-start !important; }
           .turlar-sidebar { display: none !important; }
+          .tr-cat-pad { padding-left: 24px !important; padding-right: 24px !important; }
+          .tr-principles-pad { padding: 40px 24px 48px !important; }
         }
         @media (max-width: 560px) {
           .tr-grid { grid-template-columns: 1fr !important; }
+          .tr-page-pad { padding: 32px 16px !important; }
+          .tr-cat-pad { padding-left: 16px !important; padding-right: 16px !important; }
+          .tr-principles-pad { padding: 32px 16px 40px !important; }
         }
         .footer-social {
           color: rgba(255,255,255,0.45);
@@ -213,7 +218,7 @@ export default async function TurlarPage({
       </TurlarHero>
 
       {/* Category row — hero altında, beyaz bant */}
-      <div id="cat-section" style={{ background: 'white', borderBottom: '1px solid #EAEAEA', padding: '0 48px' }}>
+      <div id="cat-section" className="tr-cat-pad" style={{ background: 'white', borderBottom: '1px solid #EAEAEA', padding: '0 48px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <Suspense>
             <TurlarCategories activeCategory={activeCategory} dynamicCategories={categories} />
@@ -375,7 +380,7 @@ export default async function TurlarPage({
       </section>
 
       {/* Principles */}
-      <section style={{ background: '#F7F7F7', padding: '48px 48px 56px' }}>
+      <section className="tr-principles-pad" style={{ background: '#F7F7F7', padding: '48px 48px 56px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <p style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#FF5533', margin: '0 0 8px', textAlign: 'center' }}>
             {tp.title}

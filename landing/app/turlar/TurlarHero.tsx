@@ -38,16 +38,13 @@ export default function TurlarHero({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <div style={{
-      position: 'relative',
-      height: '65vh',
-      minHeight: '540px',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'flex-end',
-      paddingBottom: '40px',
-    }}>
+    <>
+    <style>{`
+      .th-outer { position: relative; height: 65vh; min-height: 540px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 40px; }
+      @media (max-width: 768px) { .th-outer { min-height: 420px !important; padding-bottom: 24px !important; } }
+      @media (max-width: 480px) { .th-outer { min-height: 340px !important; height: 58vh !important; padding-bottom: 16px !important; } }
+    `}</style>
+    <div className="th-outer">
       {/* Background layer — overflow:hidden sadece buraya uygulanıyor,
           üst container'dan kaldırıldı ki dropdownlar kırpılmasın */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
@@ -124,5 +121,6 @@ export default function TurlarHero({ children }: { children: React.ReactNode }) 
         {children}
       </div>
     </div>
+    </>
   );
 }

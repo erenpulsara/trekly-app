@@ -361,8 +361,23 @@ export default function HakkimizdaPage() {
           .hk-pillars { grid-template-columns: 1fr; gap: 2px; }
           .hk-pillar:first-child { border-radius: 16px 16px 0 0; }
           .hk-pillar:last-child  { border-radius: 0 0 16px 16px; }
-          .hk-origin, .hk-mission, .hk-community, .hk-manifesto { padding-left: 24px; padding-right: 24px; }
+          .hk-origin    { padding: 80px 24px; }
+          .hk-mission   { padding: 100px 24px; }
+          .hk-community { padding: 80px 24px; }
+          .hk-manifesto { padding: 100px 24px 80px; }
           .hk-footer { padding: 24px; flex-direction: column; text-align: center; }
+          .hk-hero-orb1 { width: 320px; height: 320px; top: -100px; right: -80px; }
+          .hk-hero-orb2 { width: 220px; height: 220px; bottom: -60px; left: -60px; }
+        }
+        @media (max-width: 480px) {
+          .hk-hero-inner { padding: 24px 20px 0; }
+          .hk-origin    { padding: 60px 20px; }
+          .hk-mission   { padding: 72px 20px; }
+          .hk-community { padding: 60px 20px; }
+          .hk-manifesto { padding: 72px 20px 60px; }
+          .hk-footer { padding: 20px; }
+          .hk-hero-orb1 { width: 220px; height: 220px; }
+          .hk-hero-orb2 { width: 160px; height: 160px; }
         }
       `}</style>
     </div>

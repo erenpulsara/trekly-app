@@ -287,8 +287,18 @@ export default function TurlarSearchBar({ labels, categories = [] }: Props) {
   }));
 
   return (
+    <>
+    <style>{`
+      @media (max-width: 540px) {
+        .tsb-form { flex-wrap: wrap !important; height: auto !important; border-radius: 16px !important; padding-bottom: 6px !important; }
+        .tsb-form > * { flex: 1 1 45% !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.10) !important; min-width: 0 !important; }
+        .tsb-form > *:last-child { flex: 1 1 100% !important; border-bottom: none !important; padding: 0 6px !important; }
+        .tsb-form > *:last-child > button { width: 100% !important; border-radius: 10px !important; height: 40px !important; }
+      }
+    `}</style>
     <form
       onSubmit={handleSubmit}
+      className="tsb-form"
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -384,5 +394,6 @@ export default function TurlarSearchBar({ labels, categories = [] }: Props) {
         </button>
       </div>
     </form>
+    </>
   );
 }
