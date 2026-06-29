@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getTour, getPublishedTours } from '@/lib/api';
 import type { Tour, TourDifficulty } from '@/lib/types';
-import CollapsibleSection from './CollapsibleSection';
 import PhotoGallery from './PhotoGallery';
 import StickyCard from './StickyCard';
 import TourTabs from './TourTabs';
@@ -138,15 +137,33 @@ export default async function TourDetailPage({ params }: { params: { id: string 
 
       {/* ── Tam genişlik başlık + galeri bölümü ── */}
       <div className="tour-header">
-        {/* Rozetler + başlık + lokasyon */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
+        {/* Başlık */}
+        <h1 style={{
+          fontSize: 'clamp(1.4rem, 2.6vw, 2rem)',
+          fontWeight: 800, color: '#1A1A1A',
+          letterSpacing: '-0.03em', lineHeight: 1.2,
+          margin: '0 0 16px',
+        }}>
+          {tour.name}
+        </h1>
+
+        {/* Galeri */}
+        <PhotoGallery
+          photos={tour.photo_urls ?? []}
+          tourName={tour.name}
+          gradient={PH_GRADIENT[tour.difficulty]}
+          height={420}
+        />
+
+        {/* Rozetler — galeri altında */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
           {tour.category && (
             <span style={{
               background: '#FFF4F1', color: '#FF5533',
               fontSize: '0.66rem', fontWeight: 700,
-              padding: '4px 10px', borderRadius: '6px',
+              padding: '4px 12px', borderRadius: '20px',
               textTransform: 'uppercase', letterSpacing: '0.06em',
-              border: '1px solid rgba(255,85,51,0.2)',
+              border: '1px solid rgba(255,85,51,0.25)',
             }}>
               {tour.category}
             </span>
@@ -154,36 +171,12 @@ export default async function TourDetailPage({ params }: { params: { id: string 
           <span style={{
             background: dc.bg, color: dc.text,
             fontSize: '0.66rem', fontWeight: 700,
-            padding: '4px 10px', borderRadius: '6px',
+            padding: '4px 12px', borderRadius: '20px',
             textTransform: 'uppercase', letterSpacing: '0.06em',
           }}>
             {DIFF_LABEL[tour.difficulty]}
           </span>
         </div>
-
-        <h1 style={{
-          fontSize: 'clamp(1.4rem, 2.6vw, 2rem)',
-          fontWeight: 800, color: '#1A1A1A',
-          letterSpacing: '-0.03em', lineHeight: 1.2,
-          margin: '0 0 8px',
-        }}>
-          {tour.name}
-        </h1>
-
-        <p style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.88rem', color: '#5A5A5A', margin: '0 0 20px' }}>
-          <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          {tour.location_name}
-        </p>
-
-        <PhotoGallery
-          photos={tour.photo_urls ?? []}
-          tourName={tour.name}
-          gradient={PH_GRADIENT[tour.difficulty]}
-          height={420}
-        />
       </div>
 
       {/* 2-column layout */}
@@ -191,9 +184,6 @@ export default async function TourDetailPage({ params }: { params: { id: string 
 
         {/* ── Left column ── */}
         <div style={{ alignSelf: 'start' }}>
-          {/* Buluşma Noktaları — collapsible */}
-          {tour.meeting_points && <CollapsibleSection title="Buluşma Noktaları" content={tour.meeting_points} />}
-
           {/* Tab sections */}
           <TourTabs tabs={[
             { label: 'Tur Programı',   content: tour.program },
