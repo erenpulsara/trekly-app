@@ -1,4 +1,5 @@
 import { getBlogPosts } from '@/lib/api';
+import SiteFooter from '@/app/components/SiteFooter';
 import LandingNav from '../landing-nav';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -108,10 +109,7 @@ export default async function BlogPage() {
         </div>
       </main>
 
-      <footer className="blog-footer-pad" style={{ background: '#1A1A1A', color: 'white', padding: '24px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-        <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>© {new Date().getFullYear()} Trekly</span>
-        <Link href="/turlar" style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', textDecoration: 'none' }}>Turları Keşfet →</Link>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

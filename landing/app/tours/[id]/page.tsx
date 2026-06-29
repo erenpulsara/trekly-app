@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { notFound } from 'next/navigation';
+import SiteFooter from '@/app/components/SiteFooter';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getTour, getPublishedTours } from '@/lib/api';
@@ -244,10 +245,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
         </section>
       )}
 
-      <footer className="footer">
-        <span className="footer-logo">Trekly</span>
-        <span className="footer-copy">© {new Date().getFullYear()} Trekly. Tüm hakları saklıdır.</span>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

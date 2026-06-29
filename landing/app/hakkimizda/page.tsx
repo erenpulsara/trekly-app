@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import SiteFooter from '@/app/components/SiteFooter';
 import Image from 'next/image';
 import { type Lang, getLangClient } from '@/lib/i18n';
 import LandingNav from '../landing-nav';
@@ -239,18 +240,7 @@ export default function HakkimizdaPage() {
       </section>
 
       {/* ── Footer ─────────────────────────────── */}
-      <footer className="hk-footer">
-        <div className="hk-footer-logo-wrap">
-          <Image src="/logo.png" alt="Trekly" width={36} height={36} style={{ objectFit: 'contain' }} />
-          <span style={{ fontFamily: '"Montserrat", sans-serif', fontWeight: 900, fontSize: '1.1rem', color: '#ff751f', letterSpacing: '-0.02em', lineHeight: 1 }}>Trekly</span>
-        </div>
-        <div className="hk-footer-links">
-          <a href="/privacy">{hk.footer.privacy}</a>
-          <a href="/terms">{hk.footer.terms}</a>
-          <a href={AGENCY_URL} target="_blank" rel="noopener noreferrer">{hk.footer.agency}</a>
-        </div>
-        <span className="hk-footer-copy">© {new Date().getFullYear()} Trekly</span>
-      </footer>
+      <SiteFooter />
 
       <style>{`
         .hk {

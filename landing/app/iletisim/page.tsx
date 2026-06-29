@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import SiteFooter from '@/app/components/SiteFooter';
 import LandingNav from '../landing-nav';
 import Link from 'next/link';
 
@@ -186,10 +187,7 @@ export default function IletisimPage() {
         </div>
       </main>
 
-      <footer className="il-footer" style={{ background: '#1A1A1A', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-        <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>© {new Date().getFullYear()} Trekly</span>
-        <Link href="/turlar" style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', textDecoration: 'none' }}>Turları Keşfet →</Link>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

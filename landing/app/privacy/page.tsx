@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import SiteFooter from '@/app/components/SiteFooter';
 
 const AGENCY_URL = process.env.NEXT_PUBLIC_AGENCY_URL ?? 'https://acenta.treklyapp.com';
 
@@ -113,14 +114,7 @@ export default function PrivacyPage() {
         </Section>
       </div>
 
-      <footer className="footer">
-        <span className="footer-logo">Trekly</span>
-        <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-          <Link href="/privacy" style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>Gizlilik Politikası</Link>
-          <Link href="/terms" style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>Kullanım Koşulları</Link>
-        </div>
-        <span className="footer-copy">© {new Date().getFullYear()} Trekly. Tüm hakları saklıdır.</span>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
