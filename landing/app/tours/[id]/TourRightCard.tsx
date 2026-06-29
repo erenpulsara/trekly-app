@@ -5,17 +5,12 @@ import { useState } from 'react';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
 type Currency = 'TRY' | 'USD' | 'EUR';
-const RATE: Record<Currency, number> = { TRY: 1, USD: 35, EUR: 38 };
-const SYM: Record<Currency, string>  = { TRY: '₺', USD: '$', EUR: '€' };
+const SYM: Record<Currency, string> = { TRY: '₺', USD: '$', EUR: '€' };
 
-function convertPrice(priceTRY: number, cur: Currency) {
-  return priceTRY / RATE[cur];
-}
-
-function fmtPrice(priceTRY: number, cur: Currency) {
-  const val = convertPrice(priceTRY, cur);
-  if (cur === 'TRY') return `₺${val.toLocaleString('tr-TR')}`;
-  return `${SYM[cur]}${val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+function fmtPrice(price: number, cur: Currency) {
+  const sym = SYM[cur];
+  if (cur === 'TRY') return `${sym}${price.toLocaleString('tr-TR')}`;
+  return `${sym}${price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 function fmtDate(s: string) {
@@ -37,6 +32,7 @@ interface TourData {
   target_location?: string | null;
   contact_phone?: string | null;
   price?: number | null;
+  price_currency?: 'TRY' | 'USD' | 'EUR' | null;
 }
 
 interface Props {
@@ -72,7 +68,7 @@ const iconClock = <svg width="22" height="22" fill="none" stroke="currentColor" 
 
 export default function TourRightCard({ tour, isFull, remaining }: Props) {
   const [showForm, setShowForm] = useState(false);
-  const [currency, setCurrency] = useState<Currency>('TRY');
+  const cur: Currency = (tour.price_currency as Currency) ?? 'TRY';
 
   /* ── form state ── */
   const [step, setStep]   = useState<'form' | 'success'>('form');
@@ -85,7 +81,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
   const [notes, setNotes]           = useState('');
 
   const hasPrice = tour.price != null && tour.price > 0;
-  const totalTRY = hasPrice ? (tour.price as number) * count : null;
+  const totalPrice = hasPrice ? (tour.price as number) * count : null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -188,34 +184,15 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
           {/* Price summary in form */}
           {hasPrice && (
             <div style={{ background: '#FFF8F7', borderRadius: '10px', padding: '14px 16px', border: '1px solid rgba(255,85,51,0.15)', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <div style={{ marginBottom: '8px' }}>
                 <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#AAAAAA', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Tur Ücreti</span>
-                {/* Currency selector */}
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  {(['TRY', 'USD', 'EUR'] as Currency[]).map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setCurrency(c)}
-                      style={{
-                        padding: '3px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 700,
-                        border: `1.5px solid ${currency === c ? '#FF5533' : '#E0E0E0'}`,
-                        background: currency === c ? '#FF5533' : 'white',
-                        color: currency === c ? 'white' : '#888',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
               </div>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#FF5533', lineHeight: 1 }}>
-                {fmtPrice(tour.price as number, currency)}
+                {fmtPrice(tour.price as number, cur)}
               </div>
-              {count > 1 && totalTRY != null && (
+              {count > 1 && totalPrice != null && (
                 <div style={{ fontSize: '0.78rem', color: '#888', marginTop: '4px' }}>
-                  Toplam: {fmtPrice(totalTRY, currency)} ({count} kişi)
+                  Toplam: {fmtPrice(totalPrice, cur)} ({count} kişi)
                 </div>
               )}
             </div>
@@ -299,7 +276,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
           {tour.target_location && <InfoRow icon={iconPin}   label="Hedef Lokasyon"  value={tour.target_location} />}
           {tour.contact_phone   && <InfoRow icon={iconPhone} label="İrtibat No" value={tour.contact_phone} href={`tel:${tour.contact_phone}`} />}
 
-          {/* Price with currency selector */}
+          {/* Price */}
           {hasPrice && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '11px 0', borderBottom: '1px solid #F5F5F5' }}>
               <div style={{ width: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>
@@ -308,29 +285,9 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
                 </svg>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ fontSize: '0.6rem', color: '#BBBBBB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Ücret</div>
-                  <div style={{ display: 'flex', gap: '3px' }}>
-                    {(['TRY', 'USD', 'EUR'] as Currency[]).map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => setCurrency(c)}
-                        style={{
-                          padding: '2px 6px', borderRadius: '5px', fontSize: '0.62rem', fontWeight: 700,
-                          border: `1.5px solid ${currency === c ? '#FF5533' : '#E8E8E8'}`,
-                          background: currency === c ? '#FF5533' : 'white',
-                          color: currency === c ? 'white' : '#AAAAAA',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <div style={{ fontSize: '0.6rem', color: '#BBBBBB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Ücret</div>
                 <span style={{ color: '#FF5533', fontWeight: 700, fontSize: '1.05rem' }}>
-                  {fmtPrice(tour.price as number, currency)}
+                  {fmtPrice(tour.price as number, cur)}
                 </span>
               </div>
             </div>

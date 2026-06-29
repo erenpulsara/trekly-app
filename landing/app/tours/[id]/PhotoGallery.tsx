@@ -7,10 +7,11 @@ interface Props {
   photos: string[];
   tourName: string;
   gradient: string;
-  height?: number;
+  overlayTitle?: string;
+  overlayCategory?: string;
 }
 
-export default function PhotoGallery({ photos, tourName, gradient, height = 480 }: Props) {
+export default function PhotoGallery({ photos, tourName, gradient, overlayTitle, overlayCategory }: Props) {
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   const close = useCallback(() => setLightbox(null), []);
@@ -35,43 +36,87 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 480 
     };
   }, [lightbox, close, prev, next]);
 
+  const TitleOverlay = () => (
+    (overlayTitle || overlayCategory) ? (
+      <div style={{
+        position: 'absolute',
+        bottom: 0, left: 0, right: 0,
+        background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.38) 55%, transparent 100%)',
+        padding: '56px 18px 18px',
+        pointerEvents: 'none',
+      }}>
+        {overlayCategory && (
+          <div style={{
+            display: 'inline-block',
+            background: 'rgba(255,255,255,0.16)',
+            color: 'rgba(255,255,255,0.92)',
+            fontSize: '0.58rem',
+            fontWeight: 700,
+            padding: '3px 9px',
+            borderRadius: '5px',
+            marginBottom: '7px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.09em',
+            border: '1px solid rgba(255,255,255,0.22)',
+          }}>
+            {overlayCategory}
+          </div>
+        )}
+        {overlayTitle && (
+          <div style={{
+            color: 'white',
+            fontSize: 'clamp(0.95rem, 1.6vw, 1.3rem)',
+            fontWeight: 800,
+            lineHeight: 1.2,
+            letterSpacing: '-0.02em',
+            textShadow: '0 1px 6px rgba(0,0,0,0.5)',
+          }}>
+            {overlayTitle}
+          </div>
+        )}
+      </div>
+    ) : null
+  );
+
   if (photos.length === 0) {
-    return <div style={{ height: `${height}px`, borderRadius: '16px', background: gradient }} />;
+    return (
+      <div style={{
+        height: '420px', borderRadius: '16px', background: gradient,
+        position: 'relative', overflow: 'hidden',
+      }}>
+        <TitleOverlay />
+      </div>
+    );
   }
 
   const smallPhotos = photos.slice(1, 5);
-  const smallCount = smallPhotos.length;
   const extraCount = photos.length - 5;
-  const hasSmalls = smallCount > 0;
-
-  // right 2×2 grid style based on how many small photos exist
-  let rightGrid: React.CSSProperties = {};
-  if (smallCount === 1) {
-    rightGrid = { gridTemplateColumns: '1fr', gridTemplateRows: '1fr' };
-  } else if (smallCount === 2) {
-    rightGrid = { gridTemplateColumns: '1fr', gridTemplateRows: '1fr 1fr' };
-  } else {
-    rightGrid = { gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr' };
-  }
+  const hasSmalls = smallPhotos.length > 0;
 
   return (
     <>
-      {/* Gallery grid */}
-      <div style={{
+      <div className="gallery-inner" style={{
         display: 'grid',
         gridTemplateColumns: hasSmalls ? '3fr 2fr' : '1fr',
         gap: '6px',
-        height: `${height}px`,
         borderRadius: '16px',
         overflow: 'hidden',
       }}>
-        {/* Cover photo */}
+        {/* Main photo */}
         <div
           role="button"
           tabIndex={0}
           onClick={() => setLightbox(0)}
           onKeyDown={(e) => e.key === 'Enter' && setLightbox(0)}
-          style={{ position: 'relative', background: gradient, cursor: 'zoom-in', outline: 'none' }}
+          style={{
+            position: 'relative',
+            background: gradient,
+            cursor: 'zoom-in',
+            outline: 'none',
+            overflow: 'hidden',
+            /* when no smalls, give it a 16:9 aspect */
+            ...(hasSmalls ? { minHeight: '280px' } : { aspectRatio: '16/9' }),
+          }}
         >
           <Image
             src={photos[0]}
@@ -81,17 +126,19 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 480 
             style={{ objectFit: 'cover', objectPosition: 'center 40%' }}
           />
           <div className="gallery-hover-overlay" />
+          <TitleOverlay />
         </div>
 
-        {/* Small photos */}
+        {/* Small square photos */}
         {hasSmalls && (
-          <div style={{ display: 'grid', gap: '6px', ...rightGrid }}>
+          <div className="gallery-smalls" style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '6px',
+          }}>
             {smallPhotos.map((url, idx) => {
               const photoIndex = idx + 1;
               const showCountOverlay = idx === 3 && extraCount > 0;
-              // when 3 smalls: last one spans both columns
-              const spanFull = smallCount === 3 && idx === 2;
-
               return (
                 <div
                   key={url}
@@ -101,20 +148,22 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 480 
                   onKeyDown={(e) => e.key === 'Enter' && setLightbox(photoIndex)}
                   style={{
                     position: 'relative',
+                    aspectRatio: '1',
                     background: '#D8D8D8',
-                    cursor: showCountOverlay ? 'default' : 'zoom-in',
+                    cursor: 'zoom-in',
                     outline: 'none',
-                    ...(spanFull ? { gridColumn: '1 / -1' } : {}),
+                    overflow: 'hidden',
                   }}
                 >
                   <Image src={url} alt="" fill style={{ objectFit: 'cover' }} />
                   {showCountOverlay ? (
-                    <div style={{
-                      position: 'absolute', inset: 0,
-                      background: 'rgba(0,0,0,0.5)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'zoom-in',
-                    }}
+                    <div
+                      style={{
+                        position: 'absolute', inset: 0,
+                        background: 'rgba(0,0,0,0.5)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'zoom-in',
+                      }}
                       onClick={() => setLightbox(photoIndex)}
                     >
                       <span style={{ color: 'white', fontWeight: 800, fontSize: '1.5rem' }}>
@@ -141,7 +190,6 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 480 
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
-          {/* Image */}
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
@@ -160,7 +208,6 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 480 
             />
           </div>
 
-          {/* Close */}
           <button
             onClick={close}
             style={{
@@ -175,7 +222,6 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 480 
             </svg>
           </button>
 
-          {/* Prev */}
           {lightbox > 0 && (
             <button
               onClick={(e) => { e.stopPropagation(); prev(); }}
@@ -192,7 +238,6 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 480 
             </button>
           )}
 
-          {/* Next */}
           {lightbox < photos.length - 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); next(); }}
@@ -209,7 +254,6 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 480 
             </button>
           )}
 
-          {/* Counter */}
           <div style={{
             position: 'fixed', bottom: '22px', left: '50%', transform: 'translateX(-50%)',
             background: 'rgba(0,0,0,0.55)', color: 'white', borderRadius: '20px',
@@ -229,6 +273,10 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 480 
         .gallery-hover-overlay:hover,
         [role="button"]:hover .gallery-hover-overlay {
           background: rgba(0,0,0,0.14);
+        }
+        @media (max-width: 640px) {
+          .gallery-inner { grid-template-columns: 1fr !important; }
+          .gallery-smalls { display: none !important; }
         }
       `}</style>
     </>

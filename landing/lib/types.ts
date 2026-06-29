@@ -26,6 +26,7 @@ export interface Tour {
   dates: TourDate[];
   category?: string | null;
   price?: number | null;
+  price_currency?: 'TRY' | 'USD' | 'EUR' | null;
   start_date?: string | null;
   end_date?: string | null;
   guide_name?: string | null;

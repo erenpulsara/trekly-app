@@ -79,6 +79,10 @@ export class UpdateTourDto {
   price?: number;
 
   @IsOptional()
+  @IsEnum(['TRY', 'USD', 'EUR'])
+  price_currency?: 'TRY' | 'USD' | 'EUR';
+
+  @IsOptional()
   @IsDateString()
   start_date?: string;
 

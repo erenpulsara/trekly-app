@@ -83,6 +83,9 @@ export class Tour {
   @Column({ type: 'decimal', nullable: true })
   price!: number | null;
 
+  @Column({ type: 'varchar', length: 3, nullable: true, default: 'TRY' })
+  price_currency!: 'TRY' | 'USD' | 'EUR' | null;
+
   @Column({ type: 'date', nullable: true })
   start_date!: string | null;
 

@@ -143,49 +143,28 @@ export default async function TourDetailPage({ params }: { params: { id: string 
             photos={tour.photo_urls ?? []}
             tourName={tour.name}
             gradient={PH_GRADIENT[tour.difficulty]}
-            height={400}
+            overlayTitle={tour.name}
+            overlayCategory={tour.category ?? undefined}
           />
 
-          {/* Title + category + difficulty */}
-          <div style={{ marginTop: '28px', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
-              {tour.category && (
-                <span style={{
-                  background: '#FFF4F1', color: '#FF5533',
-                  fontSize: '0.68rem', fontWeight: 700,
-                  padding: '4px 10px', borderRadius: '6px',
-                  textTransform: 'uppercase', letterSpacing: '0.06em',
-                  border: '1px solid rgba(255,85,51,0.2)',
-                }}>
-                  {tour.category}
-                </span>
-              )}
-              <span style={{
-                background: dc.bg, color: dc.text,
-                fontSize: '0.68rem', fontWeight: 700,
-                padding: '4px 10px', borderRadius: '6px',
-                textTransform: 'uppercase', letterSpacing: '0.06em',
-              }}>
-                {DIFF_LABEL[tour.difficulty]}
-              </span>
-            </div>
-
-            <h1 style={{ fontSize: 'clamp(1.5rem, 2.8vw, 2.2rem)', fontWeight: 800, color: '#1A1A1A', letterSpacing: '-0.03em', lineHeight: 1.2, margin: '0 0 8px' }}>
-              {tour.name}
-            </h1>
-            <p style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem', color: '#5A5A5A', margin: 0 }}>
-              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          {/* Compact info row below gallery */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '14px 0 22px', flexWrap: 'wrap' }}>
+            <span style={{
+              background: dc.bg, color: dc.text,
+              fontSize: '0.66rem', fontWeight: 700,
+              padding: '4px 10px', borderRadius: '6px',
+              textTransform: 'uppercase', letterSpacing: '0.06em',
+            }}>
+              {DIFF_LABEL[tour.difficulty]}
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: '#5A5A5A' }}>
+              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               {tour.location_name}
-            </p>
+            </span>
           </div>
-
-          <hr style={{ border: 'none', borderTop: '1px solid #E8E8E8', marginBottom: '28px' }} />
-
-          {/* Description — always visible collapsible */}
-          {tour.description && <CollapsibleSection title="Tur Hakkında" content={tour.description} />}
 
           {/* Buluşma Noktaları — collapsible */}
           {tour.meeting_points && <CollapsibleSection title="Buluşma Noktaları" content={tour.meeting_points} />}
@@ -217,6 +196,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
               target_location: tour.target_location,
               contact_phone: tour.contact_phone,
               price: tour.price,
+              price_currency: tour.price_currency,
             }}
             isFull={isFull}
             remaining={remaining}
