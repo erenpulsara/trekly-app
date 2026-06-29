@@ -5,10 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import type { CategoryItem } from '@/lib/api';
 
 
-// Sabit 8 kategori — her zaman gösterilir (dropdown için)
+// Sabit kategoriler — her zaman gösterilir (dropdown için)
 const STATIC_CATEGORIES = [
-  'trekking', 'dağcılık', 'kano', 'rafting',
-  'bisiklet', 'kamp', 'dalış', 'yamaç paraşütü',
+  'trekking', 'dağcılık', 'bisiklet', 'kamp', 'dalış',
+  'zirve tırmanışı', 'kaya tırmanışı', 'yelken',
+  'aile kampı', 'dağcılık eğitimi', 'kayak', 'su sporları',
 ];
 
 const MONTHS = [
@@ -225,10 +226,11 @@ interface Props {
     allCategories: string;
   };
   categories?: CategoryItem[];
+  basePath?: string;
 }
 
 /* ── Main Component ─────────────────────────────────── */
-export default function TurlarSearchBar({ labels, categories = [] }: Props) {
+export default function TurlarSearchBar({ labels, categories = [], basePath = '/turlar' }: Props) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -256,7 +258,7 @@ export default function TurlarSearchBar({ labels, categories = [] }: Props) {
     if (d) q.set('start_date', d);
     if (l.trim()) q.set('location', l.trim());
     if (c) q.set('category', c);
-    return `/turlar${q.toString() ? `?${q}` : ''}`;
+    return `${basePath}${q.toString() ? `?${q}` : ''}`;
   }
 
   function handleSubmit(e: React.FormEvent) {

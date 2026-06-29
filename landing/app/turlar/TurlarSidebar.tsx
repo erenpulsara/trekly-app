@@ -5,14 +5,18 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import type { CategoryItem } from '@/lib/api';
 
 const STATIC_CATEGORIES = [
-  { key: 'trekking',       label: 'Trekking'       },
-  { key: 'dağcılık',       label: 'Dağcılık'       },
-  { key: 'kano',           label: 'Kano'            },
-  { key: 'rafting',        label: 'Rafting'         },
-  { key: 'bisiklet',       label: 'Bisiklet'        },
-  { key: 'kamp',           label: 'Kamp'            },
-  { key: 'dalış',          label: 'Dalış'           },
-  { key: 'yamaç paraşütü', label: 'Yamaç Paraşütü' },
+  { key: 'trekking',         label: 'Trekking'          },
+  { key: 'dağcılık',         label: 'Dağcılık'          },
+  { key: 'bisiklet',         label: 'Bisiklet'          },
+  { key: 'kamp',             label: 'Kamp'              },
+  { key: 'dalış',            label: 'Dalış'             },
+  { key: 'zirve tırmanışı',  label: 'Zirve Tırmanışı'  },
+  { key: 'kaya tırmanışı',   label: 'Kaya Tırmanışı'   },
+  { key: 'yelken',           label: 'Yelken'            },
+  { key: 'aile kampı',       label: 'Aile Kampı'        },
+  { key: 'dağcılık eğitimi', label: 'Dağcılık Eğitimi' },
+  { key: 'kayak',            label: 'Kayak'             },
+  { key: 'su sporları',      label: 'Su Sporları'       },
 ];
 
 const MONTHS = [
@@ -27,11 +31,12 @@ interface Props {
   activeSearch: string;
   dynamicCategories: CategoryItem[];
   locations: string[];
+  basePath?: string;
 }
 
 export default function TurlarSidebar({
   activeCategory, activeLocation, activeMonth, activeSearch,
-  dynamicCategories, locations,
+  dynamicCategories, locations, basePath = '/etkinlikler',
 }: Props) {
   const router = useRouter();
   const params = useSearchParams();
@@ -51,7 +56,7 @@ export default function TurlarSidebar({
     if (month)  q.set('month',      month);
     if (date)   q.set('start_date', date);
     if (search) q.set('search',     search);
-    router.push(`/turlar${q.toString() ? `?${q}` : ''}`);
+    router.push(`${basePath}${q.toString() ? `?${q}` : ''}`);
   }
 
   function handleSearch(e: React.FormEvent) {
@@ -59,8 +64,11 @@ export default function TurlarSidebar({
     navigateTo({ search: searchInput.trim() });
   }
 
+  const BLOCKED    = new Set(['kano', 'rafting', 'yamaç paraşütü']);
   const staticKeys = new Set(STATIC_CATEGORIES.map(s => s.key.toLowerCase()));
-  const extraCats  = dynamicCategories.filter(c => !staticKeys.has(c.name.toLowerCase()));
+  const extraCats  = dynamicCategories.filter(c =>
+    !staticKeys.has(c.name.toLowerCase()) && !BLOCKED.has(c.name.toLowerCase())
+  );
   const allCats    = [
     ...STATIC_CATEGORIES,
     ...extraCats.map(c => ({ key: c.name, label: c.name })),
@@ -105,7 +113,7 @@ export default function TurlarSidebar({
 
       {/* Tüm Turlar */}
       <button
-        onClick={() => router.push('/turlar')}
+        onClick={() => router.push(basePath)}
         style={{
           display: 'flex', alignItems: 'center', gap: '10px',
           width: '100%', padding: '13px 16px', borderRadius: '14px',

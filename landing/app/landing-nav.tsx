@@ -76,7 +76,7 @@ export default function LandingNav({
                   href={link.href}
                   style={{
                     fontSize: '0.85rem',
-                    fontWeight: 500,
+                    fontWeight: link.active ? 700 : 500,
                     color: link.active ? '#FF5533' : 'rgba(0,0,0,0.45)',
                     textDecoration: 'none',
                     transition: 'color 0.15s',

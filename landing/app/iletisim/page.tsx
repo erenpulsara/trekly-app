@@ -42,10 +42,11 @@ export default function IletisimPage() {
       `}</style>
 
       <LandingNav navLinks={[
+        { label: 'Anasayfa',    href: '/turlar' },
         { label: 'Hakkımızda', href: '/hakkimizda' },
-        { label: 'Etkinlikler', href: '/turlar' },
-        { label: 'Blog', href: '/blog' },
-        { label: 'İletişim', href: '/iletisim', active: true },
+        { label: 'Etkinlikler', href: '/etkinlikler' },
+        { label: 'Blog',        href: '/blog' },
+        { label: 'İletişim',   href: '/iletisim', active: true },
       ]} />
 
       <main style={{ minHeight: '100vh', background: '#FAFAFA' }}>

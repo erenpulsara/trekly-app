@@ -6,46 +6,55 @@ import type { CategoryItem } from '@/lib/api';
 
 // Fallback photos for well-known categories (when no image_url in DB)
 const FALLBACK_PHOTOS: Record<string, string> = {
-  'trekking':                  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75',
-  'dağcılık':                  'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=75',
-  'kano':                      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=75',
-  'rafting':                   'https://images.unsplash.com/photo-1530866495561-507c9faab2ed?w=600&q=75',
-  'bisiklet':                  'https://images.unsplash.com/photo-1571188654248-7a89213915f7?w=600&q=75',
-  'kamp':                      'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&q=75',
-  'dalış':                     'https://images.unsplash.com/photo-1682687982502-1529b3b33f85?w=600&q=75',
-  'yamaç paraşütü':            'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=600&q=75',
-  'kültür turları':            'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=75',
+  'trekking':            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75',
+  'dağcılık':            'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=75',
+  'bisiklet':            'https://images.unsplash.com/photo-1571188654248-7a89213915f7?w=600&q=75',
+  'kamp':                'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&q=75',
+  'dalış':               'https://images.unsplash.com/photo-1682687982502-1529b3b33f85?w=600&q=75',
+  'zirve tırmanışı':     'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=600&q=75',
+  'kaya tırmanışı':      'https://images.unsplash.com/photo-1564769662533-4f00a87b4056?w=600&q=75',
+  'yelken':              'https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=600&q=75',
+  'aile kampı':          'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=600&q=75',
+  'dağcılık eğitimi':    'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=600&q=75',
+  'kayak':               'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=600&q=75',
+  'su sporları':         'https://images.unsplash.com/photo-1530866495561-507c9faab2ed?w=600&q=75',
+  'kültür turları':      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=75',
+  'gastronomi':          'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=75',
   'gastronomi / organizasyon': 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=75',
-  'gastronomi':                'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=75',
-  'transfer hizmeti':          'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&q=75',
-  'gemi ve tekne turları':     'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&q=75',
-  'doğa macera turları':       'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&q=75',
-  'deniz macera turları':      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=75',
-  'hava macera turları':       'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=75',
-  'kış turizm turları':        'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=600&q=75',
-  'wellness spa / sağlık':     'https://images.unsplash.com/photo-1540555700478-4be0bf42b3ef?w=600&q=75',
-  'tema / aksiyon turları':    'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600&q=75',
+  'transfer hizmeti':    'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&q=75',
+  'gemi ve tekne turları': 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&q=75',
+  'doğa macera turları': 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&q=75',
+  'deniz macera turları': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=75',
+  'hava macera turları': 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=75',
+  'kış turizm turları':  'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=600&q=75',
+  'wellness spa / sağlık': 'https://images.unsplash.com/photo-1540555700478-4be0bf42b3ef?w=600&q=75',
+  'tema / aksiyon turları': 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600&q=75',
 };
 
 const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&q=75';
 
 const STATIC_CATEGORIES = [
-  { key: 'trekking',       label: 'Trekking'        },
-  { key: 'dağcılık',       label: 'Dağcılık'        },
-  { key: 'kano',           label: 'Kano'             },
-  { key: 'rafting',        label: 'Rafting'          },
-  { key: 'bisiklet',       label: 'Bisiklet'         },
-  { key: 'kamp',           label: 'Kamp'             },
-  { key: 'dalış',          label: 'Dalış'            },
-  { key: 'yamaç paraşütü', label: 'Yamaç Paraşütü'  },
+  { key: 'trekking',          label: 'Trekking'          },
+  { key: 'dağcılık',          label: 'Dağcılık'          },
+  { key: 'bisiklet',          label: 'Bisiklet'          },
+  { key: 'kamp',              label: 'Kamp'              },
+  { key: 'dalış',             label: 'Dalış'             },
+  { key: 'zirve tırmanışı',   label: 'Zirve Tırmanışı'  },
+  { key: 'kaya tırmanışı',    label: 'Kaya Tırmanışı'   },
+  { key: 'yelken',            label: 'Yelken'            },
+  { key: 'aile kampı',        label: 'Aile Kampı'        },
+  { key: 'dağcılık eğitimi',  label: 'Dağcılık Eğitimi' },
+  { key: 'kayak',             label: 'Kayak'             },
+  { key: 'su sporları',       label: 'Su Sporları'       },
 ];
 
 interface Props {
   activeCategory: string;
   dynamicCategories?: CategoryItem[];
+  basePath?: string;
 }
 
-export default function TurlarCategories({ activeCategory, dynamicCategories }: Props) {
+export default function TurlarCategories({ activeCategory, dynamicCategories, basePath = '/turlar' }: Props) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -56,7 +65,7 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
     const loc  = params.get('location');
     if (date) q.set('start_date', date);
     if (loc)  q.set('location', loc);
-    router.push(`/turlar${q.toString() ? `?${q}` : ''}`);
+    router.push(`${basePath}${q.toString() ? `?${q}` : ''}`);
   }
 
   function getPhoto(name: string, image_url?: string | null): string {
@@ -64,8 +73,11 @@ export default function TurlarCategories({ activeCategory, dynamicCategories }: 
     return FALLBACK_PHOTOS[name.toLowerCase()] ?? DEFAULT_PHOTO;
   }
 
+  const BLOCKED = new Set(['kano', 'rafting', 'yamaç paraşütü']);
   const staticKeys = new Set(STATIC_CATEGORIES.map(s => s.key.toLowerCase()));
-  const extraItems = (dynamicCategories ?? []).filter(c => !staticKeys.has(c.name.toLowerCase()));
+  const extraItems = (dynamicCategories ?? []).filter(c =>
+    !staticKeys.has(c.name.toLowerCase()) && !BLOCKED.has(c.name.toLowerCase())
+  );
 
   const allCategories: { key: string; label: string; photo: string }[] = [
     ...STATIC_CATEGORIES.map(c => {
