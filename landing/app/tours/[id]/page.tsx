@@ -114,11 +114,9 @@ export default async function TourDetailPage({ params }: { params: { id: string 
   return (
     <div style={{ background: '#fff', minHeight: '100vh' }}>
       <style>{`
-        .tour-header { max-width: 1100px; margin: 28px auto 0; padding: 0 40px; }
-        .td-grid { display: grid; grid-template-columns: 1fr 340px; gap: 40px; max-width: 1100px; margin: 36px auto 0; padding: 0 40px 80px; }
+        .td-grid { display: grid; grid-template-columns: 1fr 340px; gap: 40px; max-width: 1100px; margin: 24px auto 0; padding: 0 40px 80px; }
         @media (max-width: 768px) {
-          .tour-header { padding: 0 16px !important; margin-top: 20px !important; }
-          .td-grid { grid-template-columns: 1fr !important; padding: 0 16px 60px !important; gap: 24px !important; margin-top: 20px !important; }
+          .td-grid { grid-template-columns: 1fr !important; padding: 0 16px 60px !important; gap: 24px !important; }
           .navbar { padding: 0 16px !important; }
           .td-related-pad { padding: 40px 16px !important; }
         }
@@ -135,55 +133,53 @@ export default async function TourDetailPage({ params }: { params: { id: string 
         </div>
       </nav>
 
-      {/* ── Tam genişlik başlık + galeri bölümü ── */}
-      <div className="tour-header">
-        {/* Başlık */}
-        <h1 style={{
-          fontSize: 'clamp(1.4rem, 2.6vw, 2rem)',
-          fontWeight: 800, color: '#1A1A1A',
-          letterSpacing: '-0.03em', lineHeight: 1.2,
-          margin: '0 0 16px',
-        }}>
-          {tour.name}
-        </h1>
-
-        {/* Galeri */}
-        <PhotoGallery
-          photos={tour.photo_urls ?? []}
-          tourName={tour.name}
-          gradient={PH_GRADIENT[tour.difficulty]}
-          height={420}
-        />
-
-        {/* Rozetler — galeri altında */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-          {tour.category && (
-            <span style={{
-              background: '#FFF4F1', color: '#FF5533',
-              fontSize: '0.66rem', fontWeight: 700,
-              padding: '4px 12px', borderRadius: '20px',
-              textTransform: 'uppercase', letterSpacing: '0.06em',
-              border: '1px solid rgba(255,85,51,0.25)',
-            }}>
-              {tour.category}
-            </span>
-          )}
-          <span style={{
-            background: dc.bg, color: dc.text,
-            fontSize: '0.66rem', fontWeight: 700,
-            padding: '4px 12px', borderRadius: '20px',
-            textTransform: 'uppercase', letterSpacing: '0.06em',
-          }}>
-            {DIFF_LABEL[tour.difficulty]}
-          </span>
-        </div>
-      </div>
-
       {/* 2-column layout */}
       <div className="td-grid">
 
         {/* ── Left column ── */}
         <div style={{ alignSelf: 'start' }}>
+
+          {/* Başlık */}
+          <h1 style={{
+            fontSize: 'clamp(1.4rem, 2.6vw, 2rem)',
+            fontWeight: 800, color: '#1A1A1A',
+            letterSpacing: '-0.03em', lineHeight: 1.2,
+            margin: '0 0 16px',
+          }}>
+            {tour.name}
+          </h1>
+
+          {/* Galeri */}
+          <PhotoGallery
+            photos={tour.photo_urls ?? []}
+            tourName={tour.name}
+            gradient={PH_GRADIENT[tour.difficulty]}
+            height={420}
+          />
+
+          {/* Rozetler — galeri altında */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '14px 0 24px', flexWrap: 'wrap' }}>
+            {tour.category && (
+              <span style={{
+                background: '#FFF4F1', color: '#FF5533',
+                fontSize: '0.66rem', fontWeight: 700,
+                padding: '4px 12px', borderRadius: '20px',
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+                border: '1px solid rgba(255,85,51,0.25)',
+              }}>
+                {tour.category}
+              </span>
+            )}
+            <span style={{
+              background: dc.bg, color: dc.text,
+              fontSize: '0.66rem', fontWeight: 700,
+              padding: '4px 12px', borderRadius: '20px',
+              textTransform: 'uppercase', letterSpacing: '0.06em',
+            }}>
+              {DIFF_LABEL[tour.difficulty]}
+            </span>
+          </div>
+
           {/* Tab sections */}
           <TourTabs tabs={[
             { label: 'Tur Programı',   content: tour.program },

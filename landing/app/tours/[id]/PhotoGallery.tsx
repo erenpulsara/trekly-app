@@ -56,7 +56,7 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 420 
         className="gallery-inner"
         style={{
           display: 'grid',
-          gridTemplateColumns: hasSmalls ? `1fr ${height}px` : '1fr',
+          gridTemplateColumns: hasSmalls ? '3fr 2fr' : '1fr',
           gap: '4px',
           height: `${height}px`,
           borderRadius: '16px',
