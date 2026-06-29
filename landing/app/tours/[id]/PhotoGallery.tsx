@@ -7,11 +7,10 @@ interface Props {
   photos: string[];
   tourName: string;
   gradient: string;
-  overlayTitle?: string;
-  overlayCategory?: string;
+  height?: number;
 }
 
-export default function PhotoGallery({ photos, tourName, gradient, overlayTitle, overlayCategory }: Props) {
+export default function PhotoGallery({ photos, tourName, gradient, height = 420 }: Props) {
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   const close = useCallback(() => setLightbox(null), []);
@@ -36,56 +35,13 @@ export default function PhotoGallery({ photos, tourName, gradient, overlayTitle,
     };
   }, [lightbox, close, prev, next]);
 
-  const TitleOverlay = () => (
-    (overlayTitle || overlayCategory) ? (
-      <div style={{
-        position: 'absolute',
-        bottom: 0, left: 0, right: 0,
-        background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.38) 55%, transparent 100%)',
-        padding: '56px 18px 18px',
-        pointerEvents: 'none',
-      }}>
-        {overlayCategory && (
-          <div style={{
-            display: 'inline-block',
-            background: 'rgba(255,255,255,0.16)',
-            color: 'rgba(255,255,255,0.92)',
-            fontSize: '0.58rem',
-            fontWeight: 700,
-            padding: '3px 9px',
-            borderRadius: '5px',
-            marginBottom: '7px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.09em',
-            border: '1px solid rgba(255,255,255,0.22)',
-          }}>
-            {overlayCategory}
-          </div>
-        )}
-        {overlayTitle && (
-          <div style={{
-            color: 'white',
-            fontSize: 'clamp(0.95rem, 1.6vw, 1.3rem)',
-            fontWeight: 800,
-            lineHeight: 1.2,
-            letterSpacing: '-0.02em',
-            textShadow: '0 1px 6px rgba(0,0,0,0.5)',
-          }}>
-            {overlayTitle}
-          </div>
-        )}
-      </div>
-    ) : null
-  );
-
   if (photos.length === 0) {
     return (
       <div style={{
-        height: '420px', borderRadius: '16px', background: gradient,
-        position: 'relative', overflow: 'hidden',
-      }}>
-        <TitleOverlay />
-      </div>
+        height: `${height}px`,
+        borderRadius: '16px',
+        background: gradient,
+      }} />
     );
   }
 
@@ -95,13 +51,18 @@ export default function PhotoGallery({ photos, tourName, gradient, overlayTitle,
 
   return (
     <>
-      <div className="gallery-inner" style={{
-        display: 'grid',
-        gridTemplateColumns: hasSmalls ? '3fr 2fr' : '1fr',
-        gap: '6px',
-        borderRadius: '16px',
-        overflow: 'hidden',
-      }}>
+      {/* Gallery — right col = height px → each of 4 cells = (height-4)/2 square */}
+      <div
+        className="gallery-inner"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: hasSmalls ? `1fr ${height}px` : '1fr',
+          gap: '4px',
+          height: `${height}px`,
+          borderRadius: '16px',
+          overflow: 'hidden',
+        }}
+      >
         {/* Main photo */}
         <div
           role="button"
@@ -110,12 +71,11 @@ export default function PhotoGallery({ photos, tourName, gradient, overlayTitle,
           onKeyDown={(e) => e.key === 'Enter' && setLightbox(0)}
           style={{
             position: 'relative',
+            height: '100%',
             background: gradient,
             cursor: 'zoom-in',
             outline: 'none',
             overflow: 'hidden',
-            /* when no smalls, give it a 16:9 aspect */
-            ...(hasSmalls ? { minHeight: '280px' } : { aspectRatio: '16/9' }),
           }}
         >
           <Image
@@ -126,16 +86,20 @@ export default function PhotoGallery({ photos, tourName, gradient, overlayTitle,
             style={{ objectFit: 'cover', objectPosition: 'center 40%' }}
           />
           <div className="gallery-hover-overlay" />
-          <TitleOverlay />
         </div>
 
-        {/* Small square photos */}
+        {/* 2×2 square thumbnails */}
         {hasSmalls && (
-          <div className="gallery-smalls" style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '6px',
-          }}>
+          <div
+            className="gallery-smalls"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gridTemplateRows: '1fr 1fr',
+              gap: '4px',
+              height: '100%',
+            }}
+          >
             {smallPhotos.map((url, idx) => {
               const photoIndex = idx + 1;
               const showCountOverlay = idx === 3 && extraCount > 0;
@@ -148,11 +112,10 @@ export default function PhotoGallery({ photos, tourName, gradient, overlayTitle,
                   onKeyDown={(e) => e.key === 'Enter' && setLightbox(photoIndex)}
                   style={{
                     position: 'relative',
-                    aspectRatio: '1',
-                    background: '#D8D8D8',
+                    overflow: 'hidden',
+                    background: '#C8C8C8',
                     cursor: 'zoom-in',
                     outline: 'none',
-                    overflow: 'hidden',
                   }}
                 >
                   <Image src={url} alt="" fill style={{ objectFit: 'cover' }} />
@@ -270,7 +233,6 @@ export default function PhotoGallery({ photos, tourName, gradient, overlayTitle,
           background: rgba(0,0,0,0);
           transition: background 0.18s;
         }
-        .gallery-hover-overlay:hover,
         [role="button"]:hover .gallery-hover-overlay {
           background: rgba(0,0,0,0.14);
         }

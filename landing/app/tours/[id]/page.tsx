@@ -115,9 +115,11 @@ export default async function TourDetailPage({ params }: { params: { id: string 
   return (
     <div style={{ background: '#fff', minHeight: '100vh' }}>
       <style>{`
-        .td-grid { display: grid; grid-template-columns: 1fr 340px; gap: 40px; max-width: 1100px; margin: 24px auto 0; padding: 0 40px 80px; }
+        .tour-header { max-width: 1100px; margin: 28px auto 0; padding: 0 40px; }
+        .td-grid { display: grid; grid-template-columns: 1fr 340px; gap: 40px; max-width: 1100px; margin: 36px auto 0; padding: 0 40px 80px; }
         @media (max-width: 768px) {
-          .td-grid { grid-template-columns: 1fr !important; padding: 0 16px 60px !important; gap: 24px !important; }
+          .tour-header { padding: 0 16px !important; margin-top: 20px !important; }
+          .td-grid { grid-template-columns: 1fr !important; padding: 0 16px 60px !important; gap: 24px !important; margin-top: 20px !important; }
           .navbar { padding: 0 16px !important; }
           .td-related-pad { padding: 40px 16px !important; }
         }
@@ -134,38 +136,61 @@ export default async function TourDetailPage({ params }: { params: { id: string 
         </div>
       </nav>
 
+      {/* ── Tam genişlik başlık + galeri bölümü ── */}
+      <div className="tour-header">
+        {/* Rozetler + başlık + lokasyon */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
+          {tour.category && (
+            <span style={{
+              background: '#FFF4F1', color: '#FF5533',
+              fontSize: '0.66rem', fontWeight: 700,
+              padding: '4px 10px', borderRadius: '6px',
+              textTransform: 'uppercase', letterSpacing: '0.06em',
+              border: '1px solid rgba(255,85,51,0.2)',
+            }}>
+              {tour.category}
+            </span>
+          )}
+          <span style={{
+            background: dc.bg, color: dc.text,
+            fontSize: '0.66rem', fontWeight: 700,
+            padding: '4px 10px', borderRadius: '6px',
+            textTransform: 'uppercase', letterSpacing: '0.06em',
+          }}>
+            {DIFF_LABEL[tour.difficulty]}
+          </span>
+        </div>
+
+        <h1 style={{
+          fontSize: 'clamp(1.4rem, 2.6vw, 2rem)',
+          fontWeight: 800, color: '#1A1A1A',
+          letterSpacing: '-0.03em', lineHeight: 1.2,
+          margin: '0 0 8px',
+        }}>
+          {tour.name}
+        </h1>
+
+        <p style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.88rem', color: '#5A5A5A', margin: '0 0 20px' }}>
+          <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          {tour.location_name}
+        </p>
+
+        <PhotoGallery
+          photos={tour.photo_urls ?? []}
+          tourName={tour.name}
+          gradient={PH_GRADIENT[tour.difficulty]}
+          height={420}
+        />
+      </div>
+
       {/* 2-column layout */}
       <div className="td-grid">
 
         {/* ── Left column ── */}
         <div style={{ alignSelf: 'start' }}>
-          <PhotoGallery
-            photos={tour.photo_urls ?? []}
-            tourName={tour.name}
-            gradient={PH_GRADIENT[tour.difficulty]}
-            overlayTitle={tour.name}
-            overlayCategory={tour.category ?? undefined}
-          />
-
-          {/* Compact info row below gallery */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '14px 0 22px', flexWrap: 'wrap' }}>
-            <span style={{
-              background: dc.bg, color: dc.text,
-              fontSize: '0.66rem', fontWeight: 700,
-              padding: '4px 10px', borderRadius: '6px',
-              textTransform: 'uppercase', letterSpacing: '0.06em',
-            }}>
-              {DIFF_LABEL[tour.difficulty]}
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: '#5A5A5A' }}>
-              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              {tour.location_name}
-            </span>
-          </div>
-
           {/* Buluşma Noktaları — collapsible */}
           {tour.meeting_points && <CollapsibleSection title="Buluşma Noktaları" content={tour.meeting_points} />}
 
