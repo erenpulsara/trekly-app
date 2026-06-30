@@ -20,6 +20,19 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
   return res.json() as Promise<T>;
 }
 
+export async function adminUploadMedia(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${BASE}/media/upload`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${getToken()}` },
+    body: formData,
+  });
+  if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+  const data = await res.json() as { url: string };
+  return data.url;
+}
+
 export const adminApi = {
   login: (email: string, password: string) =>
     req<{ access_token: string }>('POST', '/auth/admin/login', { email, password }),
