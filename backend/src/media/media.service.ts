@@ -28,7 +28,6 @@ export class MediaService {
       await blob.save(file.buffer, {
         contentType: file.mimetype,
         resumable: false,
-        public: true,
       });
 
       const url = `https://storage.googleapis.com/${this.bucketName}/${filename}`;
