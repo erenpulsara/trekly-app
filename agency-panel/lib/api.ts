@@ -176,6 +176,26 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 }
 
 // Media
+export async function uploadMediaAsAdmin(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const token = getAdminToken();
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_URL}/media/upload`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  if (!res.ok) throw new ApiError(res.status, `Upload failed: HTTP ${res.status}`);
+
+  const data = (await res.json()) as { url: string };
+  return data.url;
+}
+
 export async function uploadMedia(file: File): Promise<string> {
   const formData = new FormData();
   formData.append('file', file);

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   adminGetBlogPosts, adminCreateBlogPost, adminUpdateBlogPost,
-  adminDeleteBlogPost, AdminBlogPost, ApiError, uploadMedia,
+  adminDeleteBlogPost, AdminBlogPost, ApiError, uploadMediaAsAdmin,
 } from "@/lib/api";
 import Button from "@/components/Button";
 
@@ -34,7 +34,7 @@ export default function AdminBlogPage() {
     if (!file) return;
     setUploading(true);
     try {
-      const url = await uploadMedia(file);
+      const url = await uploadMediaAsAdmin(file);
       setForm((f) => f ? { ...f, cover_image: url } : f);
     } catch (err) {
       alert(err instanceof ApiError ? err.message : "Yükleme başarısız");
