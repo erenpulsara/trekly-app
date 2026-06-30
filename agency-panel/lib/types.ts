@@ -30,7 +30,14 @@ export interface Agency {
   created_at: string;
 }
 
-export type Difficulty = 'easy' | 'medium' | 'hard' | 'extreme';
+export type Difficulty =
+  | 'easy'
+  | 'easy_medium'
+  | 'medium'
+  | 'medium_hard'
+  | 'hard'
+  | 'very_hard'
+  | 'extreme';
 export type TourStatus = 'draft' | 'published' | 'rejected';
 
 export interface TourDate {
@@ -63,6 +70,7 @@ export interface Tour {
   // Extended fields
   category?: string | null;
   price?: number | null;
+  price_currency?: 'TRY' | 'USD' | 'EUR' | null;
   start_date?: string | null;
   end_date?: string | null;
   guide_name?: string | null;
@@ -72,6 +80,7 @@ export interface Tour {
   target_location?: string | null;
   contact_phone?: string | null;
   accommodation?: string | null;
+  accommodation_url?: string | null;
   transportation?: string | null;
   program?: string | null;
   important_notes?: string | null;
@@ -94,14 +103,17 @@ export interface CreateTourPayload {
   // Extended fields
   category?: string;
   price?: number;
+  price_currency?: 'TRY' | 'USD' | 'EUR';
   start_date?: string;
   end_date?: string;
   guide_name?: string;
+  guide_instagram?: string;
   tursab_no?: string;
   meeting_points?: string;
   target_location?: string;
   contact_phone?: string;
   accommodation?: string;
+  accommodation_url?: string;
   transportation?: string;
   program?: string;
   important_notes?: string;

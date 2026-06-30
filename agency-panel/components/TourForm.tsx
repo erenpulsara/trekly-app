@@ -2,33 +2,37 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Input, Select, Textarea, ProvinceSelect } from "./FormControls";
+import { Input, Select, Textarea } from "./FormControls";
 import Button from "./Button";
 import PhotoUploader from "./PhotoUploader";
-import { createTour, updateTour } from "@/lib/api";
+import { createTour, updateTour, addTourDate, deleteTourDate } from "@/lib/api";
 import { useLang } from "@/lib/LangContext";
-import type { Difficulty, Tour, TourStatus } from "@/lib/types";
+import { TURKISH_PROVINCES } from "@/lib/provinces";
+import type { Difficulty, Tour, TourDate, TourStatus } from "@/lib/types";
 
 interface TourFormProps {
   mode: "create" | "edit";
   tour?: Tour;
 }
 
+const CURRENCIES: Array<{ value: "TRY" | "USD" | "EUR"; label: string }> = [
+  { value: "TRY", label: "₺ TRY" },
+  { value: "USD", label: "$ USD" },
+  { value: "EUR", label: "€ EUR" },
+];
+
 interface FormValues {
   name: string;
   description: string;
   location_name: string;
-  latitude: string;
-  longitude: string;
-  altitude_meters: string;
   difficulty: Difficulty;
-  distance_km: string;
   max_participants: string;
   status: TourStatus;
   photo_urls: string[];
   // Extended fields
-  category: string;
+  categories: string[];
   price: string;
+  price_currency: "TRY" | "USD" | "EUR";
   start_date: string;
   end_date: string;
   organizer: string;
@@ -40,6 +44,7 @@ interface FormValues {
   meeting_points: string;
   program: string;
   accommodation: string;
+  accommodation_url: string;
   transportation: string;
   important_notes: string;
   tags: string[];
@@ -50,6 +55,10 @@ interface FormErrors {
   description?: string;
   location_name?: string;
   max_participants?: string;
+  categories?: string;
+  price?: string;
+  start_date?: string;
+  end_date?: string;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
@@ -58,132 +67,208 @@ export default function TourForm({ mode, tour }: TourFormProps) {
   const router = useRouter();
   const { t } = useLang();
   const tx = t.tourForm;
-  const [categories, setCategories] = useState<string[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
   useEffect(() => {
     fetch(`${API_URL}/tours/categories`)
       .then((r) => r.ok ? r.json() : [])
       .then((data: Array<{ name: string; icon_key: string | null } | string>) =>
-        setCategories(data.map((d) => (typeof d === "string" ? d : d.name)))
+        setAvailableCategories(data.map((d) => (typeof d === "string" ? d : d.name)))
       )
       .catch(() => {});
   }, []);
 
   const difficultyOptions = [
-    { value: "easy", label: t.diff.easy },
-    { value: "medium", label: t.diff.medium },
-    { value: "hard", label: t.diff.hard },
-    { value: "extreme", label: t.diff.extreme },
+    { value: "easy",        label: t.diff.easy },
+    { value: "easy_medium", label: t.diff.easy_medium },
+    { value: "medium",      label: t.diff.medium },
+    { value: "medium_hard", label: t.diff.medium_hard },
+    { value: "hard",        label: t.diff.hard },
+    { value: "very_hard",   label: t.diff.very_hard },
+    { value: "extreme",     label: t.diff.extreme },
   ];
 
   const statusOptions = [
-    { value: "draft", label: t.status.draft },
+    { value: "draft",     label: t.status.draft },
     { value: "published", label: t.status.published },
   ];
 
-  const categoryOptions = [
-    { value: "", label: tx.categoryPlaceholder },
-    ...categories.map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })),
-  ];
-
-  function validate(values: FormValues): FormErrors {
+  function validate(v: FormValues): FormErrors {
     const errors: FormErrors = {};
-    if (!values.name.trim()) errors.name = tx.nameRequired;
-    if (!values.description.trim()) errors.description = tx.descRequired;
-    if (!values.location_name.trim()) errors.location_name = tx.locationRequired;
-    if (!values.max_participants || parseInt(values.max_participants) < 1) errors.max_participants = tx.participantsMin;
+    if (!v.name.trim())                               errors.name            = tx.nameRequired;
+    if (!v.description.trim())                        errors.description     = tx.descRequired;
+    if (!v.location_name.trim())                      errors.location_name   = tx.locationRequired;
+    if (!v.max_participants || parseInt(v.max_participants) < 1) errors.max_participants = tx.participantsMin;
+    if (v.categories.length === 0)                    errors.categories      = tx.categoryRequired;
+    if (!v.price || parseFloat(v.price) <= 0)         errors.price           = tx.priceRequired;
+    if (!v.start_date)                                errors.start_date      = tx.startDateRequired;
+    if (!v.end_date)                                  errors.end_date        = tx.endDateRequired;
     return errors;
   }
 
   const [values, setValues] = useState<FormValues>({
-    name: tour?.name ?? "",
-    description: tour?.description ?? "",
-    location_name: tour?.location_name ?? "",
-    latitude: tour?.latitude?.toString() ?? "",
-    longitude: tour?.longitude?.toString() ?? "",
-    altitude_meters: tour?.altitude_meters?.toString() ?? "",
-    difficulty: tour?.difficulty ?? "easy",
-    distance_km: tour?.distance_km?.toString() ?? "",
-    max_participants: tour?.max_participants?.toString() ?? "",
-    status: tour?.status ?? "published",
-    photo_urls: tour?.photo_urls ?? [],
-    category: tour?.category ?? "",
-    price: tour?.price?.toString() ?? "",
-    start_date: tour?.start_date ?? "",
-    end_date: tour?.end_date ?? "",
-    organizer: tour?.organizer ?? "",
-    guide_name: tour?.guide_name ?? "",
-    guide_instagram: tour?.guide_instagram ?? "",
-    tursab_no: tour?.tursab_no ?? "",
-    contact_phone: tour?.contact_phone ?? "",
-    target_location: tour?.target_location ?? "",
-    meeting_points: tour?.meeting_points ?? "",
-    program: tour?.program ?? "",
-    accommodation: tour?.accommodation ?? "",
-    transportation: tour?.transportation ?? "",
-    important_notes: tour?.important_notes ?? "",
-    tags: tour?.tags ?? [],
+    name:              tour?.name ?? "",
+    description:       tour?.description ?? "",
+    location_name:     tour?.location_name ?? "",
+    difficulty:        tour?.difficulty ?? "easy",
+    max_participants:  tour?.max_participants?.toString() ?? "",
+    status:            tour?.status ?? "published",
+    photo_urls:        tour?.photo_urls ?? [],
+    categories:        tour?.category ? tour.category.split(", ").filter(Boolean) : [],
+    price:             tour?.price?.toString() ?? "",
+    price_currency:    (tour?.price_currency as "TRY" | "USD" | "EUR") ?? "TRY",
+    start_date:        tour?.start_date ?? "",
+    end_date:          tour?.end_date ?? "",
+    organizer:         tour?.organizer ?? "",
+    guide_name:        tour?.guide_name ?? "",
+    guide_instagram:   tour?.guide_instagram ?? "",
+    tursab_no:         tour?.tursab_no ?? "",
+    contact_phone:     tour?.contact_phone ?? "",
+    target_location:   tour?.target_location ?? "",
+    meeting_points:    tour?.meeting_points ?? "",
+    program:           tour?.program ?? "",
+    accommodation:     tour?.accommodation ?? "",
+    accommodation_url: tour?.accommodation_url ?? "",
+    transportation:    tour?.transportation ?? "",
+    important_notes:   tour?.important_notes ?? "",
+    tags:              tour?.tags ?? [],
   });
 
+  // ── Location multi-tag state ─────────────────────────────────
+  const [locationInput,      setLocationInput]      = useState('');
+  const [locationSuggestions,setLocationSuggestions]= useState<string[]>([]);
+  const [showLocDrop,        setShowLocDrop]        = useState(false);
+  const [locationList,       setLocationList]       = useState<string[]>(
+    tour?.location_name ? tour.location_name.split(", ").filter(Boolean) : []
+  );
+
+  // ── Category multi-select state ──────────────────────────────
+  const [categoryOtherInput, setCategoryOtherInput] = useState('');
+  const [showCategoryOther,  setShowCategoryOther]  = useState(false);
+
+  // ── Tags state ───────────────────────────────────────────────
   const [tagInput, setTagInput] = useState('');
-  const [errors, setErrors] = useState<FormErrors>({});
+
+  // ── Multi-date state (edit mode) ─────────────────────────────
+  const [dates,        setDates]        = useState<TourDate[]>(tour?.dates ?? []);
+  const [newDateValue, setNewDateValue] = useState('');
+  const [newDateSlots, setNewDateSlots] = useState('');
+  const [dateLoading,  setDateLoading]  = useState(false);
+
+  const [errors,      setErrors]      = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading,     setLoading]     = useState(false);
 
   const set = (field: keyof FormValues) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     setValues((prev) => ({ ...prev, [field]: e.target.value }));
-    if (errors[field as keyof FormErrors]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
+    if (errors[field as keyof FormErrors]) setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
+  // ── Location helpers ─────────────────────────────────────────
+  function addLocation(val: string) {
+    const trimmed = val.trim();
+    if (!trimmed || locationList.includes(trimmed)) { setLocationInput(''); return; }
+    const next = [...locationList, trimmed];
+    setLocationList(next);
+    setValues(prev => ({ ...prev, location_name: next.join(', ') }));
+    if (errors.location_name) setErrors(prev => ({ ...prev, location_name: undefined }));
+    setLocationInput('');
+    setShowLocDrop(false);
+  }
+  function removeLocation(val: string) {
+    const next = locationList.filter(l => l !== val);
+    setLocationList(next);
+    setValues(prev => ({ ...prev, location_name: next.join(', ') }));
+  }
+
+  // ── Category helpers ─────────────────────────────────────────
+  function toggleCategory(cat: string) {
+    setValues(prev => {
+      const has = prev.categories.includes(cat);
+      const next = has ? prev.categories.filter(c => c !== cat) : [...prev.categories, cat];
+      if (next.length > 0 && errors.categories) setErrors(e => ({ ...e, categories: undefined }));
+      return { ...prev, categories: next };
+    });
+  }
+  function addCustomCategory() {
+    const val = categoryOtherInput.trim();
+    if (val && !values.categories.includes(val)) {
+      setValues(prev => ({ ...prev, categories: [...prev.categories, val] }));
+      if (errors.categories) setErrors(e => ({ ...e, categories: undefined }));
+    }
+    setCategoryOtherInput('');
+    setShowCategoryOther(false);
+  }
+
+  // ── Date helpers ─────────────────────────────────────────────
+  async function handleAddDate() {
+    if (!newDateValue || !tour?.id) return;
+    setDateLoading(true);
+    try {
+      const added = await addTourDate(tour.id, {
+        date: newDateValue,
+        available_slots: parseInt(newDateSlots) || tour.max_participants,
+      }) as TourDate;
+      setDates(prev => [...prev, added]);
+      setNewDateValue('');
+      setNewDateSlots('');
+    } finally {
+      setDateLoading(false);
+    }
+  }
+  async function handleRemoveDate(dateId: string) {
+    if (!tour?.id) return;
+    setDateLoading(true);
+    try {
+      await deleteTourDate(tour.id, dateId);
+      setDates(prev => prev.filter(d => d.id !== dateId));
+    } finally {
+      setDateLoading(false);
+    }
+  }
+
+  // ── Submit ───────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formErrors = validate(values);
     if (Object.keys(formErrors).length > 0) { setErrors(formErrors); return; }
-
     setLoading(true);
     setSubmitError(null);
-
     try {
       const payload = {
-        name: values.name.trim(),
-        description: values.description.trim(),
-        location_name: values.location_name.trim(),
-        latitude: values.latitude ? parseFloat(values.latitude) : undefined,
-        longitude: values.longitude ? parseFloat(values.longitude) : undefined,
-        altitude_meters: values.altitude_meters ? parseInt(values.altitude_meters) : undefined,
-        difficulty: values.difficulty,
-        distance_km: values.distance_km ? parseFloat(values.distance_km) : undefined,
-        max_participants: parseInt(values.max_participants),
-        photo_urls: values.photo_urls,
-        status: values.status,
-        category: values.category || undefined,
-        price: values.price ? parseFloat(values.price) : undefined,
-        start_date: values.start_date || undefined,
-        end_date: values.end_date || undefined,
-        organizer: values.organizer.trim() || undefined,
-        guide_name: values.guide_name.trim() || undefined,
-        guide_instagram: values.guide_instagram.trim() || undefined,
-        tursab_no: values.tursab_no.trim() || undefined,
-        contact_phone: values.contact_phone.trim() || undefined,
-        target_location: values.target_location.trim() || undefined,
-        meeting_points: values.meeting_points.trim() || undefined,
-        program: values.program.trim() || undefined,
-        accommodation: values.accommodation.trim() || undefined,
-        transportation: values.transportation.trim() || undefined,
-        important_notes: values.important_notes.trim() || undefined,
-        tags: values.tags.length > 0 ? values.tags : undefined,
+        name:              values.name.trim(),
+        description:       values.description.trim(),
+        location_name:     values.location_name.trim(),
+        difficulty:        values.difficulty,
+        max_participants:  parseInt(values.max_participants),
+        photo_urls:        values.photo_urls,
+        status:            values.status,
+        category:          values.categories.join(', '),
+        price:             parseFloat(values.price),
+        price_currency:    values.price_currency,
+        start_date:        values.start_date,
+        end_date:          values.end_date,
+        organizer:         values.organizer.trim() || undefined,
+        guide_name:        values.guide_name.trim() || undefined,
+        guide_instagram:   values.guide_instagram.trim() || undefined,
+        tursab_no:         values.tursab_no.trim() || undefined,
+        contact_phone:     values.contact_phone.trim() || undefined,
+        target_location:   values.target_location.trim() || undefined,
+        meeting_points:    values.meeting_points.trim() || undefined,
+        program:           values.program.trim() || undefined,
+        accommodation:     values.accommodation.trim() || undefined,
+        accommodation_url: values.accommodation_url.trim() || undefined,
+        transportation:    values.transportation.trim() || undefined,
+        important_notes:   values.important_notes.trim() || undefined,
+        tags:              values.tags.length > 0 ? values.tags : undefined,
       };
-
       if (mode === "create") {
         await createTour(payload);
       } else {
         await updateTour(tour!.id, payload);
       }
-
       router.push("/tours");
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : tx.submitError);
@@ -192,9 +277,32 @@ export default function TourForm({ mode, tour }: TourFormProps) {
     }
   };
 
+  // ── Style helpers ────────────────────────────────────────────
+  const tagContainerStyle: React.CSSProperties = {
+    display: 'flex', flexWrap: 'wrap', gap: '6px',
+    padding: '8px 10px', borderRadius: '10px',
+    border: '1px solid #E5E7EB', background: 'white',
+    minHeight: '42px', alignItems: 'center',
+  };
+  const inlineInputStyle: React.CSSProperties = {
+    border: 'none', outline: 'none', padding: '4px',
+    fontSize: '0.82rem', color: '#374151', background: 'transparent',
+    flex: '1 1 120px', minWidth: '120px',
+  };
+  const chipStyle = (active: boolean): React.CSSProperties => ({
+    display: 'inline-flex', alignItems: 'center', gap: '4px',
+    background: active ? '#FF5533' : '#F3F4F6',
+    color: active ? 'white' : '#374151',
+    border: active ? 'none' : '1px solid #E5E7EB',
+    borderRadius: '8px', padding: '5px 12px',
+    fontSize: '0.78rem', fontWeight: 600,
+    cursor: 'pointer', transition: 'all 0.15s',
+  });
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-      {/* Basic Info */}
+
+      {/* ── Basic Info ── */}
       <section className="bg-white rounded-2xl shadow-card p-6 flex flex-col gap-5">
         <h2 className="text-base font-bold font-display text-text-primary border-b border-gray-100 pb-3">{tx.basicInfo}</h2>
         <Input label={tx.tourName} required value={values.name} onChange={set("name")} error={errors.name} placeholder={tx.tourNamePlaceholder} />
@@ -205,31 +313,94 @@ export default function TourForm({ mode, tour }: TourFormProps) {
         </div>
       </section>
 
-      {/* Location & Specs */}
+      {/* ── Location & Specs ── */}
       <section className="bg-white rounded-2xl shadow-card p-6 flex flex-col gap-5">
         <h2 className="text-base font-bold font-display text-text-primary border-b border-gray-100 pb-3">{tx.locationSpecs}</h2>
-        <ProvinceSelect
-          label={tx.province}
-          required
-          value={values.location_name}
-          onChange={(val) => {
-            setValues((prev) => ({ ...prev, location_name: val }));
-            if (errors.location_name) setErrors((prev) => ({ ...prev, location_name: undefined }));
-          }}
-          error={errors.location_name}
-        />
 
-        {/* Etiket */}
+        {/* Multi-location tag input */}
+        <div>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+            {tx.province} <span style={{ color: '#FF5533' }}>*</span>
+          </label>
+          <div
+            style={{ ...tagContainerStyle, borderColor: errors.location_name ? '#F87171' : '#E5E7EB', cursor: 'text' }}
+            onClick={() => document.getElementById('loc-input')?.focus()}
+          >
+            {locationList.map(loc => (
+              <span key={loc} style={{
+                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                background: '#EEF2FF', color: '#4F46E5',
+                border: '1px solid rgba(79,70,229,0.25)',
+                borderRadius: '6px', padding: '3px 8px',
+                fontSize: '0.78rem', fontWeight: 600,
+              }}>
+                {loc}
+                <button type="button" onClick={() => removeLocation(loc)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 0 2px', color: '#4F46E5', lineHeight: 1, fontSize: '1rem' }}>
+                  ×
+                </button>
+              </span>
+            ))}
+            <div style={{ position: 'relative', flex: '1 1 150px', minWidth: '150px' }}>
+              <input
+                id="loc-input"
+                type="text"
+                value={locationInput}
+                placeholder={locationList.length === 0 ? 'İl veya ülke yazın, Enter ile ekle...' : ''}
+                onChange={(e) => {
+                  setLocationInput(e.target.value);
+                  const q = e.target.value.trim().toLocaleLowerCase('tr');
+                  if (q.length >= 1) {
+                    setLocationSuggestions(
+                      TURKISH_PROVINCES.filter(p => p.toLocaleLowerCase('tr').includes(q)).slice(0, 8)
+                    );
+                    setShowLocDrop(true);
+                  } else {
+                    setLocationSuggestions([]);
+                    setShowLocDrop(false);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter')  { e.preventDefault(); addLocation(locationInput); }
+                  if (e.key === 'Escape') { setShowLocDrop(false); }
+                }}
+                onBlur={() => setTimeout(() => setShowLocDrop(false), 150)}
+                style={inlineInputStyle}
+              />
+              {showLocDrop && locationSuggestions.length > 0 && (
+                <div style={{
+                  position: 'absolute', top: '100%', left: 0, right: 0, background: 'white',
+                  border: '1px solid #E5E7EB', borderRadius: '10px', zIndex: 50,
+                  maxHeight: '180px', overflowY: 'auto', boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                }}>
+                  {locationSuggestions.map(p => (
+                    <button key={p} type="button"
+                      onMouseDown={(e) => { e.preventDefault(); addLocation(p); }}
+                      style={{
+                        display: 'block', width: '100%', textAlign: 'left',
+                        padding: '8px 12px', fontSize: '0.82rem', color: '#374151',
+                        background: 'none', border: 'none', cursor: 'pointer',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          {errors.location_name && <p style={{ fontSize: '0.72rem', color: '#EF4444', margin: '4px 0 0 2px' }}>{errors.location_name}</p>}
+          <p style={{ fontSize: '0.72rem', color: '#9CA3AF', margin: '4px 0 0 2px' }}>Birden çok şehir veya yurtdışı lokasyonu girebilirsiniz.</p>
+        </div>
+
+        {/* SEO Tags */}
         <div>
           <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
             Etiket <span style={{ fontSize: '0.72rem', color: '#9CA3AF', fontWeight: 400 }}>(isteğe bağlı)</span>
           </label>
-          <div style={{
-            display: 'flex', flexWrap: 'wrap', gap: '6px',
-            padding: '8px 10px', borderRadius: '10px',
-            border: '1px solid #E5E7EB', background: 'white',
-            minHeight: '42px', alignItems: 'center',
-          }}>
+          <div style={tagContainerStyle}>
             {values.tags.map(tag => (
               <span key={tag} style={{
                 display: 'inline-flex', alignItems: 'center', gap: '4px',
@@ -239,11 +410,9 @@ export default function TourForm({ mode, tour }: TourFormProps) {
                 fontSize: '0.78rem', fontWeight: 600,
               }}>
                 {tag}
-                <button
-                  type="button"
-                  onClick={() => setValues(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 0 2px', color: '#FF5533', lineHeight: 1, fontSize: '1rem' }}
-                >
+                <button type="button"
+                  onClick={() => setValues(prev => ({ ...prev, tags: prev.tags.filter(tg => tg !== tag) }))}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 0 2px', color: '#FF5533', lineHeight: 1, fontSize: '1rem' }}>
                   ×
                 </button>
               </span>
@@ -256,18 +425,12 @@ export default function TourForm({ mode, tour }: TourFormProps) {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ',') {
                   e.preventDefault();
-                  const val = tagInput.trim().replace(/,$/, '');
-                  if (val && !values.tags.includes(val)) {
-                    setValues(prev => ({ ...prev, tags: [...prev.tags, val] }));
-                  }
+                  const v = tagInput.trim().replace(/,$/, '');
+                  if (v && !values.tags.includes(v)) setValues(prev => ({ ...prev, tags: [...prev.tags, v] }));
                   setTagInput('');
                 }
               }}
-              style={{
-                border: 'none', outline: 'none', padding: '4px',
-                fontSize: '0.82rem', color: '#374151', background: 'transparent',
-                flex: '1 1 120px', minWidth: '120px',
-              }}
+              style={inlineInputStyle}
             />
           </div>
           <p style={{ fontSize: '0.72rem', color: '#9CA3AF', margin: '4px 0 0 2px' }}>
@@ -275,28 +438,144 @@ export default function TourForm({ mode, tour }: TourFormProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-5">
-          <Input label={tx.latitude} type="number" step="any" value={values.latitude} onChange={set("latitude")} placeholder={tx.latPlaceholder} hint={tx.optional} />
-          <Input label={tx.longitude} type="number" step="any" value={values.longitude} onChange={set("longitude")} placeholder={tx.lngPlaceholder} hint={tx.optional} />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <Input label={tx.altitude} type="number" min={0} value={values.altitude_meters} onChange={set("altitude_meters")} placeholder={tx.altitudePlaceholder} hint={tx.optional} />
-          <Input label={tx.distance} type="number" min={0.1} step={0.1} value={values.distance_km} onChange={set("distance_km")} placeholder={tx.distancePlaceholder} hint={tx.optional} />
-          <Input label={tx.maxParticipants} required type="number" min={1} value={values.max_participants} onChange={set("max_participants")} error={errors.max_participants} placeholder={tx.maxParticipantsPlaceholder} />
-        </div>
+        <Input label={tx.maxParticipants} required type="number" min={1} value={values.max_participants} onChange={set("max_participants")} error={errors.max_participants} placeholder={tx.maxParticipantsPlaceholder} />
       </section>
 
-      {/* Tour Details */}
+      {/* ── Tour Details ── */}
       <section className="bg-white rounded-2xl shadow-card p-6 flex flex-col gap-5">
         <h2 className="text-base font-bold font-display text-text-primary border-b border-gray-100 pb-3">{tx.tourDetails}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <Select label={tx.category} value={values.category} onChange={set("category")} options={categoryOptions} />
-          <Input label={tx.price} type="number" min={0} step={0.01} value={values.price} onChange={set("price")} placeholder={tx.pricePlaceholder} hint={tx.optional} />
+
+        {/* Category multi-select */}
+        <div>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#374151', marginBottom: '8px' }}>
+            {tx.category} <span style={{ color: '#FF5533' }}>*</span>
+          </label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+            {availableCategories.map(cat => (
+              <button key={cat} type="button" onClick={() => toggleCategory(cat)} style={chipStyle(values.categories.includes(cat))}>
+                {values.categories.includes(cat) && '✓ '}
+                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </button>
+            ))}
+            <button type="button" onClick={() => setShowCategoryOther(v => !v)} style={chipStyle(showCategoryOther)}>
+              + {tx.categoryOther}
+            </button>
+          </div>
+          {showCategoryOther && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+              <input
+                type="text"
+                value={categoryOtherInput}
+                onChange={(e) => setCategoryOtherInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomCategory())}
+                placeholder="Kategori adı..."
+                autoFocus
+                style={{ height: '36px', padding: '0 12px', borderRadius: '8px', border: '1px solid #E5E7EB', fontSize: '0.82rem', outline: 'none', flex: 1, maxWidth: '220px' }}
+              />
+              <button type="button" onClick={addCustomCategory}
+                style={{ height: '36px', padding: '0 14px', borderRadius: '8px', background: '#FF5533', color: 'white', border: 'none', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+                Ekle
+              </button>
+            </div>
+          )}
+          {values.categories.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
+              {values.categories.map(cat => (
+                <span key={cat} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '4px',
+                  background: '#FFF4F1', color: '#FF5533',
+                  border: '1px solid rgba(255,85,51,0.25)',
+                  borderRadius: '6px', padding: '3px 10px', fontSize: '0.75rem', fontWeight: 700,
+                }}>
+                  {cat}
+                  <button type="button" onClick={() => toggleCategory(cat)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF5533', lineHeight: 1, fontSize: '1rem' }}>
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          {errors.categories && <p style={{ fontSize: '0.72rem', color: '#EF4444', margin: '6px 0 0 2px' }}>{errors.categories}</p>}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <Input label={tx.startDate} type="date" value={values.start_date} onChange={set("start_date")} hint={tx.optional} />
-          <Input label={tx.endDate} type="date" value={values.end_date} onChange={set("end_date")} hint={tx.optional} />
+
+        {/* Price + Currency */}
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
+          <Input
+            label={`${tx.price} *`}
+            type="number" min={0} step={0.01}
+            value={values.price}
+            onChange={set("price")}
+            placeholder={tx.pricePlaceholder}
+            error={errors.price}
+          />
+          <Select label={tx.currency} value={values.price_currency} onChange={set("price_currency")} options={CURRENCIES} />
         </div>
+
+        {/* Dates */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <Input label={`${tx.startDate} *`} type="date" value={values.start_date} onChange={set("start_date")} error={errors.start_date} />
+          <Input label={`${tx.endDate} *`}   type="date" value={values.end_date}   onChange={set("end_date")}   error={errors.end_date} />
+        </div>
+
+        {/* Tur Tarihleri */}
+        <div>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#374151', marginBottom: '4px' }}>{tx.tourDates}</label>
+          <p style={{ fontSize: '0.72rem', color: '#9CA3AF', margin: '0 0 10px' }}>{tx.tourDatesHint}</p>
+          {mode === 'create' ? (
+            <p style={{ fontSize: '0.78rem', color: '#6B7280', background: '#F9FAFB', padding: '10px 14px', borderRadius: '10px', margin: 0 }}>
+              {tx.tourDatesCreateHint}
+            </p>
+          ) : (
+            <>
+              {dates.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
+                  {dates.map(d => (
+                    <div key={d.id} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '8px 14px', borderRadius: '10px', background: '#F9FAFB', border: '1px solid #E5E7EB',
+                    }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>
+                        {new Date(d.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        <span style={{ marginLeft: '12px', fontSize: '0.75rem', color: '#9CA3AF', fontWeight: 400 }}>
+                          {d.available_slots} kontenjan
+                        </span>
+                      </span>
+                      <button type="button" onClick={() => handleRemoveDate(d.id)} disabled={dateLoading}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', fontSize: '0.75rem', fontWeight: 600, padding: '4px 8px' }}>
+                        Kaldır
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: '#6B7280', marginBottom: '4px' }}>Tarih</label>
+                  <input type="date" value={newDateValue} onChange={(e) => setNewDateValue(e.target.value)}
+                    style={{ height: '36px', padding: '0 10px', borderRadius: '8px', border: '1px solid #E5E7EB', fontSize: '0.82rem', outline: 'none' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: '#6B7280', marginBottom: '4px' }}>{tx.availableSlots}</label>
+                  <input type="number" min={1} value={newDateSlots} onChange={(e) => setNewDateSlots(e.target.value)}
+                    placeholder={values.max_participants || '20'}
+                    style={{ height: '36px', padding: '0 10px', borderRadius: '8px', border: '1px solid #E5E7EB', fontSize: '0.82rem', outline: 'none', width: '100px' }} />
+                </div>
+                <button type="button" onClick={handleAddDate} disabled={!newDateValue || dateLoading}
+                  style={{
+                    height: '36px', padding: '0 16px', borderRadius: '8px',
+                    background: newDateValue && !dateLoading ? '#FF5533' : '#E5E7EB',
+                    color: newDateValue && !dateLoading ? 'white' : '#9CA3AF',
+                    border: 'none', fontSize: '0.82rem', fontWeight: 600,
+                    cursor: newDateValue && !dateLoading ? 'pointer' : 'default',
+                  }}>
+                  + {tx.addDate}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
         <Input label="Düzenleyen" value={values.organizer} onChange={set("organizer")} placeholder="örn. Trekly Outdoor, Ali Yılmaz" hint={tx.optional} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <Input label={tx.guideName} value={values.guide_name} onChange={set("guide_name")} placeholder={tx.guideNamePlaceholder} hint={tx.optional} />
@@ -310,16 +589,17 @@ export default function TourForm({ mode, tour }: TourFormProps) {
         <Textarea label={tx.meetingPoints} rows={3} value={values.meeting_points} onChange={set("meeting_points")} placeholder={tx.meetingPointsPlaceholder} hint={tx.optional} />
       </section>
 
-      {/* Tour Content */}
+      {/* ── Tour Content ── */}
       <section className="bg-white rounded-2xl shadow-card p-6 flex flex-col gap-5">
         <h2 className="text-base font-bold font-display text-text-primary border-b border-gray-100 pb-3">{tx.tourContent}</h2>
         <Textarea label={tx.program} rows={5} value={values.program} onChange={set("program")} placeholder={tx.programPlaceholder} hint={tx.optional} />
         <Textarea label={tx.accommodation} rows={3} value={values.accommodation} onChange={set("accommodation")} placeholder={tx.accommodationPlaceholder} hint={tx.optional} />
+        <Input label={tx.accommodationUrl} value={values.accommodation_url} onChange={set("accommodation_url")} placeholder={tx.accommodationUrlPlaceholder} hint={tx.optional} />
         <Textarea label={tx.transportation} rows={3} value={values.transportation} onChange={set("transportation")} placeholder={tx.transportationPlaceholder} hint={tx.optional} />
         <Textarea label={tx.importantNotes} rows={3} value={values.important_notes} onChange={set("important_notes")} placeholder={tx.importantNotesPlaceholder} hint={tx.optional} />
       </section>
 
-      {/* Photos */}
+      {/* ── Photos ── */}
       <section className="bg-white rounded-2xl shadow-card p-6">
         <h2 className="text-base font-bold font-display text-text-primary border-b border-gray-100 pb-3 mb-5">{tx.photos}</h2>
         <PhotoUploader value={values.photo_urls} onChange={(urls) => setValues((prev) => ({ ...prev, photo_urls: urls }))} />

@@ -259,6 +259,9 @@ export class ToursService {
       program: dto.program ?? null,
       important_notes: dto.important_notes ?? null,
       tags: dto.tags ?? [],
+      organizer: dto.organizer ?? null,
+      accommodation_url: dto.accommodation_url ?? null,
+      price_currency: dto.price_currency ?? 'TRY',
     });
 
     return this.tourRepo.save(tour);

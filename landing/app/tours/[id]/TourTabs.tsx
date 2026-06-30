@@ -4,6 +4,7 @@ import { useState } from 'react';
 interface TabItem {
   label: string;
   content: string | null | undefined;
+  link?: { url: string; label: string } | null;
 }
 
 export default function TourTabs({ tabs }: { tabs: TabItem[] }) {
@@ -55,6 +56,26 @@ export default function TourTabs({ tabs }: { tabs: TabItem[] }) {
       }}>
         {visible[active].content}
       </p>
+      {visible[active].link && (
+        <a
+          href={visible[active].link!.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            marginTop: '14px',
+            fontSize: '0.85rem', fontWeight: 600, color: '#FF5533',
+            textDecoration: 'none',
+            background: '#FFF4F1', border: '1px solid rgba(255,85,51,0.2)',
+            padding: '7px 14px', borderRadius: '10px',
+          }}
+        >
+          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+          {visible[active].link!.label}
+        </a>
+      )}
     </div>
   );
 }

@@ -196,10 +196,13 @@ export default function HeroSearch({ initialDifficulty = '' }: Props) {
               }}
             >
               <option value="" style={{ background: '#0F0F28', color: '#888' }}>Tümü</option>
-              <option value="easy"    style={{ background: '#0F0F28', color: 'white' }}>🥾 Kolay</option>
-              <option value="medium"  style={{ background: '#0F0F28', color: 'white' }}>⛏️ Orta</option>
-              <option value="hard"    style={{ background: '#0F0F28', color: 'white' }}>🧗 Zor</option>
-              <option value="extreme" style={{ background: '#0F0F28', color: 'white' }}>💀 Ekstrem</option>
+              <option value="easy"        style={{ background: '#0F0F28', color: 'white' }}>🥾 Kolay</option>
+              <option value="easy_medium" style={{ background: '#0F0F28', color: 'white' }}>🥾 Kolay-Orta</option>
+              <option value="medium"      style={{ background: '#0F0F28', color: 'white' }}>⛏️ Orta</option>
+              <option value="medium_hard" style={{ background: '#0F0F28', color: 'white' }}>⛏️ Orta-Zor</option>
+              <option value="hard"        style={{ background: '#0F0F28', color: 'white' }}>🧗 Zor</option>
+              <option value="very_hard"   style={{ background: '#0F0F28', color: 'white' }}>🧗 Çok Zor</option>
+              <option value="extreme"     style={{ background: '#0F0F28', color: 'white' }}>💀 Ekstrem</option>
             </select>
             {chevron}
           </div>

@@ -2,7 +2,6 @@ import {
   IsArray,
   IsDateString,
   IsEnum,
-  IsIn,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -13,7 +12,6 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { TourDifficulty } from '../../entities/tour.entity';
-import { TURKISH_PROVINCES } from '../../common/provinces';
 
 export class CreateTourDto {
   @IsString()
@@ -26,7 +24,6 @@ export class CreateTourDto {
 
   @IsString()
   @IsNotEmpty()
-  @IsIn(TURKISH_PROVINCES, { message: 'Geçerli bir Türkiye ili seçmelisiniz' })
   location_name!: string;
 
   @IsOptional()
@@ -45,7 +42,7 @@ export class CreateTourDto {
   @Type(() => Number)
   altitude_meters?: number;
 
-  @IsEnum(['easy', 'medium', 'hard', 'extreme'])
+  @IsEnum(['easy', 'easy_medium', 'medium', 'medium_hard', 'hard', 'very_hard', 'extreme'])
   difficulty!: TourDifficulty;
 
   @IsOptional()
@@ -68,26 +65,23 @@ export class CreateTourDto {
   @IsEnum(['draft', 'published'])
   status?: 'draft' | 'published';
 
-  @IsOptional()
   @IsString()
-  category?: string;
+  @IsNotEmpty()
+  category!: string;
 
-  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  price?: number;
+  price!: number;
 
   @IsOptional()
   @IsEnum(['TRY', 'USD', 'EUR'])
   price_currency?: 'TRY' | 'USD' | 'EUR';
 
-  @IsOptional()
   @IsDateString()
-  start_date?: string;
+  start_date!: string;
 
-  @IsOptional()
   @IsDateString()
-  end_date?: string;
+  end_date!: string;
 
   @IsOptional()
   @IsString()
@@ -116,6 +110,10 @@ export class CreateTourDto {
   @IsOptional()
   @IsString()
   accommodation?: string;
+
+  @IsOptional()
+  @IsString()
+  accommodation_url?: string;
 
   @IsOptional()
   @IsString()

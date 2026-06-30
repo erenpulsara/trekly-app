@@ -12,7 +12,14 @@ import { Agency } from './agency.entity';
 import { TourDate } from './tour-date.entity';
 import { Booking } from './booking.entity';
 
-export type TourDifficulty = 'easy' | 'medium' | 'hard' | 'extreme';
+export type TourDifficulty =
+  | 'easy'
+  | 'easy_medium'
+  | 'medium'
+  | 'medium_hard'
+  | 'hard'
+  | 'very_hard'
+  | 'extreme';
 export type TourStatus = 'draft' | 'published' | 'rejected';
 
 @Entity('tours')
@@ -47,7 +54,7 @@ export class Tour {
 
   @Column({
     type: 'enum',
-    enum: ['easy', 'medium', 'hard', 'extreme'],
+    enum: ['easy', 'easy_medium', 'medium', 'medium_hard', 'hard', 'very_hard', 'extreme'],
     nullable: false,
   })
   difficulty!: TourDifficulty;
@@ -112,6 +119,9 @@ export class Tour {
 
   @Column({ type: 'text', nullable: true })
   accommodation!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  accommodation_url!: string | null;
 
   @Column({ type: 'text', nullable: true })
   transportation!: string | null;

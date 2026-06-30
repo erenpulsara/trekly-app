@@ -14,21 +14,33 @@ import TourRightCard from './TourRightCard';
 const AGENCY_URL = process.env.NEXT_PUBLIC_AGENCY_URL ?? 'https://acenta.treklyapp.com';
 
 const DIFF_LABEL: Record<TourDifficulty, string> = {
-  easy: 'Kolay', medium: 'Orta', hard: 'Zor', extreme: 'Extreme',
+  easy:        'Kolay',
+  easy_medium: 'Kolay-Orta',
+  medium:      'Orta',
+  medium_hard: 'Orta-Zor',
+  hard:        'Zor',
+  very_hard:   'Çok Zor',
+  extreme:     'Ekstrem',
 };
 
 const DIFF_COLOR: Record<TourDifficulty, { bg: string; text: string }> = {
-  easy:    { bg: '#E8F5E9', text: '#2E7D32' },
-  medium:  { bg: '#FFF3E0', text: '#E65100' },
-  hard:    { bg: '#FBE9E7', text: '#BF360C' },
-  extreme: { bg: '#FFEBEE', text: '#B71C1C' },
+  easy:        { bg: '#E8F5E9', text: '#2E7D32' },
+  easy_medium: { bg: '#F1F8E9', text: '#558B2F' },
+  medium:      { bg: '#FFF3E0', text: '#E65100' },
+  medium_hard: { bg: '#FFF8E1', text: '#F57F17' },
+  hard:        { bg: '#FBE9E7', text: '#BF360C' },
+  very_hard:   { bg: '#FCE4EC', text: '#880E4F' },
+  extreme:     { bg: '#FFEBEE', text: '#B71C1C' },
 };
 
 const PH_GRADIENT: Record<TourDifficulty, string> = {
-  easy:    'linear-gradient(135deg,#1a4d2e,#2d7a4f)',
-  medium:  'linear-gradient(135deg,#4a2800,#8b5000)',
-  hard:    'linear-gradient(135deg,#3d1200,#7a2800)',
-  extreme: 'linear-gradient(135deg,#1a0000,#4a0808)',
+  easy:        'linear-gradient(135deg,#1a4d2e,#2d7a4f)',
+  easy_medium: 'linear-gradient(135deg,#2d5a1f,#4a8a3f)',
+  medium:      'linear-gradient(135deg,#4a2800,#8b5000)',
+  medium_hard: 'linear-gradient(135deg,#5a3000,#9a6000)',
+  hard:        'linear-gradient(135deg,#3d1200,#7a2800)',
+  very_hard:   'linear-gradient(135deg,#2d0030,#600060)',
+  extreme:     'linear-gradient(135deg,#1a0000,#4a0808)',
 };
 
 function scoreRelated(current: Tour, candidate: Tour): number {
@@ -183,10 +195,16 @@ export default async function TourDetailPage({ params }: { params: { id: string 
 
           {/* Tab sections */}
           <TourTabs tabs={[
-            { label: 'Tur Programı',   content: tour.program },
-            { label: 'Konaklama',      content: tour.accommodation },
-            { label: 'Ulaşım',         content: tour.transportation },
-            { label: 'Önemli Notlar',  content: tour.important_notes },
+            { label: 'Tur Programı',  content: tour.program },
+            {
+              label: 'Konaklama',
+              content: tour.accommodation,
+              link: tour.accommodation_url
+                ? { url: tour.accommodation_url, label: 'Oteli Görüntüle' }
+                : null,
+            },
+            { label: 'Ulaşım',        content: tour.transportation },
+            { label: 'Önemli Notlar', content: tour.important_notes },
           ]} />
         </div>
 

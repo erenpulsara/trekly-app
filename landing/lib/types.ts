@@ -1,4 +1,11 @@
-export type TourDifficulty = 'easy' | 'medium' | 'hard' | 'extreme';
+export type TourDifficulty =
+  | 'easy'
+  | 'easy_medium'
+  | 'medium'
+  | 'medium_hard'
+  | 'hard'
+  | 'very_hard'
+  | 'extreme';
 
 export interface TourDate {
   id: string;
@@ -35,6 +42,7 @@ export interface Tour {
   target_location?: string | null;
   meeting_points?: string | null;
   accommodation?: string | null;
+  accommodation_url?: string | null;
   transportation?: string | null;
   program?: string | null;
   important_notes?: string | null;

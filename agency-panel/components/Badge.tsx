@@ -11,10 +11,13 @@ type BadgeVariant =
 
 const variantClasses: Record<BadgeVariant, string> = {
   // Difficulty
-  easy: "bg-difficulty-easy-bg text-difficulty-easy-text",
-  medium: "bg-difficulty-medium-bg text-difficulty-medium-text",
-  hard: "bg-difficulty-hard-bg text-difficulty-hard-text",
-  extreme: "bg-difficulty-extreme-bg text-difficulty-extreme-text",
+  easy:        "bg-difficulty-easy-bg text-difficulty-easy-text",
+  easy_medium: "bg-lime-50 text-lime-700",
+  medium:      "bg-difficulty-medium-bg text-difficulty-medium-text",
+  medium_hard: "bg-amber-50 text-amber-700",
+  hard:        "bg-difficulty-hard-bg text-difficulty-hard-text",
+  very_hard:   "bg-pink-50 text-pink-800",
+  extreme:     "bg-difficulty-extreme-bg text-difficulty-extreme-text",
   // Booking status
   pending: "bg-status-pending-bg text-status-pending-text",
   confirmed: "bg-status-confirmed-bg text-status-confirmed-text",
@@ -30,10 +33,13 @@ const variantClasses: Record<BadgeVariant, string> = {
 };
 
 const variantDots: Record<BadgeVariant, string> = {
-  easy: "bg-emerald-500",
-  medium: "bg-amber-500",
-  hard: "bg-orange-500",
-  extreme: "bg-red-500",
+  easy:        "bg-emerald-500",
+  easy_medium: "bg-lime-500",
+  medium:      "bg-amber-500",
+  medium_hard: "bg-yellow-600",
+  hard:        "bg-orange-500",
+  very_hard:   "bg-pink-600",
+  extreme:     "bg-red-500",
   pending: "bg-amber-500",
   confirmed: "bg-blue-500",
   completed: "bg-emerald-500",

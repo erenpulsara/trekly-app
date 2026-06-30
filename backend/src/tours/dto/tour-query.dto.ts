@@ -3,7 +3,7 @@ import { TourDifficulty } from '../../entities/tour.entity';
 
 export class TourQueryDto {
   @IsOptional()
-  @IsEnum(['easy', 'medium', 'hard', 'extreme'])
+  @IsEnum(['easy', 'easy_medium', 'medium', 'medium_hard', 'hard', 'very_hard', 'extreme'])
   difficulty?: TourDifficulty;
 
   @IsOptional()

@@ -3,11 +3,17 @@ import { useEffect, useState } from 'react';
 import { adminApi } from '@/lib/admin-api';
 import { Trash2, Search } from 'lucide-react';
 
-const DIFF_LABEL: Record<string, string> = { easy: 'Kolay', medium: 'Orta', hard: 'Zor', extreme: 'Extreme' };
+const DIFF_LABEL: Record<string, string> = {
+  easy: 'Kolay', easy_medium: 'Kolay-Orta', medium: 'Orta', medium_hard: 'Orta-Zor',
+  hard: 'Zor', very_hard: 'Çok Zor', extreme: 'Ekstrem',
+};
 const DIFF_COLOR: Record<string, string> = {
   easy: 'bg-green-50 text-green-700',
+  easy_medium: 'bg-lime-50 text-lime-700',
   medium: 'bg-orange-50 text-orange-700',
+  medium_hard: 'bg-amber-50 text-amber-700',
   hard: 'bg-red-50 text-red-700',
+  very_hard: 'bg-pink-50 text-pink-800',
   extreme: 'bg-red-100 text-red-900',
 };
 

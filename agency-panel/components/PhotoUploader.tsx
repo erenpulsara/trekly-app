@@ -132,7 +132,7 @@ export default function PhotoUploader({
             {value.map((url, i) => (
               <div
                 key={url}
-                className="relative aspect-square rounded-xl overflow-hidden group animate-fade-in"
+                className="relative aspect-square rounded-xl overflow-hidden animate-fade-in"
                 style={{ outline: i === 0 ? '2px solid #FF5533' : 'none' }}
               >
                 <img
@@ -154,45 +154,45 @@ export default function PhotoUploader({
                   </div>
                 )}
 
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-200 flex flex-col items-center justify-center gap-2">
-                  {/* Delete button */}
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); removePhoto(i); }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    style={{
-                      background: 'rgba(239,68,68,0.9)', border: 'none', borderRadius: '8px',
-                      color: 'white', padding: '5px 10px', cursor: 'pointer',
-                      fontSize: '0.72rem', fontWeight: 700,
-                      display: 'flex', alignItems: 'center', gap: '4px',
-                    }}
-                  >
-                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Sil
-                  </button>
-
-                  {/* Set cover button */}
+                {/* Action buttons — always visible at bottom of card */}
+                <div style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0,
+                  display: 'flex', flexDirection: 'column', gap: '4px',
+                  padding: '6px',
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)',
+                }}>
                   {i !== 0 && (
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setCover(i); }}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                       style={{
-                        background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '8px',
-                        color: '#FF5533', padding: '5px 10px', cursor: 'pointer',
-                        fontSize: '0.72rem', fontWeight: 700,
-                        display: 'flex', alignItems: 'center', gap: '4px',
+                        background: 'rgba(255,255,255,0.92)', border: 'none', borderRadius: '6px',
+                        color: '#FF5533', padding: '4px 8px', cursor: 'pointer',
+                        fontSize: '0.68rem', fontWeight: 700, width: '100%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px',
                       }}
                     >
-                      <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
+                      <svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                       </svg>
                       Kapak Yap
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); removePhoto(i); }}
+                    style={{
+                      background: 'rgba(239,68,68,0.85)', border: 'none', borderRadius: '6px',
+                      color: 'white', padding: '4px 8px', cursor: 'pointer',
+                      fontSize: '0.68rem', fontWeight: 700, width: '100%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px',
+                    }}
+                  >
+                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Sil
+                  </button>
                 </div>
               </div>
             ))}

@@ -9,25 +9,34 @@ import type { Tour, TourDifficulty } from '@/lib/types';
 type Cat = TourDifficulty | 'all';
 
 const CATEGORIES: { value: Cat; icon: string; label: string }[] = [
-  { value: 'all',     icon: '🌍', label: 'Tümü' },
-  { value: 'easy',    icon: '🥾', label: 'Kolay' },
-  { value: 'medium',  icon: '⛏️', label: 'Orta' },
-  { value: 'hard',    icon: '🧗', label: 'Zor' },
-  { value: 'extreme', icon: '💀', label: 'Extreme' },
+  { value: 'all',         icon: '🌍', label: 'Tümü' },
+  { value: 'easy',        icon: '🥾', label: 'Kolay' },
+  { value: 'easy_medium', icon: '🥾', label: 'Kolay-Orta' },
+  { value: 'medium',      icon: '⛏️', label: 'Orta' },
+  { value: 'medium_hard', icon: '⛏️', label: 'Orta-Zor' },
+  { value: 'hard',        icon: '🧗', label: 'Zor' },
+  { value: 'very_hard',   icon: '🧗', label: 'Çok Zor' },
+  { value: 'extreme',     icon: '💀', label: 'Ekstrem' },
 ];
 
 const DIFF_LABEL: Record<TourDifficulty, string> = {
-  easy: 'Kolay',
-  medium: 'Orta',
-  hard: 'Zor',
-  extreme: 'Extreme',
+  easy:        'Kolay',
+  easy_medium: 'Kolay-Orta',
+  medium:      'Orta',
+  medium_hard: 'Orta-Zor',
+  hard:        'Zor',
+  very_hard:   'Çok Zor',
+  extreme:     'Ekstrem',
 };
 
 const PH_CLASS: Record<TourDifficulty, string> = {
-  easy: 'ph-easy',
-  medium: 'ph-medium',
-  hard: 'ph-hard',
-  extreme: 'ph-extreme',
+  easy:        'ph-easy',
+  easy_medium: 'ph-easy',
+  medium:      'ph-medium',
+  medium_hard: 'ph-medium',
+  hard:        'ph-hard',
+  very_hard:   'ph-hard',
+  extreme:     'ph-extreme',
 };
 
 // ── Helpers ───────────────────────────────────────
