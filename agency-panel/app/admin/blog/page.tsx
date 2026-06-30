@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   adminGetBlogPosts, adminCreateBlogPost, adminUpdateBlogPost,
-  adminDeleteBlogPost, AdminBlogPost, ApiError,
+  adminDeleteBlogPost, AdminBlogPost, ApiError, uploadMedia,
 } from "@/lib/api";
 import Button from "@/components/Button";
 
@@ -26,6 +26,23 @@ export default function AdminBlogPage() {
   const [form, setForm] = useState<typeof EMPTY_FORM | null>(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadMedia(file);
+      setForm((f) => f ? { ...f, cover_image: url } : f);
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "Yükleme başarısız");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
 
   useEffect(() => { load(); }, []);
 
@@ -123,13 +140,43 @@ export default function AdminBlogPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kapak Resmi URL</label>
-                <input
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange"
-                  value={form.cover_image}
-                  onChange={(e) => setForm((f) => f && ({ ...f, cover_image: e.target.value }))}
-                  placeholder="https://..."
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kapak Resmi</label>
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                {form.cover_image ? (
+                  <div className="relative rounded-xl overflow-hidden border border-gray-200" style={{ height: 180 }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={form.cover_image} alt="Kapak" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                      <button type="button" onClick={() => fileRef.current?.click()}
+                        className="flex items-center gap-1.5 bg-white text-gray-800 text-xs font-bold px-3 py-2 rounded-lg">
+                        ↑ Değiştir
+                      </button>
+                      <button type="button" onClick={() => setForm((f) => f ? { ...f, cover_image: "" } : f)}
+                        className="flex items-center gap-1.5 bg-red-500 text-white text-xs font-bold px-3 py-2 rounded-lg">
+                        × Kaldır
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+                    className="w-full border-2 border-dashed border-gray-200 rounded-xl py-8 flex flex-col items-center gap-2 text-gray-400 hover:border-brand-orange hover:text-brand-orange transition-colors disabled:opacity-50">
+                    {uploading ? (
+                      <>
+                        <div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        <span className="text-xs font-medium">Yükleniyor...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                          <rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="8.5" r="1.5" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 15l-5-5L5 21" />
+                        </svg>
+                        <span className="text-xs font-semibold">Fotoğraf seç veya buraya sürükle</span>
+                        <span className="text-xs">JPG, PNG, WEBP — maks 10 MB</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">İçerik</label>
