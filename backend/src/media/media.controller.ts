@@ -23,9 +23,10 @@ export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
   @Get(':filename')
-  serveFile(@Param('filename') filename: string): StreamableFile {
+  async serveFile(@Param('filename') filename: string): Promise<StreamableFile> {
     try {
-      return new StreamableFile(this.mediaService.getFileStream(filename));
+      const stream = await this.mediaService.getFileStream(filename);
+      return new StreamableFile(stream);
     } catch {
       throw new NotFoundException('File not found');
     }

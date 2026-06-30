@@ -28,6 +28,7 @@ export class MediaService {
       await blob.save(file.buffer, {
         contentType: file.mimetype,
         resumable: false,
+        public: true,
       });
 
       const url = `https://storage.googleapis.com/${this.bucketName}/${filename}`;
@@ -39,8 +40,11 @@ export class MediaService {
     }
   }
 
-  getFileStream(filename: string): import('stream').Readable {
-    return this.storage.bucket(this.bucketName).file(filename).createReadStream() as import('stream').Readable;
+  async getFileStream(filename: string): Promise<import('stream').Readable> {
+    const file = this.storage.bucket(this.bucketName).file(filename);
+    const [exists] = await file.exists();
+    if (!exists) throw new Error('not_found');
+    return file.createReadStream() as import('stream').Readable;
   }
 
   getBucketName(): string {
