@@ -5,6 +5,7 @@ import { getPublishedTours, getCategories } from '@/lib/api';
 import LandingNav from '../landing-nav';
 import Image from 'next/image';
 import Link from 'next/link';
+import TourCardImage from './TourCardImage';
 import type { Tour } from '@/lib/types';
 import { T, type Lang } from '@/lib/i18n';
 import TurlarSearchBar from './TurlarSearchBar';
@@ -201,14 +202,15 @@ export default async function AnasayfaPage() {
                   return (
                     <Link key={tour.id} href={`/tours/${tour.id}`} className="tr-card">
                       <div style={{ position: 'relative', height: '200px', overflow: 'hidden', background: '#D8D8D8', flexShrink: 0 }}>
-                        <Image
+                        <TourCardImage
                           src={photo}
+                          fallbackSrc={
+                            (tour.category && CATEGORY_PHOTOS[tour.category])
+                              ? CATEGORY_PHOTOS[tour.category]
+                              : CATEGORY_PHOTOS['_default']
+                          }
                           alt={tour.name}
-                          fill
-                          priority={idx < 4}
                           className="tr-thumb"
-                          sizes="(max-width: 560px) 100vw, (max-width: 960px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                          style={{ objectFit: 'cover' }}
                         />
                         {tour.category && (
                           <span style={{
@@ -235,7 +237,13 @@ export default async function AnasayfaPage() {
                         <div style={{ height: '1px', background: '#F0F0F0' }} />
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          {tour.altitude_meters != null && (
+                            <InfoRow icon="⛰️" label={tt.altitude} value={`${tour.altitude_meters.toLocaleString()}m`} />
+                          )}
                           <InfoRow icon="📍" label={tt.location} value={tour.location_name} />
+                          {tour.distance_km != null && (
+                            <InfoRow icon="📏" label={tt.distance} value={`${Number(tour.distance_km).toFixed(1)} km`} />
+                          )}
                           {(tour.start_date || tour.end_date) && (
                             <InfoRow
                               icon="📅"
@@ -245,6 +253,9 @@ export default async function AnasayfaPage() {
                                 tour.end_date   ? fmtDate(tour.end_date,   tt.locale) : null,
                               ].filter(Boolean).join(' – ')}
                             />
+                          )}
+                          {tour.max_participants != null && (
+                            <InfoRow icon="👥" label={tt.quota} value={String(tour.max_participants)} />
                           )}
                           {tour.price !== undefined && tour.price !== null && (
                             <InfoRow icon="💰" label={tt.price} value={fmtPrice(tour.price, tt.free, tt.perPerson)} orange />
