@@ -67,14 +67,19 @@ export default function TourForm({ mode, tour }: TourFormProps) {
   const router = useRouter();
   const { t } = useLang();
   const tx = t.tourForm;
-  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const DEFAULT_CATEGORIES = [
+    "Trekking", "Dağcılık", "Kano", "Rafting",
+    "Bisiklet", "Kamp", "Dalış", "Yamaç Paraşütü",
+  ];
+  const [availableCategories, setAvailableCategories] = useState<string[]>(DEFAULT_CATEGORIES);
 
   useEffect(() => {
     fetch(`${API_URL}/tours/categories`)
       .then((r) => r.ok ? r.json() : [])
-      .then((data: Array<{ name: string; icon_key: string | null } | string>) =>
-        setAvailableCategories(data.map((d) => (typeof d === "string" ? d : d.name)))
-      )
+      .then((data: Array<{ name: string; icon_key: string | null } | string>) => {
+        const fetched = data.map((d) => (typeof d === "string" ? d : d.name));
+        if (fetched.length > 0) setAvailableCategories(fetched);
+      })
       .catch(() => {});
   }, []);
 
