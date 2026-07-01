@@ -195,6 +195,22 @@ export default async function TourDetailPage({ params }: { params: { id: string 
             }}>
               {DIFF_LABEL[tour.difficulty]}
             </span>
+            {tour.location_name && (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                background: '#F0F9FF', color: '#0369A1',
+                fontSize: '0.66rem', fontWeight: 700,
+                padding: '4px 12px', borderRadius: '20px',
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+                border: '1px solid rgba(3,105,161,0.2)',
+              }}>
+                <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                {tour.location_name}
+              </span>
+            )}
           </div>
 
           {/* Tab sections */}
