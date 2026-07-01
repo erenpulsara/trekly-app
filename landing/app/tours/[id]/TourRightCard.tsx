@@ -14,7 +14,10 @@ function fmtPrice(price: number, cur: Currency) {
 }
 
 function fmtDate(s: string) {
-  return new Date(s).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const d = new Date(s.includes('T') ? s : s + 'T00:00:00');
+  const date = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const weekday = d.toLocaleDateString('tr-TR', { weekday: 'long' });
+  return `${date} ${weekday}`;
 }
 
 interface TourData {
