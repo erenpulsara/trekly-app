@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Input, Select, Textarea } from "./FormControls";
 import Button from "./Button";
 import PhotoUploader from "./PhotoUploader";
-import { createTour, updateTour, addTourDate, deleteTourDate } from "@/lib/api";
+import { createTour, updateTour, addTourDate, deleteTourDate, verifyTursabNo } from "@/lib/api";
 import { useLang } from "@/lib/LangContext";
 import { TURKISH_PROVINCES } from "@/lib/provinces";
 import type { Difficulty, Tour, TourDate, TourStatus } from "@/lib/types";
@@ -72,6 +72,9 @@ export default function TourForm({ mode, tour }: TourFormProps) {
     "Bisiklet", "Kamp", "Dalış", "Yamaç Paraşütü",
   ];
   const [availableCategories, setAvailableCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [tursabVerifying, setTursabVerifying] = useState(false);
+  const [tursabStatus, setTursabStatus] = useState<'verified' | 'not_found' | 'error' | null>(null);
+  const [tursabAgencyName, setTursabAgencyName] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`${API_URL}/tours/categories`)
@@ -170,6 +173,30 @@ export default function TourForm({ mode, tour }: TourFormProps) {
     setValues((prev) => ({ ...prev, [field]: e.target.value }));
     if (errors[field as keyof FormErrors]) setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
+
+  // ── TURSAB verification ──────────────────────────────────────
+  async function handleTursabVerify() {
+    const no = values.tursab_no.trim();
+    if (!no) return;
+    setTursabVerifying(true);
+    setTursabStatus(null);
+    setTursabAgencyName(null);
+    try {
+      const result = await verifyTursabNo(no);
+      if (result.error === 'connection_failed') {
+        setTursabStatus('error');
+      } else if (result.verified) {
+        setTursabStatus('verified');
+        setTursabAgencyName(result.agencyName ?? null);
+      } else {
+        setTursabStatus('not_found');
+      }
+    } catch {
+      setTursabStatus('error');
+    } finally {
+      setTursabVerifying(false);
+    }
+  }
 
   // ── Location helpers ─────────────────────────────────────────
   function addLocation(val: string) {
@@ -585,7 +612,59 @@ export default function TourForm({ mode, tour }: TourFormProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <Input label={tx.guideName} value={values.guide_name} onChange={set("guide_name")} placeholder={tx.guideNamePlaceholder} hint={tx.optional} />
           <Input label="Rehber Instagram URL" value={values.guide_instagram} onChange={set("guide_instagram")} placeholder="https://instagram.com/rehber" hint={tx.optional} />
-          <Input label={tx.tursabNo} value={values.tursab_no} onChange={set("tursab_no")} placeholder={tx.tursabNoPlaceholder} hint={tx.optional} />
+          {/* TURSAB No + verify button */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold font-body text-text-primary">{tx.tursabNo}</label>
+            <div className="flex gap-2">
+              <input
+                value={values.tursab_no}
+                onChange={(e) => {
+                  setValues((prev) => ({ ...prev, tursab_no: e.target.value }));
+                  setTursabStatus(null);
+                }}
+                placeholder={tx.tursabNoPlaceholder}
+                className="h-10 px-3.5 rounded-xl border border-gray-200 hover:border-gray-300 font-body text-sm text-text-primary bg-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition-all duration-150 flex-1 min-w-0"
+              />
+              <button
+                type="button"
+                onClick={handleTursabVerify}
+                disabled={!values.tursab_no.trim() || tursabVerifying}
+                className="h-10 px-4 rounded-xl bg-blue-600 text-white text-sm font-semibold whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+              >
+                {tursabVerifying ? (
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                ) : 'Doğrula'}
+              </button>
+            </div>
+            {tursabStatus === 'verified' && (
+              <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-xs font-semibold">
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                TURSAB Onaylı{tursabAgencyName ? `: ${tursabAgencyName}` : ''}
+              </div>
+            )}
+            {tursabStatus === 'not_found' && (
+              <div className="flex items-center gap-2 text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-xs font-semibold">
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                Bu belge numarası TURSAB sisteminde bulunamadı.
+              </div>
+            )}
+            {tursabStatus === 'error' && (
+              <div className="flex items-center gap-2 text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-xs font-semibold">
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                </svg>
+                TURSAB sistemi şu an erişilemiyor. Daha sonra tekrar deneyin.
+              </div>
+            )}
+            <p className="text-xs text-text-muted font-body">{tx.optional}</p>
+          </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <Input label={tx.contactPhone} value={values.contact_phone} onChange={set("contact_phone")} placeholder={tx.contactPhonePlaceholder} hint={tx.optional} />

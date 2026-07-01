@@ -216,6 +216,18 @@ export async function uploadMedia(file: File): Promise<string> {
   return data.url;
 }
 
+// ── TURSAB ────────────────────────────────────────────────────────────────
+
+export async function verifyTursabNo(belgeNo: string): Promise<{
+  verified: boolean;
+  agencyName?: string;
+  error?: string;
+}> {
+  const res = await fetch(`${API_URL}/tursab/verify/${encodeURIComponent(belgeNo.trim())}`);
+  if (!res.ok) return { verified: false, error: 'request_failed' };
+  return res.json() as Promise<{ verified: boolean; agencyName?: string; error?: string }>;
+}
+
 // ── Admin ─────────────────────────────────────────────────────────────────
 
 async function adminRequest<T>(path: string, options: RequestInit = {}): Promise<T> {

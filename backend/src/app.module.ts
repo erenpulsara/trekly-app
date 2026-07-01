@@ -18,6 +18,7 @@ import { BlogModule } from './blog/blog.module';
 import { BlogPost } from './entities/blog-post.entity';
 import { Category } from './entities/category.entity';
 import { AdminModule } from './admin/admin.module';
+import { TursabModule } from './tursab/tursab.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { AdminModule } from './admin/admin.module';
     MediaModule,
     BlogModule,
     AdminModule,
+    TursabModule,
   ],
 })
 export class AppModule {}
