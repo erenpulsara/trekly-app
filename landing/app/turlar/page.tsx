@@ -8,7 +8,6 @@ import Link from 'next/link';
 import TourCardImage from './TourCardImage';
 import type { Tour } from '@/lib/types';
 import { T, type Lang } from '@/lib/i18n';
-import TurlarSearchBar from './TurlarSearchBar';
 import TurlarCategories from './TurlarCategories';
 import TurlarHero from './TurlarHero';
 
@@ -150,19 +149,6 @@ export default async function AnasayfaPage() {
         }}>
           Sıradaki Maceranı Keşfet
         </p>
-        <Suspense>
-          <TurlarSearchBar
-            basePath="/etkinlikler"
-            labels={{
-              searchDate:     tt.searchDate,
-              searchLocation: tt.searchLocation,
-              searchCategory: tt.searchCategory,
-              searchBtn:      tt.searchBtn,
-              allCategories:  tt.allCategories,
-            }}
-            categories={categories}
-          />
-        </Suspense>
       </TurlarHero>
 
       {/* Category row */}
