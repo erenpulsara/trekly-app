@@ -17,9 +17,9 @@ export default async function BlogPage() {
     <>
       <LandingNav navLinks={[
         { label: 'Anasayfa',    href: '/turlar' },
-        { label: 'Hakkımızda', href: '/hakkimizda' },
         { label: 'Etkinlikler', href: '/etkinlikler' },
         { label: 'Blog',        href: '/blog', active: true },
+        { label: 'Hakkımızda', href: '/hakkimizda' },
         { label: 'İletişim',   href: '/iletisim' },
       ]} />
 

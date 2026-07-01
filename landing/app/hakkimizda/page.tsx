@@ -136,9 +136,9 @@ export default function HakkimizdaPage() {
       {/* ── Navbar ─────────────────────────────── */}
       <LandingNav navLinks={[
         { label: 'Anasayfa',     href: '/turlar' },
-        { label: hk.nav.about,   href: '/hakkimizda', active: true },
         { label: 'Etkinlikler',  href: '/etkinlikler' },
         { label: 'Blog',         href: '/blog' },
+        { label: hk.nav.about,   href: '/hakkimizda', active: true },
         { label: 'İletişim',     href: '/iletisim' },
       ]} />
 

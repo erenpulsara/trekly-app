@@ -129,9 +129,9 @@ export default async function AnasayfaPage() {
         logoHref="/turlar"
         navLinks={[
           { label: 'Anasayfa',    href: '/turlar', active: true },
-          { label: 'Hakkımızda', href: '/hakkimizda' },
           { label: 'Etkinlikler', href: '/etkinlikler' },
           { label: 'Blog',        href: '/blog' },
+          { label: 'Hakkımızda', href: '/hakkimizda' },
           { label: 'İletişim',   href: '/iletisim' },
         ]}
       />

@@ -44,9 +44,9 @@ export default function IletisimPage() {
 
       <LandingNav navLinks={[
         { label: 'Anasayfa',    href: '/turlar' },
-        { label: 'Hakkımızda', href: '/hakkimizda' },
         { label: 'Etkinlikler', href: '/etkinlikler' },
         { label: 'Blog',        href: '/blog' },
+        { label: 'Hakkımızda', href: '/hakkimizda' },
         { label: 'İletişim',   href: '/iletisim', active: true },
       ]} />
 

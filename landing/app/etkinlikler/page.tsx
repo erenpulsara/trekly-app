@@ -171,9 +171,9 @@ export default async function EtkinliklerPage({
         logoHref="/turlar"
         navLinks={[
           { label: 'Anasayfa',    href: '/turlar' },
-          { label: 'Hakkımızda', href: '/hakkimizda' },
           { label: 'Etkinlikler', href: '/etkinlikler', active: true },
           { label: 'Blog',        href: '/blog' },
+          { label: 'Hakkımızda', href: '/hakkimizda' },
           { label: 'İletişim',   href: '/iletisim' },
         ]}
       />
