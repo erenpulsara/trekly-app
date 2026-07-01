@@ -10,6 +10,7 @@ import PhotoGallery from './PhotoGallery';
 import StickyCard from './StickyCard';
 import TourTabs from './TourTabs';
 import TourRightCard from './TourRightCard';
+import TourActions from './TourActions';
 
 const AGENCY_URL = process.env.NEXT_PUBLIC_AGENCY_URL ?? 'https://acenta.treklyapp.com';
 
@@ -153,14 +154,17 @@ export default async function TourDetailPage({ params }: { params: { id: string 
         <div style={{ alignSelf: 'start' }}>
 
           {/* Başlık */}
-          <h1 style={{
-            fontSize: 'clamp(1.4rem, 2.6vw, 2rem)',
-            fontWeight: 800, color: '#1A1A1A',
-            letterSpacing: '-0.03em', lineHeight: 1.2,
-            margin: '0 0 16px',
-          }}>
-            {tour.name}
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', margin: '0 0 16px' }}>
+            <h1 style={{
+              fontSize: 'clamp(1.4rem, 2.6vw, 2rem)',
+              fontWeight: 800, color: '#1A1A1A',
+              letterSpacing: '-0.03em', lineHeight: 1.2,
+              margin: 0,
+            }}>
+              {tour.name}
+            </h1>
+            <TourActions tourId={tour.id} tourName={tour.name} />
+          </div>
 
           {/* Galeri */}
           <PhotoGallery
