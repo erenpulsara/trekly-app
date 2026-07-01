@@ -139,13 +139,15 @@ export default async function AnasayfaPage() {
       <TurlarHero>
         <p style={{
           fontFamily: '"Cormorant Garamond", serif',
-          fontSize: 'clamp(1.3rem, 2.2vw, 1.9rem)',
-          fontWeight: 400,
+          fontSize: 'clamp(1.8rem, 3vw, 2.8rem)',
+          fontWeight: 700,
           fontStyle: 'italic',
-          color: 'rgba(255,255,255,0.88)',
+          color: 'white',
           letterSpacing: '-0.01em',
           margin: '0 0 14px',
-          textAlign: 'left',
+          textAlign: 'center',
+          width: '100%',
+          textShadow: '0 2px 12px rgba(0,0,0,0.35)',
         }}>
           Sıradaki Maceranı Keşfet
         </p>
