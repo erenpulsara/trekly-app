@@ -278,10 +278,10 @@ export class AuthService {
   // ── Admin ─────────────────────────────────────────────────────────────────
 
   async loginAdmin(email: string, password: string) {
-    const adminEmail = this.configService.get<string>('ADMIN_EMAIL') ?? 'admin@treklyapp.com';
-    const adminPassword = this.configService.get<string>('ADMIN_PASSWORD') ?? '';
+    const adminEmail = (this.configService.get<string>('ADMIN_EMAIL') ?? 'admin@treklyapp.com').trim();
+    const adminPassword = (this.configService.get<string>('ADMIN_PASSWORD') ?? '').trim();
 
-    if (email !== adminEmail || password !== adminPassword) {
+    if (email.trim() !== adminEmail || password !== adminPassword) {
       throw new UnauthorizedException('Geçersiz kimlik bilgileri');
     }
 
