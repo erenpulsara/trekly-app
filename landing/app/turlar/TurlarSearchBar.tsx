@@ -5,13 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import type { CategoryItem } from '@/lib/api';
 
 
-// Sabit kategoriler — her zaman gösterilir (dropdown için)
-const STATIC_CATEGORIES = [
-  'trekking', 'dağcılık', 'bisiklet', 'kamp', 'dalış',
-  'zirve tırmanışı', 'kaya tırmanışı', 'yelken',
-  'aile kampı', 'dağcılık eğitimi', 'kayak', 'su sporları',
-];
-
 const MONTHS = [
   { label: 'Ocak',    value: '01' },
   { label: 'Şubat',   value: '02' },
@@ -230,7 +223,7 @@ interface Props {
 }
 
 /* ── Main Component ─────────────────────────────────── */
-export default function TurlarSearchBar({ labels, categories = [], basePath = '/turlar' }: Props) {
+export default function TurlarSearchBar({ labels, categories = [], basePath = '/anasayfa' }: Props) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -276,12 +269,8 @@ export default function TurlarSearchBar({ labels, categories = [], basePath = '/
     router.push(buildQuery({ month: val }));
   }
 
-  // Sabit 8 + DB'den gelen ekstralar (zaten statikte olmayanlar)
-  const staticSet = new Set(STATIC_CATEGORIES);
-  const extras = categories
-    .filter(c => !staticSet.has(c.name) && !staticSet.has(c.name.toLowerCase()))
-    .map(c => c.name);
-  const activeCategories = [...STATIC_CATEGORIES, ...extras];
+  // Kategoriler artık tamamen DB'den (admin panelinden yönetiliyor)
+  const activeCategories = categories.map(c => c.name);
 
   const categoryOptions: DropdownOption[] = activeCategories.map((c) => ({
     value: c,

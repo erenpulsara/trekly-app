@@ -12,13 +12,16 @@ const DIFFICULTY_CONFIG: Record<
   { label: string; bg: string; text: string }
 > = {
   easy: { label: 'Kolay', bg: '#22C55E', text: '#FFFFFF' },
+  easy_medium: { label: 'Kolay-Orta', bg: '#84CC16', text: '#FFFFFF' },
   medium: { label: 'Orta', bg: '#F59E0B', text: '#FFFFFF' },
+  medium_hard: { label: 'Orta-Zor', bg: '#F97316', text: '#FFFFFF' },
   hard: { label: 'Zor', bg: '#FF5A1F', text: '#FFFFFF' },
-  extreme: { label: 'Ekstrem', bg: '#EF4444', text: '#FFFFFF' },
+  very_hard: { label: 'Çok Zor', bg: '#DC2626', text: '#FFFFFF' },
+  extreme: { label: 'Ekstrem', bg: '#B91C1C', text: '#FFFFFF' },
 };
 
 export function DifficultyBadge({ difficulty, style }: DifficultyBadgeProps) {
-  const config = DIFFICULTY_CONFIG[difficulty];
+  const config = DIFFICULTY_CONFIG[difficulty] ?? DIFFICULTY_CONFIG.easy;
 
   return (
     <View style={[styles.badge, { backgroundColor: config.bg }, style]}>

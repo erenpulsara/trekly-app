@@ -25,4 +25,8 @@ export class TourQueryDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @IsOptional()
+  @IsEnum(['created_at_desc', 'start_date_asc'])
+  sort?: 'created_at_desc' | 'start_date_asc';
 }

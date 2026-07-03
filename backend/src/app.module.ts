@@ -19,6 +19,8 @@ import { BlogPost } from './entities/blog-post.entity';
 import { Category } from './entities/category.entity';
 import { AdminModule } from './admin/admin.module';
 import { TursabModule } from './tursab/tursab.module';
+import { FavoritesModule } from './favorites/favorites.module';
+import { Favorite } from './entities/favorite.entity';
 
 @Module({
   imports: [
@@ -31,7 +33,7 @@ import { TursabModule } from './tursab/tursab.module';
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
         url: config.get<string>('DATABASE_URL'),
-        entities: [Agency, Tour, TourDate, User, Booking, UserPointsLog, VerificationToken, BlogPost, Category],
+        entities: [Agency, Tour, TourDate, User, Booking, UserPointsLog, VerificationToken, BlogPost, Category, Favorite],
         synchronize: true, // Set to false and use migrations in production
         autoLoadEntities: true,
         ssl: (config.get<string>('DATABASE_URL')?.includes('cloudsql') ||
@@ -50,6 +52,7 @@ import { TursabModule } from './tursab/tursab.module';
     BlogModule,
     AdminModule,
     TursabModule,
+    FavoritesModule,
   ],
 })
 export class AppModule {}

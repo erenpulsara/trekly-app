@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Space_Grotesk } from 'next/font/google';
+import { UserAuthProvider } from './UserAuthContext';
 import './globals.css';
 
 const spaceGrotesk = Space_Grotesk({
@@ -21,7 +22,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="tr" className={spaceGrotesk.variable}>
-      <body>{children}</body>
+      <body>
+        <UserAuthProvider>{children}</UserAuthProvider>
+      </body>
     </html>
   );
 }

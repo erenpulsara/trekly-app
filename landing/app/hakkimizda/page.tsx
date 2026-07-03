@@ -135,7 +135,7 @@ export default function HakkimizdaPage() {
     <div className="hk">
       {/* ── Navbar ─────────────────────────────── */}
       <LandingNav navLinks={[
-        { label: 'Anasayfa',     href: '/turlar' },
+        { label: 'Anasayfa',     href: '/anasayfa' },
         { label: 'Etkinlikler',  href: '/etkinlikler' },
         { label: 'Blog',         href: '/blog' },
         { label: hk.nav.about,   href: '/hakkimizda', active: true },
@@ -159,7 +159,7 @@ export default function HakkimizdaPage() {
           </h1>
           {hk.hero.sub && <p className="hk-hero-sub">{hk.hero.sub}</p>}
           <div className="hk-hero-actions">
-            <a href="/turlar" className="hk-btn-primary">
+            <a href="/anasayfa" className="hk-btn-primary">
               {hk.hero.exploreTours}
               <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7"/>
@@ -229,7 +229,7 @@ export default function HakkimizdaPage() {
           <h2 className="hk-man-line1">{hk.manifesto.line1}</h2>
           <h2 className="hk-man-line2">{hk.manifesto.line2}</h2>
           <div className="hk-man-cta-wrap rev rev-d1">
-            <a href="/turlar" className="hk-man-cta">
+            <a href="/anasayfa" className="hk-man-cta">
               {hk.manifesto.cta}
               <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7"/>

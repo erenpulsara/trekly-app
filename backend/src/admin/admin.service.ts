@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Agency } from '../entities/agency.entity';
@@ -10,8 +10,16 @@ import { User } from '../entities/user.entity';
 import { AuditLog, AuditLogLevel } from '../entities/audit-log.entity';
 import { PlatformSettings } from '../entities/platform-settings.entity';
 
+const DEFAULT_CATEGORIES = [
+  'trekking', 'dağcılık', 'bisiklet', 'kamp', 'dalış',
+  'zirve tırmanışı', 'kaya tırmanışı', 'yelken',
+  'aile kampı', 'dağcılık eğitimi', 'kayak', 'su sporları',
+];
+
 @Injectable()
-export class AdminService {
+export class AdminService implements OnModuleInit {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     @InjectRepository(Agency)
     private agencyRepo: Repository<Agency>,
@@ -30,6 +38,25 @@ export class AdminService {
     @InjectRepository(PlatformSettings)
     private settingsRepo: Repository<PlatformSettings>,
   ) {}
+
+  // Seeds the previously hard-coded static categories into the DB so they
+  // become fully manageable (edit/delete/image) from the admin panel.
+  // Idempotent — only inserts names that don't already exist.
+  async onModuleInit() {
+    try {
+      const existing = await this.categoryRepo.find();
+      const existingNames = new Set(existing.map((c) => c.name.toLowerCase()));
+      const missing = DEFAULT_CATEGORIES.filter((name) => !existingNames.has(name));
+      if (missing.length > 0) {
+        await this.categoryRepo.save(
+          missing.map((name) => this.categoryRepo.create({ name, is_static: false })),
+        );
+        this.logger.log(`Seeded ${missing.length} default categories`);
+      }
+    } catch (err) {
+      this.logger.warn(`Category seed skipped: ${err}`);
+    }
+  }
 
   private async log(level: AuditLogLevel, action: string, detail: string | null, user: string | null) {
     try {

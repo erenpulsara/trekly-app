@@ -9,9 +9,9 @@ import {
   Image,
   Alert,
   Share,
-  SafeAreaView,
-  Platform,
+  Linking,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
@@ -19,10 +19,32 @@ import { MainStackParamList } from '../../navigation/AppNavigator';
 import { DifficultyBadge } from '../../components/common/DifficultyBadge';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
+import { PhotoLightbox } from '../../components/common/PhotoLightbox';
+import { TourCard } from '../../components/common/TourCard';
 import { toursService } from '../../services/api';
-import { Tour } from '../../types';
-import { formatDate, formatDistance, formatAltitude } from '../../utils/formatting';
+import { Tour, Difficulty } from '../../types';
+import { formatDate, formatDateRange, formatDistance, formatPrice } from '../../utils/formatting';
 import { useAuth } from '../../context/AuthContext';
+
+function scoreRelated(current: Tour, candidate: Tour): number {
+  let score = 0;
+  if (candidate.category && current.category && candidate.category === current.category) score += 4;
+  const overlap = (current.tags ?? []).filter((t) => (candidate.tags ?? []).includes(t)).length;
+  score += overlap * 2;
+  if (candidate.difficulty === current.difficulty) score += 1;
+  if (candidate.location_name === current.location_name) score += 1;
+  return score;
+}
+
+const DIFF_LABEL: Record<Difficulty, string> = {
+  easy: 'Kolay',
+  easy_medium: 'Kolay-Orta',
+  medium: 'Orta',
+  medium_hard: 'Orta-Zor',
+  hard: 'Zor',
+  very_hard: 'Çok Zor',
+  extreme: 'Ekstrem',
+};
 
 const { width, height } = Dimensions.get('window');
 const HERO_HEIGHT = height * 0.42;
@@ -38,12 +60,15 @@ type DetailTab = 'info' | 'program' | 'notes' | 'gallery';
 export function TourDetailScreen({ navigation, route }: Props) {
   const { tourId } = route.params;
   const { isGuest, exitGuest } = useAuth();
+  const insets = useSafeAreaInsets();
   const [tour, setTour] = useState<Tour | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DetailTab>('info');
   const [isLiked, setIsLiked] = useState(false);
   const [selectedDateId, setSelectedDateId] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [relatedTours, setRelatedTours] = useState<Tour[]>([]);
 
   const bgColor = '#1a3a2a';
 
@@ -54,6 +79,19 @@ export function TourDetailScreen({ navigation, route }: Props) {
       const data = await toursService.getById(tourId);
       setTour(data);
       if (data.dates?.[0]) setSelectedDateId(data.dates[0].id);
+
+      // Related tours ("İlginizi Çekebilir") — same scoring as the web
+      toursService.getAll()
+        .then((all) => {
+          const related = all
+            .filter((t) => t.id !== data.id)
+            .map((t) => ({ tour: t, score: scoreRelated(data, t) }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 4)
+            .map((x) => x.tour);
+          setRelatedTours(related);
+        })
+        .catch(() => {});
     } catch {
       setError('Tur bilgileri yüklenemedi.');
     } finally {
@@ -70,16 +108,22 @@ export function TourDetailScreen({ navigation, route }: Props) {
 
   const selectedDate = tour.dates.find((d) => d.id === selectedDateId);
 
+  // Only show tabs that actually have content (same as the web)
+  const hasProgram = !!(tour.program || tour.accommodation || tour.transportation);
+  const hasNotes = !!(tour.important_notes || tour.meeting_points);
+  const hasGallery = (tour.photo_urls?.length ?? 0) > 0;
+
   const tabs: Array<{ key: DetailTab; label: string }> = [
     { key: 'info', label: 'Etkinlik Bilgileri' },
-    { key: 'program', label: 'Program' },
-    { key: 'notes', label: 'Notlar' },
-    { key: 'gallery', label: 'Galeri' },
+    ...(hasProgram ? [{ key: 'program' as DetailTab, label: 'Program' }] : []),
+    ...(hasNotes ? [{ key: 'notes' as DetailTab, label: 'Notlar' }] : []),
+    ...(hasGallery ? [{ key: 'gallery' as DetailTab, label: 'Galeri' }] : []),
   ];
+  const effectiveTab = tabs.some((t) => t.key === activeTab) ? activeTab : 'info';
 
   function renderTabContent() {
     if (!tour) return null;
-    switch (activeTab) {
+    switch (effectiveTab) {
       case 'info':
         return (
           <View style={styles.tabContent}>
@@ -110,6 +154,16 @@ export function TourDetailScreen({ navigation, route }: Props) {
                   <Text style={styles.sectionTitle}>Konaklama</Text>
                 </View>
                 <Text style={styles.description}>{tour.accommodation}</Text>
+                {tour.accommodation_url ? (
+                  <TouchableOpacity
+                    style={styles.accommodationBtn}
+                    onPress={() => Linking.openURL(tour.accommodation_url as string)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="open-outline" size={15} color="#FF5A1F" />
+                    <Text style={styles.accommodationBtnText}>Oteli Görüntüle</Text>
+                  </TouchableOpacity>
+                ) : null}
               </>
             ) : null}
             {tour.transportation ? (
@@ -150,12 +204,17 @@ export function TourDetailScreen({ navigation, route }: Props) {
             {tour.photo_urls && tour.photo_urls.length > 0 ? (
               <View style={styles.galleryGrid}>
                 {tour.photo_urls.map((url, i) => (
-                  <Image
+                  <TouchableOpacity
                     key={i}
-                    source={{ uri: url }}
-                    style={styles.galleryItem}
-                    resizeMode="cover"
-                  />
+                    onPress={() => setLightboxIndex(i)}
+                    activeOpacity={0.85}
+                  >
+                    <Image
+                      source={{ uri: url }}
+                      style={styles.galleryItem}
+                      resizeMode="cover"
+                    />
+                  </TouchableOpacity>
                 ))}
               </View>
             ) : (
@@ -172,12 +231,18 @@ export function TourDetailScreen({ navigation, route }: Props) {
         {/* Hero image */}
         <View style={[styles.hero, { backgroundColor: bgColor }]}>
           {tour.photo_urls?.[0] ? (
-            <Image source={{ uri: tour.photo_urls[0] }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            <TouchableOpacity
+              style={StyleSheet.absoluteFill}
+              activeOpacity={0.95}
+              onPress={() => setLightboxIndex(0)}
+            >
+              <Image source={{ uri: tour.photo_urls[0] }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            </TouchableOpacity>
           ) : null}
-          <View style={styles.heroOverlay} />
+          <View style={styles.heroOverlay} pointerEvents="none" />
 
           {/* Floating header */}
-          <SafeAreaView style={styles.heroHeader}>
+          <SafeAreaView style={styles.heroHeader} edges={['top']}>
             <TouchableOpacity style={styles.heroBtn} onPress={() => navigation.goBack()}>
               <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
             </TouchableOpacity>
@@ -209,22 +274,41 @@ export function TourDetailScreen({ navigation, route }: Props) {
           {/* Title */}
           <Text style={styles.tourName}>{tour.name}</Text>
 
+          {/* Badges row */}
+          {(tour.category || tour.location_name) && (
+            <View style={styles.badgesRow}>
+              {tour.category ? (
+                <View style={styles.categoryBadge}>
+                  <Text style={styles.categoryBadgeText}>{tour.category}</Text>
+                </View>
+              ) : null}
+              {tour.location_name ? (
+                <View style={styles.locationBadge}>
+                  <Ionicons name="location-outline" size={12} color="#0369A1" />
+                  <Text style={styles.locationBadgeText}>{tour.location_name}</Text>
+                </View>
+              ) : null}
+            </View>
+          )}
+
           {/* Info grid */}
           <View style={styles.infoGrid}>
             <View style={styles.infoCell}>
               <Ionicons name="calendar-outline" size={20} color="#FF5A1F" />
               <Text style={styles.infoCellLabel}>Tarih</Text>
               <Text style={styles.infoCellValue}>
-                {tour.dates?.[0] ? formatDate(tour.dates[0].date) : 'Belirsiz'}
+                {tour.start_date
+                  ? formatDateRange(tour.start_date, tour.end_date)
+                  : tour.dates?.[0]
+                    ? formatDate(tour.dates[0].date)
+                    : 'Belirsiz'}
               </Text>
             </View>
             <View style={styles.infoCell}>
               <Ionicons name="bar-chart-outline" size={20} color="#FF5A1F" />
               <Text style={styles.infoCellLabel}>Zorluk</Text>
               <Text style={styles.infoCellValue}>
-                {tour.difficulty === 'easy' ? 'Kolay' :
-                 tour.difficulty === 'medium' ? 'Orta' :
-                 tour.difficulty === 'hard' ? 'Zor' : 'Ekstrem'}
+                {DIFF_LABEL[tour.difficulty] ?? 'Kolay'}
               </Text>
             </View>
             <View style={styles.infoCell}>
@@ -232,12 +316,65 @@ export function TourDetailScreen({ navigation, route }: Props) {
               <Text style={styles.infoCellLabel}>Kapasite</Text>
               <Text style={styles.infoCellValue}>{tour.max_participants} Kişi</Text>
             </View>
-            <View style={styles.infoCell}>
-              <Ionicons name="time-outline" size={20} color="#FF5A1F" />
-              <Text style={styles.infoCellLabel}>Mesafe</Text>
-              <Text style={styles.infoCellValue}>{formatDistance(tour.distance_km)}</Text>
-            </View>
+            {tour.price != null && Number(tour.price) > 0 ? (
+              <View style={styles.infoCell}>
+                <Ionicons name="card-outline" size={20} color="#FF5A1F" />
+                <Text style={styles.infoCellLabel}>Ücret</Text>
+                <Text style={styles.infoCellValue}>
+                  {formatPrice(Number(tour.price), tour.price_currency)}
+                </Text>
+              </View>
+            ) : tour.distance_km != null ? (
+              <View style={styles.infoCell}>
+                <Ionicons name="time-outline" size={20} color="#FF5A1F" />
+                <Text style={styles.infoCellLabel}>Mesafe</Text>
+                <Text style={styles.infoCellValue}>{formatDistance(tour.distance_km)}</Text>
+              </View>
+            ) : (
+              <View style={styles.infoCell}>
+                <Ionicons name="star-outline" size={20} color="#FF5A1F" />
+                <Text style={styles.infoCellLabel}>Puan</Text>
+                <Text style={styles.infoCellValue}>{tour.points} XP</Text>
+              </View>
+            )}
           </View>
+
+          {/* TURSAB verified badge */}
+          {tour.tursab_no ? (
+            <View style={styles.tursabCard}>
+              <View style={styles.tursabIcon}>
+                <Ionicons name="shield-checkmark" size={18} color="#FFFFFF" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.tursabLabel}>TURSAB ONAYLI ACENTA</Text>
+                <Text style={styles.tursabValue}>#{tour.tursab_no}</Text>
+              </View>
+            </View>
+          ) : null}
+
+          {/* Organizer / Guide */}
+          {(tour.organizer || tour.agency_name || tour.guide_name) ? (
+            <View style={styles.organizerCard}>
+              {(tour.organizer || tour.agency_name) ? (
+                <View style={styles.organizerRow}>
+                  <Ionicons name="business-outline" size={18} color="#6B7280" />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.organizerLabel}>Düzenleyen</Text>
+                    <Text style={styles.organizerValue}>{tour.organizer || tour.agency_name}</Text>
+                  </View>
+                </View>
+              ) : null}
+              {tour.guide_name ? (
+                <View style={styles.organizerRow}>
+                  <Ionicons name="person-outline" size={18} color="#6B7280" />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.organizerLabel}>Rehber</Text>
+                    <Text style={styles.organizerValue}>{tour.guide_name}</Text>
+                  </View>
+                </View>
+              ) : null}
+            </View>
+          ) : null}
 
           {/* Date selector — always show when dates exist */}
           {tour.dates.length > 0 && (
@@ -274,10 +411,10 @@ export function TourDetailScreen({ navigation, route }: Props) {
             {tabs.map((tab) => (
               <TouchableOpacity
                 key={tab.key}
-                style={[styles.tabChip, activeTab === tab.key && styles.tabChipActive]}
+                style={[styles.tabChip, effectiveTab === tab.key && styles.tabChipActive]}
                 onPress={() => setActiveTab(tab.key)}
               >
-                <Text style={[styles.tabChipText, activeTab === tab.key && styles.tabChipTextActive]}>
+                <Text style={[styles.tabChipText, effectiveTab === tab.key && styles.tabChipTextActive]}>
                   {tab.label}
                 </Text>
               </TouchableOpacity>
@@ -285,11 +422,33 @@ export function TourDetailScreen({ navigation, route }: Props) {
           </ScrollView>
 
           {renderTabContent()}
+
+          {/* İlginizi Çekebilir */}
+          {relatedTours.length > 0 && (
+            <View style={styles.relatedSection}>
+              <Text style={styles.relatedTitle}>İlginizi Çekebilir</Text>
+              <Text style={styles.relatedSubtitle}>Benzer turlar ve öneriler</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.relatedList}
+              >
+                {relatedTours.map((t) => (
+                  <TourCard
+                    key={t.id}
+                    tour={t}
+                    variant="compact"
+                    onPress={() => navigation.push('TourDetail', { tourId: t.id })}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          )}
         </View>
       </ScrollView>
 
       {/* Bottom sticky bar */}
-      <View style={styles.stickyBar}>
+      <View style={[styles.stickyBar, { paddingBottom: Math.max(insets.bottom, 14) }]}>
         <View style={styles.stickyPoints}>
           <Ionicons name="star" size={16} color="#FF5A1F" />
           <Text style={styles.stickyPointsValue}>{tour.points} XP</Text>
@@ -297,6 +456,14 @@ export function TourDetailScreen({ navigation, route }: Props) {
         <TouchableOpacity
           style={styles.bookButton}
           onPress={() => {
+            const hasDates = tour.dates && tour.dates.length > 0;
+
+            // Tours without a date list use the public web-booking flow (guest-friendly)
+            if (!hasDates) {
+              navigation.navigate('BookingForm', { tourId: tour.id });
+              return;
+            }
+
             if (isGuest) {
               Alert.alert(
                 'Giriş Gerekli',
@@ -317,11 +484,19 @@ export function TourDetailScreen({ navigation, route }: Props) {
           activeOpacity={0.85}
         >
           <Text style={styles.bookButtonText}>
-            {isGuest ? 'Rezervasyon için giriş yap' : 'Rezervasyon Yap'}
+            {isGuest && tour.dates?.length > 0 ? 'Rezervasyon için giriş yap' : 'Maceraya Katıl'}
           </Text>
           <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
+
+      {/* Fullscreen photo lightbox */}
+      <PhotoLightbox
+        photos={tour.photo_urls ?? []}
+        initialIndex={lightboxIndex ?? 0}
+        visible={lightboxIndex !== null}
+        onClose={() => setLightboxIndex(null)}
+      />
     </View>
   );
 }
@@ -347,7 +522,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? 40 : 0,
+    paddingTop: 8,
   },
   heroRightBtns: {
     flexDirection: 'row',
@@ -377,6 +552,106 @@ const styles = StyleSheet.create({
     lineHeight: 32,
     marginBottom: 16,
     letterSpacing: -0.3,
+  },
+  badgesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  categoryBadge: {
+    backgroundColor: '#FFF4F1',
+    borderWidth: 1,
+    borderColor: 'rgba(255,85,51,0.25)',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  categoryBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FF5533',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  locationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#F0F9FF',
+    borderWidth: 1,
+    borderColor: 'rgba(3,105,161,0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  locationBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0369A1',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  tursabCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  tursabIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#16A34A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tursabLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#15803D',
+    letterSpacing: 0.8,
+  },
+  tursabValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#166534',
+    marginTop: 1,
+  },
+  organizerCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 14,
+    gap: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  organizerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  organizerLabel: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  organizerValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginTop: 1,
   },
   infoGrid: {
     flexDirection: 'row',
@@ -641,6 +916,41 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     marginTop: 2,
   },
+  accommodationBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: '#FFF4F1',
+    borderWidth: 1,
+    borderColor: 'rgba(255,85,51,0.2)',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  accommodationBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#FF5A1F',
+  },
+  relatedSection: {
+    marginTop: 28,
+  },
+  relatedTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1A1A1A',
+  },
+  relatedSubtitle: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    marginTop: 2,
+    marginBottom: 14,
+  },
+  relatedList: {
+    gap: 12,
+  },
   galleryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -666,7 +976,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 14,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.08,

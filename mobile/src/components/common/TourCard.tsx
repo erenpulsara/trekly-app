@@ -25,7 +25,7 @@ interface TourCardProps {
 }
 
 export function TourCard({ tour, onPress, variant = 'full', style }: TourCardProps) {
-  const firstDate = tour.dates?.[0];
+  const dateStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
 
   if (variant === 'compact') {
     return (
@@ -71,10 +71,10 @@ export function TourCard({ tour, onPress, variant = 'full', style }: TourCardPro
           <Ionicons name="location-outline" size={13} color="#6B7280" />
           <Text style={styles.locationText}>{tour.location_name}</Text>
         </View>
-        {firstDate && (
+        {dateStr && (
           <View style={styles.dateRow}>
             <Ionicons name="calendar-outline" size={13} color="#6B7280" />
-            <Text style={styles.dateText}>{formatShortDate(firstDate.date)}</Text>
+            <Text style={styles.dateText}>{formatShortDate(dateStr)}</Text>
             <Text style={styles.pointsBadge}>{formatPoints(tour.points)}</Text>
           </View>
         )}

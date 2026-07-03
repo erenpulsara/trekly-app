@@ -4,21 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { CategoryItem } from '@/lib/api';
 
-const STATIC_CATEGORIES = [
-  { key: 'trekking',         label: 'Trekking'          },
-  { key: 'dağcılık',         label: 'Dağcılık'          },
-  { key: 'bisiklet',         label: 'Bisiklet'          },
-  { key: 'kamp',             label: 'Kamp'              },
-  { key: 'dalış',            label: 'Dalış'             },
-  { key: 'zirve tırmanışı',  label: 'Zirve Tırmanışı'  },
-  { key: 'kaya tırmanışı',   label: 'Kaya Tırmanışı'   },
-  { key: 'yelken',           label: 'Yelken'            },
-  { key: 'aile kampı',       label: 'Aile Kampı'        },
-  { key: 'dağcılık eğitimi', label: 'Dağcılık Eğitimi' },
-  { key: 'kayak',            label: 'Kayak'             },
-  { key: 'su sporları',      label: 'Su Sporları'       },
-];
-
 const MONTHS = [
   'Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
   'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık',
@@ -64,15 +49,10 @@ export default function TurlarSidebar({
     navigateTo({ search: searchInput.trim() });
   }
 
-  const BLOCKED    = new Set(['kano', 'rafting', 'yamaç paraşütü']);
-  const staticKeys = new Set(STATIC_CATEGORIES.map(s => s.key.toLowerCase()));
-  const extraCats  = dynamicCategories.filter(c =>
-    !staticKeys.has(c.name.toLowerCase()) && !BLOCKED.has(c.name.toLowerCase())
-  );
-  const allCats    = [
-    ...STATIC_CATEGORIES,
-    ...extraCats.map(c => ({ key: c.name, label: c.name })),
-  ];
+  const BLOCKED = new Set(['kano', 'rafting', 'yamaç paraşütü']);
+  const allCats  = dynamicCategories
+    .filter(c => !BLOCKED.has(c.name.toLowerCase()))
+    .map(c => ({ key: c.name, label: c.name }));
 
   const isAll = !activeCategory && !activeLocation && !activeMonth && !activeSearch;
 

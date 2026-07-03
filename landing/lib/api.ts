@@ -8,6 +8,7 @@ export async function getPublishedTours(params?: {
   category?: string;
   start_date?: string;
   search?: string;
+  sort?: 'created_at_desc' | 'start_date_asc';
 }): Promise<Tour[]> {
   try {
     const url = new URL(`${API_URL}/tours`);
@@ -19,7 +20,19 @@ export async function getPublishedTours(params?: {
 
     const res = await fetch(url.toString(), { next: { revalidate: 30 } });
     if (!res.ok) return [];
-    return res.json();
+    const tours: Tour[] = await res.json();
+
+    // Sorting happens client-side so the landing keeps working even before
+    // the backend that understands the `sort` query param is deployed
+    // (unknown query params are rejected with 400 by the API's validation).
+    if (params?.sort === 'start_date_asc') {
+      return tours.sort((a, b) => {
+        if (!a.start_date) return 1;
+        if (!b.start_date) return -1;
+        return a.start_date.localeCompare(b.start_date);
+      });
+    }
+    return tours;
   } catch {
     return [];
   }

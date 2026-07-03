@@ -5,11 +5,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  StatusBar,
-  SafeAreaView,
-  Linking,
+  StatusBar,  Linking,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';

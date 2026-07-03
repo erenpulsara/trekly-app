@@ -1,10 +1,37 @@
+function parseLocalDate(dateString: string): Date {
+  // Date-only strings parse as UTC; pin to local midnight to avoid day shifts
+  return new Date(dateString.includes('T') ? dateString : dateString + 'T00:00:00');
+}
+
 export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+  const date = parseLocalDate(dateString);
   return date.toLocaleDateString('tr-TR', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
+}
+
+export function formatDateWithDay(dateString: string): string {
+  const date = parseLocalDate(dateString);
+  const main = date.toLocaleDateString('tr-TR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const weekday = date.toLocaleDateString('tr-TR', { weekday: 'long' });
+  return `${main} ${weekday}`;
+}
+
+export function formatDateRange(start: string, end?: string | null): string {
+  const s = parseLocalDate(start);
+  if (!end) {
+    return s.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  const e = parseLocalDate(end);
+  const sTxt = s.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+  const eTxt = e.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+  return `${sTxt} – ${eTxt}`;
 }
 
 export function formatShortDate(dateString: string): string {
@@ -19,8 +46,9 @@ export function formatPoints(points: number): string {
   return `${points.toLocaleString('tr-TR')} XP`;
 }
 
-export function formatPrice(amount: number): string {
-  return `₺${amount.toLocaleString('tr-TR')}`;
+export function formatPrice(amount: number, currency?: 'TRY' | 'USD' | 'EUR' | null): string {
+  const sym = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '₺';
+  return `${sym}${Number(amount).toLocaleString('tr-TR')}`;
 }
 
 export function formatDistance(km: number): string {

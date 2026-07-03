@@ -7,14 +7,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Tour } from '@/lib/types';
 import { T, type Lang } from '@/lib/i18n';
-import TurlarSearchBar from '../turlar/TurlarSearchBar';
-import TurlarCategories from '../turlar/TurlarCategories';
-import TurlarHero from '../turlar/TurlarHero';
+import { splitCategories } from '@/lib/category-utils';
 import TurlarSidebar from '../turlar/TurlarSidebar';
 
 export const dynamic = 'force-dynamic';
-
-const AGENCY_URL = process.env.NEXT_PUBLIC_AGENCY_URL ?? 'https://acenta.treklyapp.com';
 
 const CATEGORY_PHOTOS: Record<string, string> = {
   'trekking':        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
@@ -34,7 +30,8 @@ const CATEGORY_PHOTOS: Record<string, string> = {
 
 function getCardPhoto(tour: Tour): string {
   if (tour.photo_urls[0]) return tour.photo_urls[0];
-  if (tour.category && CATEGORY_PHOTOS[tour.category]) return CATEGORY_PHOTOS[tour.category];
+  const firstCat = splitCategories(tour.category)[0]?.toLowerCase();
+  if (firstCat && CATEGORY_PHOTOS[firstCat]) return CATEGORY_PHOTOS[firstCat];
   return CATEGORY_PHOTOS['_default'];
 }
 
@@ -42,9 +39,9 @@ function fmtDate(s: string, locale: string) {
   return new Date(s).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-function fmtPrice(price: number | null | undefined, free: string, perPerson: string) {
+function fmtPrice(price: number | null | undefined, free: string) {
   if (!price || price === 0) return free;
-  return `₺${price.toLocaleString('tr-TR')} ${perPerson}`;
+  return `₺${price.toLocaleString('tr-TR')}`;
 }
 
 export default async function EtkinliklerPage({
@@ -81,6 +78,7 @@ export default async function EtkinliklerPage({
       location:   activeLocation || undefined,
       start_date: activeDate || undefined,
       search:     activeSearch || undefined,
+      sort:       'start_date_asc',
     }),
     getPublishedTours({}),
     getCategories(),
@@ -146,31 +144,28 @@ export default async function EtkinliklerPage({
         .etr-showall-btn:hover { background: #E64420; transform: translateY(-2px); }
         .etr-sidebar-wrap { display: flex; gap: 28px; align-items: flex-start; }
         .etr-main { flex: 1; min-width: 0; }
-        .etr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .etr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
         .turlar-sidebar { position: sticky; top: 88px; }
         @media (max-width: 1024px) {
           .etr-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .etr-page-pad { padding: 40px 24px 56px !important; }
-          .etr-cat-pad { padding-left: 24px !important; padding-right: 24px !important; }
         }
         @media (max-width: 768px) {
           .etr-sidebar-wrap { flex-direction: column !important; }
           .turlar-sidebar { width: 100% !important; position: static !important; }
           .etr-page-pad { padding: 32px 20px 48px !important; }
-          .etr-cat-pad { padding-left: 20px !important; padding-right: 20px !important; }
           .footer-etr-inner { flex-direction: column !important; gap: 20px !important; align-items: flex-start !important; }
         }
         @media (max-width: 560px) {
           .etr-grid { grid-template-columns: 1fr !important; }
           .etr-page-pad { padding: 24px 16px 40px !important; }
-          .etr-cat-pad { padding-left: 16px !important; padding-right: 16px !important; }
         }
       `}</style>
 
       <LandingNav
-        logoHref="/turlar"
+        logoHref="/anasayfa"
         navLinks={[
-          { label: 'Anasayfa',    href: '/turlar' },
+          { label: 'Anasayfa',    href: '/anasayfa' },
           { label: 'Etkinlikler', href: '/etkinlikler', active: true },
           { label: 'Blog',        href: '/blog' },
           { label: 'Hakkımızda', href: '/hakkimizda' },
@@ -178,63 +173,23 @@ export default async function EtkinliklerPage({
         ]}
       />
 
-      {/* Hero */}
-      <TurlarHero>
-        <p style={{
-          fontFamily: '"Cormorant Garamond", serif',
-          fontSize: 'clamp(1.3rem, 2.2vw, 1.9rem)',
-          fontWeight: 400,
-          fontStyle: 'italic',
-          color: 'rgba(255,255,255,0.88)',
-          letterSpacing: '-0.01em',
-          margin: '0 0 14px',
-          textAlign: 'left',
-        }}>
-          Sıradaki Maceranı Keşfet
-        </p>
-        <Suspense>
-          <TurlarSearchBar
-            basePath="/etkinlikler"
-            labels={{
-              searchDate:     tt.searchDate,
-              searchLocation: tt.searchLocation,
-              searchCategory: tt.searchCategory,
-              searchBtn:      tt.searchBtn,
-              allCategories:  tt.allCategories,
-            }}
-            categories={categories}
-          />
-        </Suspense>
-      </TurlarHero>
-
-      {/* Category row */}
-      <div id="cat-section" className="etr-cat-pad" style={{ background: 'white', borderBottom: '1px solid #EAEAEA', padding: '0 48px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <Suspense>
-            <TurlarCategories
-              activeCategory={activeCategory}
-              dynamicCategories={categories}
-              basePath="/etkinlikler"
-            />
-          </Suspense>
-        </div>
-      </div>
-
       {/* Sidebar + cards */}
       <section className="etr-page-pad" style={{ background: '#FAFAFA', padding: '48px 48px 60px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
 
           {/* Header row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
-            <div>
-              <h2 style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(1.4rem, 2.5vw, 1.9rem)', fontWeight: 400, color: '#1A1A1A', margin: '0 0 4px' }}>
-                {tt.upcomingTitle}
-              </h2>
-              <p style={{ fontSize: '0.8rem', color: '#9A9A9A', margin: 0 }}>
-                {tt.found(monthFiltered.length)}
-              </p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ marginBottom: '28px', textAlign: 'center' }}>
+            <h2 style={{
+              fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(1.5rem, 2.8vw, 2.1rem)',
+              fontWeight: 700, color: '#1A1A1A', margin: '0 0 8px', textTransform: 'uppercase',
+              letterSpacing: '0.02em', lineHeight: 1.4,
+            }}>
+              {tt.upcomingTitle}
+            </h2>
+            <p style={{ fontSize: '0.8rem', color: '#9A9A9A', margin: '0 0 16px' }}>
+              {tt.found(monthFiltered.length)}
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
               {(activeCategory || activeLocation || activeMonth || activeSearch) && (
                 <Link href="/etkinlikler" style={{ fontSize: '0.78rem', color: '#9A9A9A', fontWeight: 600, textDecoration: 'none' }}>
                   ← Filtreleri Temizle
@@ -244,11 +199,11 @@ export default async function EtkinliklerPage({
                 href="/etkinlikler"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '7px',
-                  border: '1.5px solid #1A1A1A', color: '#1A1A1A',
+                  border: '1.5px solid #FF5533', color: '#FF5533',
                   fontSize: '0.82rem', fontWeight: 700,
                   padding: '8px 18px', borderRadius: '10px',
                   textDecoration: 'none',
-                  background: (activeCategory || activeLocation || activeMonth || activeSearch) ? 'transparent' : '#1A1A1A',
+                  background: (activeCategory || activeLocation || activeMonth || activeSearch) ? 'transparent' : '#FF5533',
                   transition: 'background 0.15s, color 0.15s',
                 }}
               >
@@ -258,7 +213,7 @@ export default async function EtkinliklerPage({
                   <rect x="3" y="14" width="7" height="7" rx="1.5"/>
                   <rect x="14" y="14" width="7" height="7" rx="1.5"/>
                 </svg>
-                <span style={{ color: (activeCategory || activeLocation || activeMonth || activeSearch) ? '#1A1A1A' : 'white' }}>
+                <span style={{ color: (activeCategory || activeLocation || activeMonth || activeSearch) ? '#FF5533' : 'white' }}>
                   Tüm Turlar
                 </span>
               </Link>
@@ -292,9 +247,10 @@ export default async function EtkinliklerPage({
                   <div className="etr-grid">
                     {displayed.map((tour, idx) => {
                       const photo = getCardPhoto(tour);
+                      const cats = splitCategories(tour.category);
                       return (
                         <Link key={tour.id} href={`/tours/${tour.id}`} className="etr-card">
-                          <div style={{ position: 'relative', height: '200px', overflow: 'hidden', background: '#D8D8D8', flexShrink: 0 }}>
+                          <div style={{ position: 'relative', height: '230px', overflow: 'hidden', background: '#D8D8D8', flexShrink: 0 }}>
                             <Image
                               src={photo}
                               alt={tour.name}
@@ -304,23 +260,26 @@ export default async function EtkinliklerPage({
                               sizes="(max-width: 560px) 100vw, (max-width: 1024px) 50vw, 33vw"
                               style={{ objectFit: 'cover' }}
                             />
-                            {tour.category && (
-                              <span style={{
-                                position: 'absolute', top: '12px', left: '12px',
-                                background: '#FF5533', color: 'white',
-                                fontSize: '0.62rem', fontWeight: 700,
-                                padding: '3px 9px', borderRadius: '6px',
-                                letterSpacing: '0.04em', textTransform: 'uppercase',
-                              }}>
-                                {tour.category}
-                              </span>
+                            {cats.length > 0 && (
+                              <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px', flexWrap: 'wrap', maxWidth: 'calc(100% - 24px)' }}>
+                                {cats.map((cat) => (
+                                  <span key={cat} style={{
+                                    background: '#FF5533', color: 'white',
+                                    fontSize: '0.62rem', fontWeight: 700,
+                                    padding: '3px 9px', borderRadius: '6px',
+                                    letterSpacing: '0.04em', textTransform: 'uppercase',
+                                  }}>
+                                    {cat}
+                                  </span>
+                                ))}
+                              </div>
                             )}
                           </div>
 
-                          <div style={{ padding: '14px 16px 16px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ padding: '18px 18px 20px', flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             <h3 style={{
-                              fontSize: '0.9rem', fontWeight: 700, color: '#1A1A1A', margin: 0,
-                              lineHeight: 1.35, overflow: 'hidden', display: '-webkit-box',
+                              fontSize: '0.98rem', fontWeight: 700, color: '#1A1A1A', margin: 0,
+                              lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box',
                               WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
                             } as React.CSSProperties}>
                               {tour.name}
@@ -328,7 +287,7 @@ export default async function EtkinliklerPage({
 
                             <div style={{ height: '1px', background: '#F0F0F0' }} />
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
                               <InfoRow icon="📍" label={tt.location} value={tour.location_name} />
                               {(tour.start_date || tour.end_date) && (
                                 <InfoRow
@@ -341,11 +300,11 @@ export default async function EtkinliklerPage({
                                 />
                               )}
                               {tour.price !== undefined && tour.price !== null && (
-                                <InfoRow icon="💰" label={tt.price} value={fmtPrice(tour.price, tt.free, tt.perPerson)} orange />
+                                <InfoRow icon="💰" label={tt.price} value={fmtPrice(tour.price, tt.free)} orange />
                               )}
                             </div>
 
-                            <div style={{ height: '1px', background: '#F0F0F0' }} />
+                            <div style={{ height: '1px', background: '#F0F0F0', marginTop: '2px' }} />
                             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                               <span className="etr-detail-btn">{tt.detailBtn}</span>
                             </div>
@@ -391,12 +350,6 @@ function buildShowAllHref(cat: string, loc: string, month: string, search: strin
   q.set('showAll', '1');
   return `/etkinlikler?${q}`;
 }
-
-const footerLink: React.CSSProperties = {
-  fontSize: '0.8rem',
-  color: 'rgba(255,255,255,0.38)',
-  textDecoration: 'none',
-};
 
 function InfoRow({ icon, label, value, orange }: { icon: string; label: string; value: string; orange?: boolean }) {
   return (

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useUserAuth } from '@/app/UserAuthContext';
+import { getFavoriteIds, addFavorite, removeFavorite } from '@/lib/favorites-api';
 
 interface Props {
   tourId: string;
@@ -8,25 +11,31 @@ interface Props {
 }
 
 export default function TourActions({ tourId, tourName }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, isLoading: authLoading } = useUserAuth();
   const [liked, setLiked] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    try {
-      const favs: string[] = JSON.parse(localStorage.getItem('trekly_favs') ?? '[]');
-      setLiked(favs.includes(tourId));
-    } catch {}
-  }, [tourId]);
+    if (!user) { setLiked(false); return; }
+    getFavoriteIds().then((ids) => setLiked(ids.includes(tourId))).catch(() => {});
+  }, [tourId, user]);
 
-  function toggleFav() {
+  async function toggleFav() {
+    if (authLoading) return;
+    if (!user) {
+      router.push(`/giris?returnTo=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    const next = !liked;
+    setLiked(next); // optimistic
     try {
-      const favs: string[] = JSON.parse(localStorage.getItem('trekly_favs') ?? '[]');
-      const next = liked
-        ? favs.filter((id) => id !== tourId)
-        : [...favs, tourId];
-      localStorage.setItem('trekly_favs', JSON.stringify(next));
-      setLiked(!liked);
-    } catch {}
+      if (next) await addFavorite(tourId);
+      else await removeFavorite(tourId);
+    } catch {
+      setLiked(!next); // revert on failure
+    }
   }
 
   async function handleShare() {

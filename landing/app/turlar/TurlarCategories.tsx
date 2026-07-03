@@ -33,28 +33,13 @@ const FALLBACK_PHOTOS: Record<string, string> = {
 
 const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&q=75';
 
-const STATIC_CATEGORIES = [
-  { key: 'trekking',          label: 'Trekking'          },
-  { key: 'dağcılık',          label: 'Dağcılık'          },
-  { key: 'bisiklet',          label: 'Bisiklet'          },
-  { key: 'kamp',              label: 'Kamp'              },
-  { key: 'dalış',             label: 'Dalış'             },
-  { key: 'zirve tırmanışı',   label: 'Zirve Tırmanışı'  },
-  { key: 'kaya tırmanışı',    label: 'Kaya Tırmanışı'   },
-  { key: 'yelken',            label: 'Yelken'            },
-  { key: 'aile kampı',        label: 'Aile Kampı'        },
-  { key: 'dağcılık eğitimi',  label: 'Dağcılık Eğitimi' },
-  { key: 'kayak',             label: 'Kayak'             },
-  { key: 'su sporları',       label: 'Su Sporları'       },
-];
-
 interface Props {
   activeCategory: string;
   dynamicCategories?: CategoryItem[];
   basePath?: string;
 }
 
-export default function TurlarCategories({ activeCategory, dynamicCategories, basePath = '/turlar' }: Props) {
+export default function TurlarCategories({ activeCategory, dynamicCategories, basePath = '/anasayfa' }: Props) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -74,18 +59,12 @@ export default function TurlarCategories({ activeCategory, dynamicCategories, ba
   }
 
   const BLOCKED = new Set(['kano', 'rafting', 'yamaç paraşütü']);
-  const staticKeys = new Set(STATIC_CATEGORIES.map(s => s.key.toLowerCase()));
-  const extraItems = (dynamicCategories ?? []).filter(c =>
-    !staticKeys.has(c.name.toLowerCase()) && !BLOCKED.has(c.name.toLowerCase())
-  );
 
-  const allCategories: { key: string; label: string; photo: string }[] = [
-    ...STATIC_CATEGORIES.map(c => {
-      const dbMatch = (dynamicCategories ?? []).find(d => d.name.toLowerCase() === c.key.toLowerCase());
-      return { key: c.key, label: c.label, photo: getPhoto(c.key, dbMatch?.image_url) };
-    }),
-    ...extraItems.map(c => ({ key: c.name, label: c.name, photo: getPhoto(c.name, c.image_url) })),
-  ];
+  // Categories are now fully admin-managed in the DB (see /admin/kategoriler) —
+  // no more hard-coded static list, everything comes from dynamicCategories.
+  const allCategories: { key: string; label: string; photo: string }[] = (dynamicCategories ?? [])
+    .filter((c) => !BLOCKED.has(c.name.toLowerCase()))
+    .map((c) => ({ key: c.name, label: c.name, photo: getPhoto(c.name, c.image_url) }));
 
   // Inverted pyramid: top row gets ceil(n/2), bottom row gets floor(n/2) centered under top
   const topCount  = Math.ceil(allCategories.length / 2);

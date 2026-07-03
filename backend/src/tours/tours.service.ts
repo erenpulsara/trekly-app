@@ -64,7 +64,9 @@ export class ToursService {
     }
 
     if (query.category) {
-      qb.andWhere('tour.category = :category', { category: query.category });
+      // tour.category may hold multiple comma-separated categories
+      // (e.g. "Trekking, Dağcılık, Kamp"), so match on any one of them.
+      qb.andWhere('tour.category ILIKE :category', { category: `%${query.category}%` });
     }
 
     if (query.start_date) {
@@ -78,17 +80,16 @@ export class ToursService {
       );
     }
 
-    qb.orderBy('tour.created_at', 'DESC');
+    if (query.sort === 'start_date_asc') {
+      qb.orderBy('tour.start_date', 'ASC', 'NULLS LAST');
+    } else {
+      qb.orderBy('tour.created_at', 'DESC');
+    }
 
     return (await qb.getMany()).map((t) => this.withProxyUrls(t));
   }
 
   async findPublishedCategories(): Promise<{ name: string; icon_key: string | null; icon_svg: string | null; image_url: string | null }[]> {
-    const STATIC_8 = [
-      'trekking', 'dağcılık', 'kano', 'rafting',
-      'bisiklet', 'kamp', 'dalış', 'yamaç paraşütü',
-    ];
-
     const [dbCategories, tourRows] = await Promise.all([
       this.categoryRepo.find({ order: { order: 'ASC', name: 'ASC' } }),
       this.tourRepo
@@ -103,14 +104,7 @@ export class ToursService {
     const result: { name: string; icon_key: string | null; icon_svg: string | null; image_url: string | null }[] = [];
     const seen = new Set<string>();
 
-    // 1. Static 8 — her zaman önce gelir
-    for (const key of STATIC_8) {
-      const dbMatch = dbCategories.find((c) => c.name.toLowerCase() === key);
-      result.push({ name: key, icon_key: dbMatch?.icon_key ?? null, icon_svg: dbMatch?.icon_svg ?? null, image_url: dbMatch?.image_url ?? null });
-      seen.add(key);
-    }
-
-    // 2. DB'den gelen (admin-ekledi), statik 8'de olmayan
+    // 1. DB'den gelen — admin panelinden tam yönetilir (ekle/sil/düzenle/görsel)
     for (const c of dbCategories) {
       if (!seen.has(c.name.toLowerCase())) {
         result.push({ name: c.name, icon_key: c.icon_key, icon_svg: c.icon_svg, image_url: c.image_url });
@@ -118,11 +112,16 @@ export class ToursService {
       }
     }
 
-    // 3. Yayındaki turlardan gelen, yukarıda olmayan
+    // 2. Yayındaki turlardan gelen, DB'de olmayan — virgülle ayrılmış çoklu kategori
+    //    alanları (ör. "Trekking, Dağcılık, Kamp") tek sahte kategori olarak
+    //    sızmasın diye ayrıştırılıp tek tek eklenir.
     for (const r of tourRows) {
-      if (!seen.has(r.category.toLowerCase())) {
-        result.push({ name: r.category, icon_key: null, icon_svg: null, image_url: null });
-        seen.add(r.category.toLowerCase());
+      const parts = r.category.split(',').map((p) => p.trim()).filter(Boolean);
+      for (const name of parts) {
+        if (!seen.has(name.toLowerCase())) {
+          result.push({ name, icon_key: null, icon_svg: null, image_url: null });
+          seen.add(name.toLowerCase());
+        }
       }
     }
 
@@ -443,6 +442,16 @@ export class ToursService {
   private withProxyUrls(tour: Tour): Tour {
     tour.photo_urls = (tour.photo_urls ?? []).map((u) => this.toProxyUrl(u));
     return tour;
+  }
+
+  async findManyByIds(ids: string[]): Promise<Tour[]> {
+    if (ids.length === 0) return [];
+    const tours = await this.tourRepo
+      .createQueryBuilder('tour')
+      .leftJoinAndSelect('tour.dates', 'dates')
+      .where('tour.id IN (:...ids)', { ids })
+      .getMany();
+    return tours.map((t) => this.withProxyUrls(t));
   }
 
   private async findOwnedTour(agencyId: string, tourId: string): Promise<Tour> {

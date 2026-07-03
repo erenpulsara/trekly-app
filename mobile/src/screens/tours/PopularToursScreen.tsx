@@ -4,12 +4,11 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  Image,
+  StyleSheet,  Image,
   Dimensions,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { MainStackParamList } from '../../navigation/AppNavigator';

@@ -5,6 +5,7 @@ import SiteFooter from '@/app/components/SiteFooter';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getTour, getPublishedTours } from '@/lib/api';
+import { splitCategories } from '@/lib/category-utils';
 import type { Tour, TourDifficulty } from '@/lib/types';
 import PhotoGallery from './PhotoGallery';
 import StickyCard from './StickyCard';
@@ -73,10 +74,14 @@ function RelatedTourCard({ tour }: { tour: Tour }) {
             Doldu
           </span>
         )}
-        {tour.category && (
-          <span style={{ position: 'absolute', bottom: '10px', left: '10px', background: 'rgba(0,0,0,0.55)', color: 'white', borderRadius: '6px', padding: '3px 10px', fontSize: '0.65rem', fontWeight: 600, backdropFilter: 'blur(4px)' }}>
-            {tour.category}
-          </span>
+        {splitCategories(tour.category).length > 0 && (
+          <div style={{ position: 'absolute', bottom: '10px', left: '10px', display: 'flex', gap: '5px', flexWrap: 'wrap', maxWidth: 'calc(100% - 20px)' }}>
+            {splitCategories(tour.category).map((cat) => (
+              <span key={cat} style={{ background: 'rgba(0,0,0,0.55)', color: 'white', borderRadius: '6px', padding: '3px 10px', fontSize: '0.65rem', fontWeight: 600, backdropFilter: 'blur(4px)' }}>
+                {cat}
+              </span>
+            ))}
+          </div>
         )}
       </div>
       <div style={{ padding: '16px' }}>
@@ -140,7 +145,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
 
       {/* Navbar */}
       <nav className="navbar">
-        <Link href="/turlar" className="logo">Trekly</Link>
+        <Link href="/anasayfa" className="logo">Trekly</Link>
         <div className="nav-links">
           <Link href="/etkinlikler" className="nav-link">← Etkinlikler</Link>
           <a href={AGENCY_URL} target="_blank" rel="noopener noreferrer" className="nav-cta">Acenta Ol</a>
@@ -176,17 +181,17 @@ export default async function TourDetailPage({ params }: { params: { id: string 
 
           {/* Rozetler — galeri altında */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '14px 0 24px', flexWrap: 'wrap' }}>
-            {tour.category && (
-              <span style={{
+            {splitCategories(tour.category).map((cat) => (
+              <span key={cat} style={{
                 background: '#FFF4F1', color: '#FF5533',
                 fontSize: '0.66rem', fontWeight: 700,
                 padding: '4px 12px', borderRadius: '20px',
                 textTransform: 'uppercase', letterSpacing: '0.06em',
                 border: '1px solid rgba(255,85,51,0.25)',
               }}>
-                {tour.category}
+                {cat}
               </span>
-            )}
+            ))}
             <span style={{
               background: dc.bg, color: dc.text,
               fontSize: '0.66rem', fontWeight: 700,
@@ -235,6 +240,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
               id: tour.id,
               organizer: tour.organizer,
               agency_name: (tour as any).agency_name,
+              difficulty_label: DIFF_LABEL[tour.difficulty],
               tursab_no: tour.tursab_no,
               guide_name: tour.guide_name,
               guide_instagram: (tour as any).guide_instagram,

@@ -4,11 +4,10 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  RefreshControl,
+  StyleSheet,  RefreshControl,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';

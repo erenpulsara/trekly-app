@@ -3,11 +3,13 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { ExploreScreen } from '../screens/explore/ExploreScreen';
+import { BlogScreen } from '../screens/blog/BlogScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 
 export type BottomTabParamList = {
   Home: undefined;
   Explore: undefined;
+  Blog: undefined;
   Profile: undefined;
 };
 
@@ -18,12 +20,14 @@ type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 const TAB_ICONS: Record<keyof BottomTabParamList, { active: IoniconName; inactive: IoniconName }> = {
   Home: { active: 'home', inactive: 'home-outline' },
   Explore: { active: 'compass', inactive: 'compass-outline' },
+  Blog: { active: 'newspaper', inactive: 'newspaper-outline' },
   Profile: { active: 'person', inactive: 'person-outline' },
 };
 
 const TAB_LABELS: Record<keyof BottomTabParamList, string> = {
   Home: 'Ana Sayfa',
   Explore: 'Keşfet',
+  Blog: 'Blog',
   Profile: 'Profil',
 };
 
@@ -38,9 +42,7 @@ export function BottomTabNavigator() {
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
           borderTopColor: '#F3F4F6',
-          height: 80,
-          paddingBottom: 16,
-          paddingTop: 8,
+          paddingTop: 6,
         },
         tabBarLabelStyle: {
           fontSize: 11,
@@ -55,6 +57,7 @@ export function BottomTabNavigator() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Explore" component={ExploreScreen} />
+      <Tab.Screen name="Blog" component={BlogScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

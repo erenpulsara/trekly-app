@@ -13,6 +13,8 @@ import { BookingFormScreen } from '../screens/bookings/BookingFormScreen';
 import { BookingSuccessScreen } from '../screens/bookings/BookingSuccessScreen';
 import { MyBookingsScreen } from '../screens/bookings/MyBookingsScreen';
 import { ForgotPasswordScreen } from '../screens/auth/ForgotPasswordScreen';
+import { BlogDetailScreen } from '../screens/blog/BlogDetailScreen';
+import { AboutScreen } from '../screens/about/AboutScreen';
 
 export type AuthStackParamList = {
   Welcome: undefined;
@@ -24,10 +26,17 @@ export type AuthStackParamList = {
 export type MainStackParamList = {
   Main: undefined;
   TourDetail: { tourId: string };
-  BookingForm: { tourId: string; tourDateId: string };
-  BookingSuccess: { bookingId: string; tourId: string };
+  BookingForm: { tourId: string; tourDateId?: string };
+  BookingSuccess: {
+    bookingId: string;
+    tourId: string;
+    isWebBooking?: boolean;
+    participantCount?: number;
+  };
   MyBookings: undefined;
   PopularTours: undefined;
+  BlogDetail: { slug: string };
+  About: undefined;
 };
 
 const AuthStack = createStackNavigator<AuthStackParamList>();
@@ -53,6 +62,8 @@ function MainNavigator() {
       <MainStack.Screen name="BookingForm" component={BookingFormScreen} />
       <MainStack.Screen name="BookingSuccess" component={BookingSuccessScreen} />
       <MainStack.Screen name="MyBookings" component={MyBookingsScreen} />
+      <MainStack.Screen name="BlogDetail" component={BlogDetailScreen} />
+      <MainStack.Screen name="About" component={AboutScreen} />
     </MainStack.Navigator>
   );
 }

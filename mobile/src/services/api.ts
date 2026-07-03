@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
-import { Tour, Booking, User, PointsLog } from '../types';
+import { Tour, Booking, User, PointsLog, BlogPost } from '../types';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://trekly-api-835377577547.europe-west1.run.app';
 
@@ -87,6 +87,13 @@ export interface ToursFilters {
   search?: string;
 }
 
+export interface CategoryItem {
+  name: string;
+  icon_key: string | null;
+  icon_svg?: string | null;
+  image_url?: string | null;
+}
+
 export const toursService = {
   async getAll(filters?: ToursFilters): Promise<Tour[]> {
     const params = new URLSearchParams();
@@ -103,6 +110,36 @@ export const toursService = {
 
   async getPopular(): Promise<Tour[]> {
     return request<Tour[]>('/tours?sort=popular');
+  },
+
+  async getCategories(): Promise<CategoryItem[]> {
+    return request<CategoryItem[]>('/tours/categories');
+  },
+
+  async createWebBooking(
+    tourId: string,
+    data: {
+      full_name: string;
+      email: string;
+      phone: string;
+      participant_count: number;
+      notes?: string;
+    }
+  ): Promise<{ id: string }> {
+    return request<{ id: string }>(`/tours/${tourId}/web-booking`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+export const blogService = {
+  async getAll(): Promise<BlogPost[]> {
+    return request<BlogPost[]>('/blog');
+  },
+
+  async getBySlug(slug: string): Promise<BlogPost> {
+    return request<BlogPost>(`/blog/${slug}`);
   },
 };
 

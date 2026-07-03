@@ -16,7 +16,7 @@ export default function HeroButtons({ exploreTours, becomeAgency, agencyUrl }: P
   return (
     <div className="lp-hero-btns" style={{ display: 'flex', alignItems: 'center', gap: '14px', alignSelf: 'center', marginTop: '96px' }}>
       <a
-        href="/turlar"
+        href="/anasayfa"
         className="lp-hero-btn-primary"
         onClick={handleProd}
         style={{ cursor: isProd ? 'default' : 'pointer' }}

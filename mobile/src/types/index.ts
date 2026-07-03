@@ -1,4 +1,11 @@
-export type Difficulty = 'easy' | 'medium' | 'hard' | 'extreme';
+export type Difficulty =
+  | 'easy'
+  | 'easy_medium'
+  | 'medium'
+  | 'medium_hard'
+  | 'hard'
+  | 'very_hard'
+  | 'extreme';
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
 export interface Agency {
@@ -20,9 +27,9 @@ export interface Tour {
   location_name: string;
   latitude?: number;
   longitude?: number;
-  altitude_meters: number;
+  altitude_meters: number | null;
   difficulty: Difficulty;
-  distance_km: number;
+  distance_km: number | null;
   max_participants: number;
   photo_urls: string[];
   status: 'draft' | 'published';
@@ -32,17 +39,36 @@ export interface Tour {
   created_at: string;
   category?: string | null;
   price?: number | null;
+  price_currency?: 'TRY' | 'USD' | 'EUR' | null;
   start_date?: string | null;
   end_date?: string | null;
   guide_name?: string | null;
+  guide_instagram?: string | null;
+  organizer?: string | null;
+  agency_name?: string | null;
   tursab_no?: string | null;
   meeting_points?: string | null;
   target_location?: string | null;
   contact_phone?: string | null;
   accommodation?: string | null;
+  accommodation_url?: string | null;
   transportation?: string | null;
   program?: string | null;
   important_notes?: string | null;
+  booking_count?: number | null;
+  tags?: string[];
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string | null;
+  cover_image: string | null;
+  status: 'draft' | 'published';
+  published_at: string | null;
+  created_at: string;
 }
 
 export interface User {

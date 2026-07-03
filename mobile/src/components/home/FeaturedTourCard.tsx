@@ -21,8 +21,8 @@ interface FeaturedTourCardProps {
 }
 
 export function FeaturedTourCard({ tour, onPress, onBook }: FeaturedTourCardProps) {
-  const firstDate = tour.dates?.[0];
-  const secondDate = tour.dates?.[1];
+  const startStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
+  const endStr = tour.end_date ?? tour.dates?.[1]?.date ?? null;
 
   return (
     <TouchableOpacity
@@ -53,13 +53,13 @@ export function FeaturedTourCard({ tour, onPress, onBook }: FeaturedTourCardProp
           <Ionicons name="location-outline" size={14} color="#6B7280" />
           <Text style={styles.infoText}>{tour.location_name}</Text>
         </View>
-        {(firstDate || secondDate) && (
+        {(startStr || endStr) && (
           <View style={styles.infoRow}>
             <Ionicons name="calendar-outline" size={14} color="#6B7280" />
             <Text style={styles.infoText}>
-              {firstDate ? formatShortDate(firstDate.date) : ''}
-              {firstDate && secondDate ? ' – ' : ''}
-              {secondDate ? formatShortDate(secondDate.date) : ''}
+              {startStr ? formatShortDate(startStr) : ''}
+              {startStr && endStr ? ' – ' : ''}
+              {endStr ? formatShortDate(endStr) : ''}
             </Text>
           </View>
         )}
@@ -69,7 +69,7 @@ export function FeaturedTourCard({ tour, onPress, onBook }: FeaturedTourCardProp
             <Text style={styles.pointsText}>{tour.points} XP</Text>
           </View>
           <TouchableOpacity style={styles.bookButton} onPress={onBook} activeOpacity={0.85}>
-            <Text style={styles.bookButtonText}>Rezervasyon Yap</Text>
+            <Text style={styles.bookButtonText}>Maceraya Katıl</Text>
           </TouchableOpacity>
         </View>
       </View>

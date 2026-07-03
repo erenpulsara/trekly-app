@@ -4,12 +4,11 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  RefreshControl,
+  StyleSheet,  RefreshControl,
   StatusBar,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -227,6 +226,26 @@ export function ProfileScreen({ navigation }: Props) {
           )}
         </View>
 
+        {/* Menu links */}
+        <View style={styles.menuSection}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('MyBookings')}
+          >
+            <Ionicons name="calendar-outline" size={20} color="#374151" />
+            <Text style={styles.menuItemText}>Rezervasyonlarım</Text>
+            <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('About')}
+          >
+            <Ionicons name="information-circle-outline" size={20} color="#374151" />
+            <Text style={styles.menuItemText}>Hakkımızda</Text>
+            <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
+          </TouchableOpacity>
+        </View>
+
         {/* Logout */}
         <View style={styles.logoutSection}>
           <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
@@ -401,6 +420,33 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emptyText: { fontSize: 14, color: '#9CA3AF' },
+  menuSection: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F9FAFB',
+  },
+  menuItemText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
   logoutSection: { paddingHorizontal: 20, paddingBottom: 12 },
   dangerSection: { paddingHorizontal: 20, paddingBottom: 40 },
   deleteBtn: {

@@ -8,16 +8,15 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Alert,
-  SafeAreaView,
-  ActivityIndicator,
+  Alert,  ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { MainStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../context/AuthContext';
-import { bookingsService } from '../../services/api';
+import { bookingsService, toursService } from '../../services/api';
 
 type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'BookingForm'>;
@@ -42,25 +41,42 @@ export function BookingFormScreen({ navigation, route }: Props) {
       return;
     }
 
-    if (!tourId || !tourDateId) {
-      Alert.alert('Hata', 'Tur veya tarih bilgisi eksik. Lütfen geri dönüp tekrar deneyin.');
+    if (!tourId) {
+      Alert.alert('Hata', 'Tur bilgisi eksik. Lütfen geri dönüp tekrar deneyin.');
       return;
     }
 
     setIsLoading(true);
     try {
-      const payload = {
-        tour_id: tourId,
-        tour_date_id: tourDateId,
-        name: name.trim(),
-        surname: surname.trim(),
-        email: email.trim(),
-        phone: phone.trim(),
-        participant_count: participantCount,
-        notes: notes.trim() || undefined,
-      };
-      const booking = await bookingsService.create(payload);
-      navigation.replace('BookingSuccess', { bookingId: booking.id, tourId });
+      if (tourDateId) {
+        // Classic flow: tour has a date list, booking tied to a specific date
+        const booking = await bookingsService.create({
+          tour_id: tourId,
+          tour_date_id: tourDateId,
+          name: name.trim(),
+          surname: surname.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          participant_count: participantCount,
+          notes: notes.trim() || undefined,
+        });
+        navigation.replace('BookingSuccess', { bookingId: booking.id, tourId });
+      } else {
+        // Dateless tours (created on the web panel) use the public web-booking flow
+        const result = await toursService.createWebBooking(tourId, {
+          full_name: `${name.trim()} ${surname.trim()}`,
+          email: email.trim(),
+          phone: phone.trim(),
+          participant_count: participantCount,
+          notes: notes.trim() || undefined,
+        });
+        navigation.replace('BookingSuccess', {
+          bookingId: result.id ?? '',
+          tourId,
+          isWebBooking: true,
+          participantCount,
+        });
+      }
     } catch (err) {
       Alert.alert('Hata', err instanceof Error ? err.message : 'Rezervasyon oluşturulamadı.');
     } finally {

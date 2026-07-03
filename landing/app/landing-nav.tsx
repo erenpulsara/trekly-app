@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { type Lang, getLangClient, setLangCookie } from '@/lib/i18n';
+import { useUserAuth } from './UserAuthContext';
 
 interface NavLink {
   label: string;
@@ -20,6 +21,9 @@ export default function LandingNav({
 }) {
   const [lang, setLangState] = useState<Lang>('tr');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const { user, isLoading, logout } = useUserAuth();
 
   useEffect(() => {
     setLangState(getLangClient());
@@ -29,6 +33,17 @@ export default function LandingNav({
   useEffect(() => {
     setMenuOpen(false);
   }, [logoHref]);
+
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    function handler(e: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [userMenuOpen]);
 
   const switchLang = (l: Lang) => {
     setLangCookie(l);
@@ -85,6 +100,77 @@ export default function LandingNav({
                   {link.label}
                 </Link>
               ))}
+            </div>
+          )}
+
+          {/* User auth */}
+          {!isLoading && (
+            <div ref={userMenuRef} style={{ position: 'relative' }}>
+              {user ? (
+                <>
+                  <button
+                    onClick={() => setUserMenuOpen((v) => !v)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      background: 'rgba(255,85,51,0.08)', border: 'none', borderRadius: '20px',
+                      padding: '6px 14px 6px 6px', cursor: 'pointer', fontFamily: 'inherit',
+                    }}
+                  >
+                    <span style={{
+                      width: '26px', height: '26px', borderRadius: '50%', background: '#FF5533',
+                      color: 'white', fontSize: '0.72rem', fontWeight: 800,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1A1A1A' }}>
+                      {user.name}
+                    </span>
+                  </button>
+                  {userMenuOpen && (
+                    <div style={{
+                      position: 'absolute', top: 'calc(100% + 10px)', right: 0,
+                      background: 'white', border: '1px solid #EAEAEA', borderRadius: '14px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.14)', minWidth: '200px', overflow: 'hidden', zIndex: 300,
+                    }}>
+                      <div style={{ padding: '14px 16px', borderBottom: '1px solid #F0F0F0' }}>
+                        <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: '#1A1A1A' }}>
+                          {user.name} {user.surname}
+                        </p>
+                        <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: '#9A9A9A' }}>{user.email}</p>
+                      </div>
+                      <Link
+                        href="/favorilerim"
+                        onClick={() => setUserMenuOpen(false)}
+                        style={{ display: 'block', padding: '11px 16px', fontSize: '0.82rem', fontWeight: 600, color: '#3A3A3A', textDecoration: 'none' }}
+                      >
+                        Favorilerim
+                      </Link>
+                      <button
+                        onClick={() => { logout(); setUserMenuOpen(false); }}
+                        style={{
+                          display: 'block', width: '100%', textAlign: 'left', padding: '11px 16px',
+                          fontSize: '0.82rem', fontWeight: 600, color: '#DC2626', background: 'none',
+                          border: 'none', borderTop: '1px solid #F0F0F0', cursor: 'pointer', fontFamily: 'inherit',
+                        }}
+                      >
+                        Çıkış Yap
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link
+                  href="/giris"
+                  style={{
+                    fontSize: '0.82rem', fontWeight: 700, color: '#FF5533',
+                    textDecoration: 'none', padding: '7px 16px', borderRadius: '20px',
+                    border: '1.5px solid rgba(255,85,51,0.3)',
+                  }}
+                >
+                  Giriş Yap
+                </Link>
+              )}
             </div>
           )}
 
