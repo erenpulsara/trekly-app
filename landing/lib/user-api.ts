@@ -93,3 +93,20 @@ export async function userRegister(
   const data = (await res.json()) as LoginResponse;
   return storeSession(data);
 }
+
+export async function fetchMe(): Promise<WebUser | null> {
+  const token = getUserToken();
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API_URL}/users/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as WebUser;
+    // Keep the cached copy fresh
+    localStorage.setItem(USER_KEY, JSON.stringify(data));
+    return data;
+  } catch {
+    return null;
+  }
+}

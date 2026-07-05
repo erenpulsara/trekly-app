@@ -133,12 +133,23 @@ export default function LandingNav({
                       background: 'white', border: '1px solid #EAEAEA', borderRadius: '14px',
                       boxShadow: '0 8px 32px rgba(0,0,0,0.14)', minWidth: '200px', overflow: 'hidden', zIndex: 300,
                     }}>
-                      <div style={{ padding: '14px 16px', borderBottom: '1px solid #F0F0F0' }}>
+                      <Link
+                        href="/profilim"
+                        onClick={() => setUserMenuOpen(false)}
+                        style={{ display: 'block', padding: '14px 16px', borderBottom: '1px solid #F0F0F0', textDecoration: 'none' }}
+                      >
                         <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: '#1A1A1A' }}>
                           {user.name} {user.surname}
                         </p>
                         <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: '#9A9A9A' }}>{user.email}</p>
-                      </div>
+                      </Link>
+                      <Link
+                        href="/profilim"
+                        onClick={() => setUserMenuOpen(false)}
+                        style={{ display: 'block', padding: '11px 16px', fontSize: '0.82rem', fontWeight: 600, color: '#3A3A3A', textDecoration: 'none' }}
+                      >
+                        Profilim
+                      </Link>
                       <Link
                         href="/favorilerim"
                         onClick={() => setUserMenuOpen(false)}
