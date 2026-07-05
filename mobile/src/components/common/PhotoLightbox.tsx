@@ -45,6 +45,7 @@ export function PhotoLightbox({ photos, initialIndex, visible, onClose }: Props)
           {/* Swipeable photos */}
           <FlatList
             ref={listRef}
+            style={{ flex: 1 }}
             data={photos}
             horizontal
             pagingEnabled
@@ -95,6 +96,7 @@ const styles = StyleSheet.create({
   },
   slide: {
     width,
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -145,13 +145,13 @@ export default async function AnasayfaPage() {
           fontSize: 'clamp(1.8rem, 3vw, 2.8rem)',
           fontWeight: 700,
           fontStyle: 'italic',
-          color: 'white',
+          color: '#FF5533',
           letterSpacing: '-0.01em',
           margin: '0 0 20px',
           textAlign: 'center',
           width: '100%',
           textTransform: 'uppercase',
-          textShadow: '0 2px 12px rgba(0,0,0,0.35)',
+          textShadow: '0 2px 12px rgba(0,0,0,0.45)',
         }}>
           Sıradaki Maceranı Keşfet
         </p>

@@ -8,7 +8,7 @@ import { ProfileScreen } from '../screens/profile/ProfileScreen';
 
 export type BottomTabParamList = {
   Home: undefined;
-  Explore: undefined;
+  Explore: { category?: string } | undefined;
   Blog: undefined;
   Profile: undefined;
 };
@@ -26,7 +26,7 @@ const TAB_ICONS: Record<keyof BottomTabParamList, { active: IoniconName; inactiv
 
 const TAB_LABELS: Record<keyof BottomTabParamList, string> = {
   Home: 'Ana Sayfa',
-  Explore: 'Keşfet',
+  Explore: 'Etkinlikler',
   Blog: 'Blog',
   Profile: 'Profil',
 };

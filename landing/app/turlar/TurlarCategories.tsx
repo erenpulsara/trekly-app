@@ -5,7 +5,7 @@ import Image from 'next/image';
 import type { CategoryItem } from '@/lib/api';
 
 // Fallback photos for well-known categories (when no image_url in DB)
-const FALLBACK_PHOTOS: Record<string, string> = {
+export const FALLBACK_PHOTOS: Record<string, string> = {
   'trekking':            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75',
   'dağcılık':            'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=75',
   'bisiklet':            'https://images.unsplash.com/photo-1571188654248-7a89213915f7?w=600&q=75',
@@ -31,7 +31,7 @@ const FALLBACK_PHOTOS: Record<string, string> = {
   'tema / aksiyon turları': 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600&q=75',
 };
 
-const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&q=75';
+export const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&q=75';
 
 interface Props {
   activeCategory: string;

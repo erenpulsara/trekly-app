@@ -181,15 +181,12 @@ export default async function EtkinliklerPage({
           <div style={{ marginBottom: '28px', textAlign: 'center' }}>
             <h2 style={{
               fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(1.5rem, 2.8vw, 2.1rem)',
-              fontWeight: 700, color: '#1A1A1A', margin: '0 0 8px', textTransform: 'uppercase',
+              fontWeight: 700, color: '#1A1A1A', margin: '0 0 16px', textTransform: 'uppercase',
               letterSpacing: '0.02em', lineHeight: 1.4,
             }}>
               {tt.upcomingTitle}
             </h2>
-            <p style={{ fontSize: '0.8rem', color: '#9A9A9A', margin: '0 0 16px' }}>
-              {tt.found(monthFiltered.length)}
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
               {(activeCategory || activeLocation || activeMonth || activeSearch) && (
                 <Link href="/etkinlikler" style={{ fontSize: '0.78rem', color: '#9A9A9A', fontWeight: 600, textDecoration: 'none' }}>
                   ← Filtreleri Temizle

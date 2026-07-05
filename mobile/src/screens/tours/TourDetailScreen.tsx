@@ -21,9 +21,10 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { PhotoLightbox } from '../../components/common/PhotoLightbox';
 import { TourCard } from '../../components/common/TourCard';
-import { toursService } from '../../services/api';
+import { toursService, favoritesService } from '../../services/api';
 import { Tour, Difficulty } from '../../types';
-import { formatDate, formatDateRange, formatDistance, formatPrice } from '../../utils/formatting';
+import { formatDate, formatDateRange, formatDateWithDay, formatDistance, formatPrice } from '../../utils/formatting';
+import { splitCategories } from '../../utils/category';
 import { useAuth } from '../../context/AuthContext';
 
 function scoreRelated(current: Tour, candidate: Tour): number {
@@ -59,7 +60,7 @@ type DetailTab = 'info' | 'program' | 'notes' | 'gallery';
 
 export function TourDetailScreen({ navigation, route }: Props) {
   const { tourId } = route.params;
-  const { isGuest, exitGuest } = useAuth();
+  const { user, isGuest, exitGuest } = useAuth();
   const insets = useSafeAreaInsets();
   const [tour, setTour] = useState<Tour | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -102,6 +103,35 @@ export function TourDetailScreen({ navigation, route }: Props) {
   useEffect(() => {
     loadTour();
   }, [loadTour]);
+
+  useEffect(() => {
+    if (!user) { setIsLiked(false); return; }
+    favoritesService.getIds()
+      .then((ids) => setIsLiked(ids.includes(tourId)))
+      .catch(() => {});
+  }, [tourId, user]);
+
+  async function toggleFavorite() {
+    if (isGuest || !user) {
+      Alert.alert(
+        'Giriş Gerekli',
+        'Favorilere eklemek için giriş yapmanız gerekiyor.',
+        [
+          { text: 'İptal', style: 'cancel' },
+          { text: 'Giriş Yap', onPress: exitGuest },
+        ]
+      );
+      return;
+    }
+    const next = !isLiked;
+    setIsLiked(next); // optimistic
+    try {
+      if (next) await favoritesService.add(tourId);
+      else await favoritesService.remove(tourId);
+    } catch {
+      setIsLiked(!next); // revert on failure
+    }
+  }
 
   if (isLoading) return <LoadingSpinner />;
   if (!tour) return <ErrorMessage message={error ?? 'Tur bulunamadı.'} onRetry={loadTour} />;
@@ -247,7 +277,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
               <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
             </TouchableOpacity>
             <View style={styles.heroRightBtns}>
-              <TouchableOpacity style={styles.heroBtn} onPress={() => setIsLiked((l) => !l)}>
+              <TouchableOpacity style={styles.heroBtn} onPress={toggleFavorite}>
                 <Ionicons
                   name={isLiked ? 'heart' : 'heart-outline'}
                   size={20}
@@ -277,11 +307,11 @@ export function TourDetailScreen({ navigation, route }: Props) {
           {/* Badges row */}
           {(tour.category || tour.location_name) && (
             <View style={styles.badgesRow}>
-              {tour.category ? (
-                <View style={styles.categoryBadge}>
-                  <Text style={styles.categoryBadgeText}>{tour.category}</Text>
+              {splitCategories(tour.category).map((cat) => (
+                <View key={cat} style={styles.categoryBadge}>
+                  <Text style={styles.categoryBadgeText}>{cat}</Text>
                 </View>
-              ) : null}
+              ))}
               {tour.location_name ? (
                 <View style={styles.locationBadge}>
                   <Ionicons name="location-outline" size={12} color="#0369A1" />
@@ -352,29 +382,112 @@ export function TourDetailScreen({ navigation, route }: Props) {
             </View>
           ) : null}
 
-          {/* Organizer / Guide */}
-          {(tour.organizer || tour.agency_name || tour.guide_name) ? (
-            <View style={styles.organizerCard}>
-              {(tour.organizer || tour.agency_name) ? (
-                <View style={styles.organizerRow}>
-                  <Ionicons name="business-outline" size={18} color="#6B7280" />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.organizerLabel}>Düzenleyen</Text>
-                    <Text style={styles.organizerValue}>{tour.organizer || tour.agency_name}</Text>
-                  </View>
+          {/* Tour details card — mirrors the web's right-side card rows */}
+          <View style={styles.organizerCard}>
+            {(tour.organizer || tour.agency_name) ? (
+              <View style={styles.organizerRow}>
+                <Ionicons name="business-outline" size={18} color="#6B7280" />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.organizerLabel}>Düzenleyen</Text>
+                  <Text style={styles.organizerValue}>{tour.organizer || tour.agency_name}</Text>
                 </View>
-              ) : null}
-              {tour.guide_name ? (
-                <View style={styles.organizerRow}>
-                  <Ionicons name="person-outline" size={18} color="#6B7280" />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.organizerLabel}>Rehber</Text>
-                    <Text style={styles.organizerValue}>{tour.guide_name}</Text>
-                  </View>
+              </View>
+            ) : null}
+            {tour.guide_name ? (
+              <TouchableOpacity
+                style={styles.organizerRow}
+                disabled={!tour.guide_instagram}
+                onPress={() => tour.guide_instagram && Linking.openURL(tour.guide_instagram)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="person-outline" size={18} color="#6B7280" />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.organizerLabel}>Rehber</Text>
+                  <Text style={[styles.organizerValue, tour.guide_instagram ? { color: '#FF5A1F' } : null]}>
+                    {tour.guide_name}
+                    {tour.guide_instagram ? '  ' : ''}
+                    {tour.guide_instagram ? (
+                      <Ionicons name="logo-instagram" size={13} color="#FF5A1F" />
+                    ) : null}
+                  </Text>
                 </View>
-              ) : null}
+              </TouchableOpacity>
+            ) : null}
+            {tour.start_date ? (
+              <View style={styles.organizerRow}>
+                <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.organizerLabel}>Başlangıç Tarihi</Text>
+                  <Text style={styles.organizerValue}>{formatDateWithDay(tour.start_date)}</Text>
+                </View>
+              </View>
+            ) : null}
+            {tour.end_date ? (
+              <View style={styles.organizerRow}>
+                <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.organizerLabel}>Bitiş Tarihi</Text>
+                  <Text style={styles.organizerValue}>{formatDateWithDay(tour.end_date)}</Text>
+                </View>
+              </View>
+            ) : null}
+            {tour.meeting_points ? (
+              <View style={styles.organizerRow}>
+                <Ionicons name="location-outline" size={18} color="#6B7280" />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.organizerLabel}>Buluşma Noktası</Text>
+                  <Text style={styles.organizerValue}>{tour.meeting_points}</Text>
+                </View>
+              </View>
+            ) : null}
+            {tour.target_location ? (
+              <View style={styles.organizerRow}>
+                <Ionicons name="flag-outline" size={18} color="#6B7280" />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.organizerLabel}>Hedef Lokasyon</Text>
+                  <Text style={styles.organizerValue}>{tour.target_location}</Text>
+                </View>
+              </View>
+            ) : null}
+            {tour.contact_phone ? (
+              <TouchableOpacity
+                style={styles.organizerRow}
+                onPress={() => Linking.openURL(`tel:${tour.contact_phone}`)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="call-outline" size={18} color="#6B7280" />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.organizerLabel}>İrtibat No</Text>
+                  <Text style={[styles.organizerValue, { color: '#FF5A1F' }]}>{tour.contact_phone}</Text>
+                </View>
+              </TouchableOpacity>
+            ) : null}
+
+            {/* Kontenjan bar — same as the web card */}
+            <View style={styles.organizerRow}>
+              <Ionicons name="time-outline" size={18} color="#6B7280" />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.organizerLabel}>Kontenjan</Text>
+                {(() => {
+                  const booked = tour.booking_count ?? 0;
+                  const remaining = Math.max(0, tour.max_participants - booked);
+                  const isFull = remaining === 0;
+                  const pct = Math.min(100, (booked / Math.max(1, tour.max_participants)) * 100);
+                  return (
+                    <>
+                      <View style={styles.quotaBarBg}>
+                        <View style={[styles.quotaBarFill, { width: `${pct}%` }, isFull && { backgroundColor: '#EF4444' }]} />
+                      </View>
+                      <Text style={[styles.quotaText, isFull && { color: '#EF4444' }]}>
+                        {isFull ? 'Doldu' : `${remaining} yer kaldı`}
+                        <Text style={styles.quotaSubText}>  ({booked}/{tour.max_participants})</Text>
+                      </Text>
+                    </>
+                  );
+                })()}
+              </View>
             </View>
-          ) : null}
+          </View>
 
           {/* Date selector — always show when dates exist */}
           {tour.dates.length > 0 && (
@@ -637,7 +750,7 @@ const styles = StyleSheet.create({
   },
   organizerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 12,
   },
   organizerLabel: {
@@ -652,6 +765,29 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1A1A1A',
     marginTop: 1,
+  },
+  quotaBarBg: {
+    height: 5,
+    backgroundColor: '#E8E8E8',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginTop: 6,
+    marginBottom: 5,
+  },
+  quotaBarFill: {
+    height: '100%',
+    borderRadius: 3,
+    backgroundColor: '#FF5A1F',
+  },
+  quotaText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FF5A1F',
+  },
+  quotaSubText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#9CA3AF',
   },
   infoGrid: {
     flexDirection: 'row',

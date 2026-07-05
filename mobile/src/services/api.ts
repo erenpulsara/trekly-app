@@ -195,3 +195,21 @@ export const usersService = {
     return request<{ message: string }>('/users/me', { method: 'DELETE' });
   },
 };
+
+export const favoritesService = {
+  async getAll(): Promise<Tour[]> {
+    return request<Tour[]>('/favorites');
+  },
+
+  async getIds(): Promise<string[]> {
+    return request<string[]>('/favorites/ids');
+  },
+
+  async add(tourId: string): Promise<{ favorited: true }> {
+    return request<{ favorited: true }>(`/favorites/${tourId}`, { method: 'POST' });
+  },
+
+  async remove(tourId: string): Promise<{ favorited: false }> {
+    return request<{ favorited: false }>(`/favorites/${tourId}`, { method: 'DELETE' });
+  },
+};
