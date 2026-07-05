@@ -9,7 +9,23 @@ export interface WebUser {
   name: string;
   surname: string;
   email: string;
+  phone?: string | null;
   total_points: number;
+}
+
+export interface PointsLogEntry {
+  id: string;
+  points_earned: number;
+  awarded_at: string;
+  tour: { id: string; name: string; photo_urls?: string[] } | null;
+}
+
+export interface UserWebBooking {
+  id: string;
+  participant_count: number;
+  status: 'pending' | 'confirmed' | 'cancelled';
+  created_at: string;
+  tour: { id: string; name: string; start_date?: string | null; photo_urls?: string[] } | null;
 }
 
 interface LoginResponse extends WebUser {
@@ -109,4 +125,52 @@ export async function fetchMe(): Promise<WebUser | null> {
   } catch {
     return null;
   }
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getUserToken();
+  return token
+    ? { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+    : { 'Content-Type': 'application/json' };
+}
+
+export async function updateProfile(data: { name?: string; surname?: string; phone?: string }): Promise<WebUser> {
+  const res = await fetch(`${API_URL}/users/me`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new UserApiError(res.status, await parseErrorMessage(res));
+  const updated = (await res.json()) as WebUser;
+  localStorage.setItem(USER_KEY, JSON.stringify(updated));
+  return updated;
+}
+
+export async function fetchMyPoints(): Promise<PointsLogEntry[]> {
+  try {
+    const res = await fetch(`${API_URL}/users/me/points`, { headers: authHeaders() });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchMyWebBookings(): Promise<UserWebBooking[]> {
+  try {
+    const res = await fetch(`${API_URL}/users/me/web-bookings`, { headers: authHeaders() });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export async function deleteMyAccount(): Promise<void> {
+  const res = await fetch(`${API_URL}/users/me`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new UserApiError(res.status, await parseErrorMessage(res));
+  clearUserSession();
 }

@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
-import { Tour, Booking, User, PointsLog, BlogPost } from '../types';
+import { Tour, Booking, User, PointsLog, BlogPost, UserWebBooking } from '../types';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://trekly-api-835377577547.europe-west1.run.app';
 
@@ -184,11 +184,15 @@ export const usersService = {
     return request<PointsLog[]>('/users/me/points');
   },
 
-  async updateProfile(data: Partial<User>): Promise<User> {
+  async updateProfile(data: { name?: string; surname?: string; phone?: string }): Promise<User> {
     return request<User>('/users/me', {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
+  },
+
+  async getMyWebBookings(): Promise<UserWebBooking[]> {
+    return request<UserWebBooking[]>('/users/me/web-bookings');
   },
 
   async deleteAccount(): Promise<{ message: string }> {

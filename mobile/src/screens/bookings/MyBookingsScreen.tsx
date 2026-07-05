@@ -12,8 +12,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { MainStackParamList } from '../../navigation/AppNavigator';
-import { bookingsService } from '../../services/api';
-import { Booking } from '../../types';
+import { bookingsService, usersService } from '../../services/api';
+import { Booking, UserWebBooking } from '../../types';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
@@ -38,8 +38,13 @@ type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'MyBookings'>;
 };
 
+// Single list mixing app bookings (date-based) and web bookings (guest flow)
+type ListItem =
+  | { kind: 'mobile'; id: string; booking: Booking }
+  | { kind: 'web'; id: string; booking: UserWebBooking };
+
 export function MyBookingsScreen({ navigation }: Props) {
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [items, setItems] = useState<ListItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,8 +54,15 @@ export function MyBookingsScreen({ navigation }: Props) {
     try {
       if (showSpinner) setIsLoading(true);
       setError(null);
-      const data = await bookingsService.getMy();
-      setBookings(sortBookings(data));
+      const [mobile, web] = await Promise.all([
+        bookingsService.getMy(),
+        usersService.getMyWebBookings().catch(() => [] as UserWebBooking[]),
+      ]);
+      const merged: ListItem[] = [
+        ...sortBookings(mobile).map((b): ListItem => ({ kind: 'mobile', id: `m-${b.id}`, booking: b })),
+        ...web.map((b): ListItem => ({ kind: 'web', id: `w-${b.id}`, booking: b })),
+      ];
+      setItems(merged);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Rezervasyonlar yüklenemedi.');
     } finally {
@@ -87,9 +99,9 @@ export function MyBookingsScreen({ navigation }: Props) {
         <ErrorMessage message={error} onRetry={fetchBookings} />
       ) : (
         <FlatList
-          data={bookings}
+          data={items}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={bookings.length === 0 ? styles.emptyContainer : styles.list}
+          contentContainerStyle={items.length === 0 ? styles.emptyContainer : styles.list}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
@@ -112,41 +124,55 @@ export function MyBookingsScreen({ navigation }: Props) {
               </TouchableOpacity>
             </View>
           }
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.card, item.status === 'confirmed' && styles.cardConfirmed]}
-              onPress={() => navigation.navigate('TourDetail', { tourId: item.tour.id })}
-              activeOpacity={0.85}
-            >
-              {item.tour.photo_urls.length > 0 ? (
-                <Image source={{ uri: item.tour.photo_urls[0] }} style={styles.cardImage} />
-              ) : (
-                <View style={[styles.cardImage, styles.imagePlaceholder]}>
-                  <Ionicons name="image-outline" size={32} color="#D1D5DB" />
+          renderItem={({ item }) => {
+            const booking = item.booking;
+            const tour = booking.tour;
+            const dateStr =
+              item.kind === 'mobile'
+                ? item.booking.tour_date?.date
+                : item.booking.tour?.start_date ?? item.booking.created_at;
+            return (
+              <TouchableOpacity
+                style={[styles.card, booking.status === 'confirmed' && styles.cardConfirmed]}
+                onPress={() => tour && navigation.navigate('TourDetail', { tourId: tour.id })}
+                activeOpacity={0.85}
+              >
+                {tour && tour.photo_urls.length > 0 ? (
+                  <Image source={{ uri: tour.photo_urls[0] }} style={styles.cardImage} />
+                ) : (
+                  <View style={[styles.cardImage, styles.imagePlaceholder]}>
+                    <Ionicons name="image-outline" size={32} color="#D1D5DB" />
+                  </View>
+                )}
+                <View style={styles.statusBadge}>
+                  <StatusBadge status={booking.status} />
                 </View>
-              )}
-              <View style={styles.statusBadge}>
-                <StatusBadge status={item.status} />
-              </View>
-              <View style={styles.cardBody}>
-                <Text style={styles.tourName} numberOfLines={2}>{item.tour.name}</Text>
-                <View style={styles.metaRow}>
-                  <Ionicons name="calendar-outline" size={13} color="#6B7280" />
-                  <Text style={styles.metaText}>{formatDate(item.tour_date.date)}</Text>
+                <View style={styles.cardBody}>
+                  <Text style={styles.tourName} numberOfLines={2}>{tour?.name ?? 'Tur'}</Text>
+                  {dateStr && (
+                    <View style={styles.metaRow}>
+                      <Ionicons name="calendar-outline" size={13} color="#6B7280" />
+                      <Text style={styles.metaText}>{formatDate(dateStr)}</Text>
+                    </View>
+                  )}
+                  {tour?.location_name && (
+                    <View style={styles.metaRow}>
+                      <Ionicons name="location-outline" size={13} color="#6B7280" />
+                      <Text style={styles.metaText}>{tour.location_name}</Text>
+                    </View>
+                  )}
+                  <View style={styles.pointsRow}>
+                    <Text style={styles.points}>
+                      {item.kind === 'web' ? 'Web Rezervasyonu' : `${tour?.points ?? 0} XP`}
+                    </Text>
+                    <Text style={styles.participants}>
+                      {booking.participant_count} kişi
+                    </Text>
+                  </View>
                 </View>
-                <View style={styles.metaRow}>
-                  <Ionicons name="location-outline" size={13} color="#6B7280" />
-                  <Text style={styles.metaText}>{item.tour.location_name}</Text>
-                </View>
-                <View style={styles.pointsRow}>
-                  <Text style={styles.points}>{item.tour.points} XP</Text>
-                  <Text style={styles.participants}>
-                    {item.participant_count} kişi
-                  </Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          )}
+              </TouchableOpacity>
+            );
+          }}
         />
       )}
     </SafeAreaView>

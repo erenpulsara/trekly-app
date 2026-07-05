@@ -101,6 +101,15 @@ export interface PointsLog {
   awarded_at: string;
 }
 
+// Guest reservations made through the web-booking flow, matched by email
+export interface UserWebBooking {
+  id: string;
+  participant_count: number;
+  status: 'pending' | 'confirmed' | 'cancelled';
+  created_at: string;
+  tour: Tour | null;
+}
+
 export interface Notification {
   id: string;
   type: 'booking_confirmed' | 'points_earned' | 'badge_earned' | 'reminder';

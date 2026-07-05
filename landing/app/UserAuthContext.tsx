@@ -15,6 +15,7 @@ interface UserAuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, surname: string, email: string, password: string, phone?: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => void;
 }
 
 const UserAuthContext = createContext<UserAuthContextValue | null>(null);
@@ -46,8 +47,13 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
+  // Re-read the cached user (e.g. after a profile update refreshed localStorage)
+  const refreshUser = useCallback(() => {
+    setUser(getStoredUser());
+  }, []);
+
   return (
-    <UserAuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <UserAuthContext.Provider value={{ user, isLoading, login, register, logout, refreshUser }}>
       {children}
     </UserAuthContext.Provider>
   );

@@ -15,6 +15,8 @@ import { MyBookingsScreen } from '../screens/bookings/MyBookingsScreen';
 import { ForgotPasswordScreen } from '../screens/auth/ForgotPasswordScreen';
 import { BlogDetailScreen } from '../screens/blog/BlogDetailScreen';
 import { AboutScreen } from '../screens/about/AboutScreen';
+import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
+import { FavoritesScreen } from '../screens/profile/FavoritesScreen';
 
 export type AuthStackParamList = {
   Welcome: undefined;
@@ -37,6 +39,8 @@ export type MainStackParamList = {
   PopularTours: undefined;
   BlogDetail: { slug: string };
   About: undefined;
+  EditProfile: undefined;
+  Favorites: undefined;
 };
 
 const AuthStack = createStackNavigator<AuthStackParamList>();
@@ -64,6 +68,8 @@ function MainNavigator() {
       <MainStack.Screen name="MyBookings" component={MyBookingsScreen} />
       <MainStack.Screen name="BlogDetail" component={BlogDetailScreen} />
       <MainStack.Screen name="About" component={AboutScreen} />
+      <MainStack.Screen name="EditProfile" component={EditProfileScreen} />
+      <MainStack.Screen name="Favorites" component={FavoritesScreen} />
     </MainStack.Navigator>
   );
 }

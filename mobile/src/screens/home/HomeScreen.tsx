@@ -342,7 +342,6 @@ export function HomeScreen({ navigation }: Props) {
                 <View style={styles.section}>
                   <View style={styles.sectionTitleWrap}>
                     <Text style={styles.sectionTitle}>YAKLAŞAN ETKİNLİKLER</Text>
-                    <Text style={styles.sectionCount}>{tours.length} tur bulundu</Text>
                   </View>
 
                   <View style={styles.upList}>

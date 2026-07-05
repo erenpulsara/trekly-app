@@ -191,9 +191,6 @@ export default async function AnasayfaPage() {
             }}>
               {tt.upcomingTitle}
             </h2>
-            <p style={{ fontSize: '0.8rem', color: '#9A9A9A', margin: 0 }}>
-              {tt.found(allTours.length)}
-            </p>
           </div>
 
           {displayed.length === 0 ? (

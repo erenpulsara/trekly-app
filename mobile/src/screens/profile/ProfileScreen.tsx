@@ -152,6 +152,10 @@ export function ProfileScreen({ navigation }: Props) {
           <Text style={styles.userName}>
             {displayUser?.name} {displayUser?.surname}
           </Text>
+          <Text style={styles.userEmail}>{displayUser?.email}</Text>
+          {displayUser?.phone ? (
+            <Text style={styles.userEmail}>{displayUser.phone}</Text>
+          ) : null}
           <View style={styles.levelRow}>
             <Ionicons name="compass" size={14} color="#FF5A1F" />
             <Text style={styles.levelLabel}>
@@ -228,6 +232,22 @@ export function ProfileScreen({ navigation }: Props) {
 
         {/* Menu links */}
         <View style={styles.menuSection}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('EditProfile')}
+          >
+            <Ionicons name="create-outline" size={20} color="#374151" />
+            <Text style={styles.menuItemText}>Profili Düzenle</Text>
+            <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('Favorites')}
+          >
+            <Ionicons name="heart-outline" size={20} color="#374151" />
+            <Text style={styles.menuItemText}>Favorilerim</Text>
+            <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => navigation.navigate('MyBookings')}
@@ -317,7 +337,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   levelBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
-  userName: { fontSize: 26, fontWeight: '800', color: '#1A1A1A', marginBottom: 6 },
+  userName: { fontSize: 26, fontWeight: '800', color: '#1A1A1A', marginBottom: 2 },
+  userEmail: { fontSize: 13, color: '#9CA3AF', marginBottom: 4 },
   levelRow: {
     flexDirection: 'row',
     alignItems: 'center',
