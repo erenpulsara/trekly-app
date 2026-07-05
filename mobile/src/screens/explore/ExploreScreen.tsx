@@ -253,7 +253,7 @@ export function ExploreScreen({ navigation, route }: Props) {
           activeOpacity={0.85}
           onPress={() => setShowAll(true)}
         >
-          <Text style={styles.showAllBtnText}>Tümünü Listele ({filteredTours.length})</Text>
+          <Text style={styles.showAllBtnText}>Tümünü Listele</Text>
           <Ionicons name="arrow-forward" size={15} color="#FFFFFF" />
         </TouchableOpacity>
       )}

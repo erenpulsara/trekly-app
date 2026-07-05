@@ -317,7 +317,7 @@ export default async function EtkinliklerPage({
                         href={buildShowAllHref(activeCategory, activeLocation, activeMonth, activeSearch, activeDate)}
                         className="etr-showall-btn"
                       >
-                        Tümünü Listele ({monthFiltered.length})
+                        Tümünü Listele
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                         </svg>
