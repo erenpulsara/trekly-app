@@ -270,6 +270,9 @@ export default async function AnasayfaPage() {
                           {tour.price !== undefined && tour.price !== null && (
                             <InfoRow icon="💰" label={tt.price} value={fmtPrice(tour.price, tt.free)} orange />
                           )}
+                          {tour.points > 0 && (
+                            <InfoRow icon="⭐" label="Kazanılacak XP" value={`${tour.points} XP`} orange />
+                          )}
                         </div>
 
                         <div style={{ height: '1px', background: '#F0F0F0', marginTop: '2px' }} />

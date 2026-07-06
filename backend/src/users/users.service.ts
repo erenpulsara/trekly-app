@@ -62,4 +62,40 @@ export class UsersService {
   async deleteAccount(userId: string): Promise<void> {
     await this.userRepo.delete({ id: userId });
   }
+
+  // ── Leaderboard ───────────────────────────────────────────────────────────
+
+  async getLeaderboard(limit = 50): Promise<Array<{
+    rank: number;
+    name: string;
+    surname_initial: string;
+    total_points: number;
+  }>> {
+    const users = await this.userRepo.find({
+      select: ['id', 'name', 'surname', 'total_points'],
+      where: { is_banned: false },
+      order: { total_points: 'DESC', created_at: 'ASC' },
+      take: limit,
+    });
+
+    return users.map((u, i) => ({
+      rank: i + 1,
+      name: u.name,
+      surname_initial: u.surname ? `${u.surname.charAt(0).toUpperCase()}.` : '',
+      total_points: u.total_points,
+    }));
+  }
+
+  async getMyRank(userId: string): Promise<{ rank: number; total_points: number }> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    const higher = await this.userRepo
+      .createQueryBuilder('u')
+      .where('u.total_points > :pts', { pts: user.total_points })
+      .andWhere('u.is_banned = false')
+      .getCount();
+
+    return { rank: higher + 1, total_points: user.total_points };
+  }
 }

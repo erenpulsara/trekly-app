@@ -202,6 +202,18 @@ function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }
           </View>
         )}
 
+        {tour.points > 0 && (
+          <View style={styles.upCardInfoRow}>
+            <Ionicons name="star-outline" size={14} color="#9CA3AF" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.upCardInfoLabel}>KAZANILACAK XP</Text>
+              <Text style={[styles.upCardInfoValue, { color: '#FF5A1F' }]}>
+                {tour.points} XP
+              </Text>
+            </View>
+          </View>
+        )}
+
         <View style={styles.upCardDivider} />
         <View style={styles.upCardFooter}>
           <View style={styles.upCardDetailBtn}>

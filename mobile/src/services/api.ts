@@ -200,6 +200,23 @@ export const usersService = {
   },
 };
 
+export interface LeaderboardEntry {
+  rank: number;
+  name: string;
+  surname_initial: string;
+  total_points: number;
+}
+
+export const leaderboardService = {
+  async getTop(): Promise<LeaderboardEntry[]> {
+    return request<LeaderboardEntry[]>('/leaderboard');
+  },
+
+  async getMyRank(): Promise<{ rank: number; total_points: number }> {
+    return request<{ rank: number; total_points: number }>('/leaderboard/me');
+  },
+};
+
 export const favoritesService = {
   async getAll(): Promise<Tour[]> {
     return request<Tour[]>('/favorites');

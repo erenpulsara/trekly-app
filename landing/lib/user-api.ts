@@ -166,6 +166,35 @@ export async function fetchMyWebBookings(): Promise<UserWebBooking[]> {
   }
 }
 
+export interface LeaderboardEntry {
+  rank: number;
+  name: string;
+  surname_initial: string;
+  total_points: number;
+}
+
+export async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
+  try {
+    const res = await fetch(`${API_URL}/leaderboard`);
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchMyRank(): Promise<{ rank: number; total_points: number } | null> {
+  const token = getUserToken();
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API_URL}/leaderboard/me`, { headers: authHeaders() });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
 export async function deleteMyAccount(): Promise<void> {
   const res = await fetch(`${API_URL}/users/me`, {
     method: 'DELETE',

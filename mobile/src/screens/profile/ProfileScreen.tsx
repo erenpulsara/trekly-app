@@ -258,6 +258,14 @@ export function ProfileScreen({ navigation }: Props) {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.menuItem}
+            onPress={() => navigation.navigate('Leaderboard')}
+          >
+            <Ionicons name="trophy-outline" size={20} color="#374151" />
+            <Text style={styles.menuItemText}>Liderlik Tablosu</Text>
+            <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
             onPress={() => navigation.navigate('About')}
           >
             <Ionicons name="information-circle-outline" size={20} color="#374151" />

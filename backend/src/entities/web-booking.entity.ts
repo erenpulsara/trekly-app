@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { Tour } from './tour.entity';
 
-export type WebBookingStatus = 'pending' | 'confirmed' | 'cancelled';
+export type WebBookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
 @Entity('web_bookings')
 export class WebBooking {
@@ -39,7 +39,7 @@ export class WebBooking {
 
   @Column({
     type: 'enum',
-    enum: ['pending', 'confirmed', 'cancelled'],
+    enum: ['pending', 'confirmed', 'completed', 'cancelled'],
     default: 'pending',
   })
   status!: WebBookingStatus;

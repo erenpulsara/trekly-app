@@ -161,7 +161,7 @@ export interface DashboardStats {
   recent_bookings: Booking[];
 }
 
-export type WebBookingStatus = 'pending' | 'confirmed' | 'cancelled';
+export type WebBookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
 export interface WebBooking {
   id: string;

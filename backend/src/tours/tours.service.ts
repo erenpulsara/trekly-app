@@ -6,12 +6,14 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Tour } from '../entities/tour.entity';
 import { TourDate } from '../entities/tour-date.entity';
 import { Booking } from '../entities/booking.entity';
 import { WebBooking } from '../entities/web-booking.entity';
 import { Category } from '../entities/category.entity';
+import { User } from '../entities/user.entity';
+import { UserPointsLog } from '../entities/user-points-log.entity';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
 import { CreateTourDateDto } from './dto/create-tour-date.dto';
@@ -34,6 +36,9 @@ export class ToursService {
     private webBookingRepo: Repository<WebBooking>,
     @InjectRepository(Category)
     private categoryRepo: Repository<Category>,
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
+    private readonly dataSource: DataSource,
     private readonly mediaService: MediaService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
@@ -416,7 +421,43 @@ export class ToursService {
       void this.emailService.sendBookingCancelled(booking.email, booking.full_name, tourName);
     }
 
+    // Tour attended → award the tour's XP to the matching registered user (by email)
+    if (prev !== 'completed' && status === 'completed') {
+      await this.awardWebBookingPoints(booking);
+    }
+
     return booking;
+  }
+
+  // Web bookings are guest records; if the guest email belongs to a registered
+  // user, credit the tour points to that account when the tour is completed.
+  private async awardWebBookingPoints(booking: WebBooking): Promise<void> {
+    const user = await this.userRepo.findOne({ where: { email: booking.email } });
+    if (!user) return; // guest without an account — nothing to credit
+
+    const pointsEarned = booking.tour.points ?? 0;
+    if (pointsEarned <= 0) return;
+
+    // Idempotency: skip if this tour already credited this user
+    const existing = await this.dataSource.getRepository(UserPointsLog).findOne({
+      where: { user_id: user.id, tour_id: booking.tour_id },
+    });
+    if (existing) return;
+
+    await this.dataSource.transaction(async (manager) => {
+      const log = manager.create(UserPointsLog, {
+        user_id: user.id,
+        tour_id: booking.tour_id,
+        booking_id: null,
+        points_earned: pointsEarned,
+      });
+      await manager.save(log);
+
+      await manager.query(
+        `UPDATE users SET total_points = total_points + $1 WHERE id = $2`,
+        [pointsEarned, user.id],
+      );
+    });
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

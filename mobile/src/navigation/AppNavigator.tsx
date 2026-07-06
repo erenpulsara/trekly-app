@@ -17,6 +17,7 @@ import { BlogDetailScreen } from '../screens/blog/BlogDetailScreen';
 import { AboutScreen } from '../screens/about/AboutScreen';
 import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
 import { FavoritesScreen } from '../screens/profile/FavoritesScreen';
+import { LeaderboardScreen } from '../screens/profile/LeaderboardScreen';
 
 export type AuthStackParamList = {
   Welcome: undefined;
@@ -41,6 +42,7 @@ export type MainStackParamList = {
   About: undefined;
   EditProfile: undefined;
   Favorites: undefined;
+  Leaderboard: undefined;
 };
 
 const AuthStack = createStackNavigator<AuthStackParamList>();
@@ -70,6 +72,7 @@ function MainNavigator() {
       <MainStack.Screen name="About" component={AboutScreen} />
       <MainStack.Screen name="EditProfile" component={EditProfileScreen} />
       <MainStack.Screen name="Favorites" component={FavoritesScreen} />
+      <MainStack.Screen name="Leaderboard" component={LeaderboardScreen} />
     </MainStack.Navigator>
   );
 }

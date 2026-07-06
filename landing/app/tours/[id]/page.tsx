@@ -241,6 +241,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
               organizer: tour.organizer,
               agency_name: (tour as any).agency_name,
               difficulty_label: DIFF_LABEL[tour.difficulty],
+              points: tour.points,
               tursab_no: tour.tursab_no,
               guide_name: tour.guide_name,
               guide_instagram: (tour as any).guide_instagram,

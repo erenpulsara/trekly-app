@@ -99,11 +99,8 @@ export default function RezerasyonlarPage() {
   }
 
   function getNextStatuses(b: AnyBooking): string[] {
-    if (b._type === "web") {
-      if (b.status === "pending") return ["confirmed", "cancelled"];
-      if (b.status === "confirmed") return ["cancelled"];
-      return [];
-    }
+    // Web and app bookings share the same lifecycle now — "completed"
+    // marks attendance and triggers XP crediting on the backend.
     if (b.status === "pending") return ["confirmed", "cancelled"];
     if (b.status === "confirmed") return ["completed", "cancelled"];
     return [];

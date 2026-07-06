@@ -95,15 +95,19 @@ function TourEventCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
             <Text style={styles.eventMetaText} numberOfLines={1}>{tour.location_name}</Text>
           </View>
           <View style={styles.eventFooterRow}>
-            {hasPrice ? (
-              <Text style={styles.eventPrice}>
-                {formatPrice(Number(tour.price), tour.price_currency)}
-              </Text>
-            ) : (
-              <View style={styles.eventPoints}>
-                <Text style={styles.eventPointsText}>{tour.points} XP</Text>
-              </View>
-            )}
+            <View style={styles.eventFooterLeft}>
+              {hasPrice && (
+                <Text style={styles.eventPrice}>
+                  {formatPrice(Number(tour.price), tour.price_currency)}
+                </Text>
+              )}
+              {tour.points > 0 && (
+                <View style={styles.eventPoints}>
+                  <Ionicons name="star" size={11} color="#FF5A1F" />
+                  <Text style={styles.eventPointsText}>{tour.points} XP</Text>
+                </View>
+              )}
+            </View>
             <View style={styles.eventDetailBtn}>
               <Text style={styles.eventDetailText}>Detayları Gör</Text>
               <Ionicons name="arrow-forward" size={12} color="#FF5A1F" />
@@ -711,12 +715,20 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     flex: 1,
   },
+  eventFooterLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 1,
+  },
   eventPoints: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     backgroundColor: '#FFF3EE',
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    alignSelf: 'flex-start',
   },
   eventPointsText: {
     fontSize: 13,

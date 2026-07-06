@@ -157,6 +157,13 @@ export default function LandingNav({
                       >
                         Favorilerim
                       </Link>
+                      <Link
+                        href="/liderlik"
+                        onClick={() => setUserMenuOpen(false)}
+                        style={{ display: 'block', padding: '11px 16px', fontSize: '0.82rem', fontWeight: 600, color: '#3A3A3A', textDecoration: 'none' }}
+                      >
+                        Liderlik Tablosu
+                      </Link>
                       <button
                         onClick={() => { logout(); setUserMenuOpen(false); }}
                         style={{

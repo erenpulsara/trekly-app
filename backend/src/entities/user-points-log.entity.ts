@@ -29,12 +29,13 @@ export class UserPointsLog {
   @JoinColumn({ name: 'tour_id' })
   tour!: Tour;
 
-  @Column({ type: 'uuid' })
-  booking_id!: string;
+  // Nullable: points from web bookings have no mobile booking record
+  @Column({ type: 'uuid', nullable: true })
+  booking_id!: string | null;
 
-  @ManyToOne(() => Booking)
+  @ManyToOne(() => Booking, { nullable: true })
   @JoinColumn({ name: 'booking_id' })
-  booking!: Booking;
+  booking!: Booking | null;
 
   @Column({ type: 'integer', nullable: false })
   points_earned!: number;

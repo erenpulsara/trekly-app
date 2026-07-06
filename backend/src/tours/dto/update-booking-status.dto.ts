@@ -6,6 +6,6 @@ export class UpdateBookingStatusDto {
 }
 
 export class UpdateWebBookingStatusDto {
-  @IsEnum(['pending', 'confirmed', 'cancelled'])
+  @IsEnum(['pending', 'confirmed', 'completed', 'cancelled'])
   status!: string;
 }
