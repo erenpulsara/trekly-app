@@ -49,17 +49,30 @@ function fmtPrice(price: number | null | undefined, free: string) {
   return `₺${price.toLocaleString('tr-TR')}`;
 }
 
+function isUpcoming(tour: Tour): boolean {
+  const lastDate = tour.end_date
+    ?? tour.start_date
+    ?? tour.dates?.map((d) => d.date).sort().slice(-1)[0]
+    ?? null;
+  if (!lastDate) return true; // no date info — don't filter it out
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(lastDate.includes('T') ? lastDate : lastDate + 'T00:00:00');
+  return d >= today;
+}
+
 export default async function AnasayfaPage() {
   const lang: Lang = cookies().get('lang')?.value === 'en' ? 'en' : 'tr';
   const tx = T[lang];
   const tt = tx.tours;
   const tp = tx.principles;
 
-  const [allTours, categories] = await Promise.all([
+  const [toursRaw, categories] = await Promise.all([
     getPublishedTours({ sort: 'start_date_asc' }),
     getCategories(),
   ]);
 
+  const allTours = toursRaw.filter(isUpcoming);
   const displayed = allTours.slice(0, 12);
 
   return (
@@ -143,15 +156,14 @@ export default async function AnasayfaPage() {
         <p style={{
           fontFamily: '"Cormorant Garamond", serif',
           fontSize: 'clamp(1.8rem, 3vw, 2.8rem)',
-          fontWeight: 700,
+          fontWeight: 400,
           fontStyle: 'italic',
-          color: '#FF5533',
+          color: 'white',
           letterSpacing: '-0.01em',
           margin: '0 0 20px',
           textAlign: 'center',
           width: '100%',
-          textTransform: 'uppercase',
-          textShadow: '0 2px 12px rgba(0,0,0,0.45)',
+          textShadow: '0 2px 12px rgba(0,0,0,0.35)',
         }}>
           Sıradaki Maceranı Keşfet
         </p>
@@ -275,9 +287,11 @@ export default async function AnasayfaPage() {
                           )}
                         </div>
 
-                        <div style={{ height: '1px', background: '#F0F0F0', marginTop: '2px' }} />
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <span className="detail-btn">{tt.detailBtn}</span>
+                        <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
+                          <div style={{ height: '1px', background: '#F0F0F0', marginBottom: '10px' }} />
+                          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <span className="detail-btn">{tt.detailBtn}</span>
+                          </div>
                         </div>
                       </div>
                     </Link>

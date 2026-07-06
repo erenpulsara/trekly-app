@@ -34,7 +34,7 @@ export default function SiteFooter() {
         {/* Right: social + app stores */}
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           {/* Instagram */}
-          <a href="#" aria-label="Instagram" style={{
+          <a href="https://www.instagram.com/gettrekly" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style={{
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             width: '36px', height: '36px', borderRadius: '9px',
             background: 'radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)',
