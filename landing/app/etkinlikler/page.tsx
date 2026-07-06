@@ -304,9 +304,11 @@ export default async function EtkinliklerPage({
                               )}
                             </div>
 
-                            <div style={{ height: '1px', background: '#F0F0F0', marginTop: '2px' }} />
-                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                              <span className="etr-detail-btn">{tt.detailBtn}</span>
+                            <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
+                              <div style={{ height: '1px', background: '#F0F0F0', marginBottom: '10px' }} />
+                              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <span className="etr-detail-btn">{tt.detailBtn}</span>
+                              </div>
                             </div>
                           </div>
                         </Link>
