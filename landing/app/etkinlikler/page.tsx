@@ -182,9 +182,9 @@ export default async function EtkinliklerPage({
             <h2 style={{
               fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(1.5rem, 2.8vw, 2.1rem)',
               fontWeight: 700, color: '#1A1A1A', margin: '0 0 16px', textTransform: 'uppercase',
-              letterSpacing: '0.02em', lineHeight: 1.4,
+              letterSpacing: '0.02em', lineHeight: 1.3,
             }}>
-              {tt.upcomingTitle}
+              Tüm Etkinlikler
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
               {(activeCategory || activeLocation || activeMonth || activeSearch) && (
@@ -195,7 +195,7 @@ export default async function EtkinliklerPage({
               <Link
                 href="/etkinlikler"
                 style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '7px',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
                   border: '1.5px solid #FF5533', color: '#FF5533',
                   fontSize: '0.82rem', fontWeight: 700,
                   padding: '8px 18px', borderRadius: '10px',

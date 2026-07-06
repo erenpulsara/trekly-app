@@ -50,11 +50,10 @@ export default function TurlarSidebar({
   }
 
   const BLOCKED = new Set(['kano', 'rafting', 'yamaç paraşütü']);
+  const capitalize = (s: string) => s.charAt(0).toLocaleUpperCase('tr') + s.slice(1);
   const allCats  = dynamicCategories
     .filter(c => !BLOCKED.has(c.name.toLowerCase()))
-    .map(c => ({ key: c.name, label: c.name }));
-
-  const isAll = !activeCategory && !activeLocation && !activeMonth && !activeSearch;
+    .map(c => ({ key: c.name, label: capitalize(c.name) }));
 
   return (
     <aside className="turlar-sidebar" style={{ width: '230px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -90,29 +89,6 @@ export default function TurlarSidebar({
           </svg>
         </button>
       </form>
-
-      {/* Tüm Turlar */}
-      <button
-        onClick={() => router.push(basePath)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: '10px',
-          width: '100%', padding: '13px 16px', borderRadius: '14px',
-          border: isAll ? 'none' : '1.5px solid #EAEAEA',
-          background: isAll ? '#FF5533' : 'white',
-          color: isAll ? 'white' : '#1A1A1A',
-          fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer',
-          boxShadow: isAll ? '0 4px 16px rgba(255,85,51,0.3)' : '0 2px 10px rgba(0,0,0,0.06)',
-          transition: 'all 0.18s ease', textAlign: 'left',
-        }}
-      >
-        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-          <rect x="14" y="3" width="7" height="7" rx="1.5"/>
-          <rect x="3" y="14" width="7" height="7" rx="1.5"/>
-          <rect x="14" y="14" width="7" height="7" rx="1.5"/>
-        </svg>
-        Tüm Turlar
-      </button>
 
       {/* Kategori */}
       <FilterCard label="Kategori">
