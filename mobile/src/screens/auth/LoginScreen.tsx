@@ -8,7 +8,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,  StatusBar,
+  Alert,
+  StatusBar,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -78,8 +80,13 @@ export function LoginScreen({ navigation }: Props) {
 
           {/* Title */}
           <View style={styles.titleSection}>
-            <View style={styles.titleIcon}>
-              <Ionicons name="leaf" size={24} color="#FF5A1F" />
+            <View style={styles.logoRow}>
+              <Image
+                source={require('../../../assets/logo.png')}
+                style={styles.logoImg}
+                resizeMode="contain"
+              />
+              <Text style={styles.logoWord}>Trekly</Text>
             </View>
             <Text style={styles.title}>Giriş Yap</Text>
             <Text style={styles.subtitle}>Hesabınıza giriş yapın ve maceraya başlayın.</Text>
@@ -200,14 +207,21 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     gap: 8,
   },
-  titleIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    backgroundColor: '#FFF3EE',
-    justifyContent: 'center',
+  logoRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    gap: 8,
+    marginBottom: 12,
+  },
+  logoImg: {
+    width: 44,
+    height: 44,
+  },
+  logoWord: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#FF5A1F',
+    letterSpacing: -0.5,
   },
   title: {
     fontSize: 28,

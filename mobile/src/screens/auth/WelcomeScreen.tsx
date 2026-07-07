@@ -4,18 +4,20 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
-  StatusBar,  Linking,
+  StatusBar,
+  Linking,
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../context/AuthContext';
 
-const { height } = Dimensions.get('window');
+const heroVideoSource = require('../../../assets/hero-video.mp4');
+const AGENCY_REGISTER_URL = 'https://acenta.treklyapp.com/register';
 
 type Props = {
   navigation: StackNavigationProp<AuthStackParamList, 'Welcome'>;
@@ -24,19 +26,27 @@ type Props = {
 export function WelcomeScreen({ navigation }: Props) {
   const { continueAsGuest } = useAuth();
 
+  const player = useVideoPlayer(heroVideoSource, (p) => {
+    p.loop = true;
+    p.muted = true;
+    p.play();
+  });
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={['#1A3A2A', '#2D5A3D', '#1A3A2A']}
+      <VideoView
+        player={player}
         style={StyleSheet.absoluteFill}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        contentFit="cover"
+        nativeControls={false}
+        pointerEvents="none"
       />
-      {/* Decorative circles */}
-      <View style={[styles.circle, styles.circle1]} />
-      <View style={[styles.circle, styles.circle2]} />
-      <View style={[styles.circle, styles.circle3]} />
+      <LinearGradient
+        colors={['rgba(0,0,0,0.35)', 'rgba(0,0,0,0.15)', 'rgba(0,0,0,0.75)']}
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFill}
+      />
 
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.content}>
@@ -52,26 +62,14 @@ export function WelcomeScreen({ navigation }: Props) {
 
           {/* Hero text */}
           <View style={styles.heroSection}>
-            <Text style={styles.headline}>Doğayı keşfet,{'\n'}yeni rotalar bul.</Text>
-            <Text style={styles.subtext}>
-              Türkiye'nin en kapsamlı outdoor{'\n'}aktivite pazaryeri.
+            <Text style={styles.headline}>
+              Türkiye'nin{'\n'}
+              <Text style={styles.headlineAccent}>Doğa ve Su Sporları</Text>{'\n'}
+              Ekosistemi
             </Text>
-          </View>
-
-          {/* Feature pills */}
-          <View style={styles.pillsRow}>
-            <View style={styles.pill}>
-              <Ionicons name="compass-outline" size={14} color="#FF5A1F" />
-              <Text style={styles.pillText}>Rotalar</Text>
-            </View>
-            <View style={styles.pill}>
-              <Ionicons name="people-outline" size={14} color="#FF5A1F" />
-              <Text style={styles.pillText}>Topluluk</Text>
-            </View>
-            <View style={styles.pill}>
-              <Ionicons name="trophy-outline" size={14} color="#FF5A1F" />
-              <Text style={styles.pillText}>Puanlar</Text>
-            </View>
+            <Text style={styles.subtext}>
+              Türkiye'nin en seçkin doğa ve su sporları turları, akredite profesyonel eğitmenlerle tek platformda.
+            </Text>
           </View>
 
           {/* Buttons */}
@@ -81,15 +79,15 @@ export function WelcomeScreen({ navigation }: Props) {
               onPress={() => navigation.navigate('Login')}
               activeOpacity={0.85}
             >
-              <Text style={styles.loginButtonText}>Giriş yap</Text>
+              <Text style={styles.loginButtonText}>Maceraya Ortak Ol</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.registerButton}
-              onPress={() => navigation.navigate('Register')}
+              onPress={() => Linking.openURL(AGENCY_REGISTER_URL)}
               activeOpacity={0.85}
             >
-              <Text style={styles.registerButtonText}>Hesap oluştur</Text>
+              <Text style={styles.registerButtonText}>Ekosisteme Katıl</Text>
             </TouchableOpacity>
           </View>
 
@@ -124,34 +122,10 @@ export function WelcomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1A3A2A',
+    backgroundColor: '#09091A',
   },
   safeArea: {
     flex: 1,
-  },
-  circle: {
-    position: 'absolute',
-    borderRadius: 999,
-    opacity: 0.08,
-    backgroundColor: '#FFFFFF',
-  },
-  circle1: {
-    width: 300,
-    height: 300,
-    top: -80,
-    right: -80,
-  },
-  circle2: {
-    width: 200,
-    height: 200,
-    bottom: 200,
-    left: -60,
-  },
-  circle3: {
-    width: 150,
-    height: 150,
-    top: height * 0.35,
-    right: -40,
   },
   content: {
     flex: 1,
@@ -180,68 +154,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headline: {
-    fontSize: 36,
-    fontWeight: '800',
+    fontSize: 32,
+    fontWeight: '700',
     color: '#FFFFFF',
     textAlign: 'center',
-    lineHeight: 44,
+    lineHeight: 40,
     letterSpacing: -0.5,
   },
+  headlineAccent: {
+    color: '#FF5A1F',
+    fontStyle: 'italic',
+  },
   subtext: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.7)',
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.65)',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 21,
     marginTop: 14,
-  },
-  pillsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 10,
-    flexWrap: 'wrap',
-  },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
-  },
-  pillText: {
-    fontSize: 12,
-    color: '#FFFFFF',
-    fontWeight: '600',
   },
   buttonsSection: {
     gap: 12,
   },
   loginButton: {
-    backgroundColor: '#FF5A1F',
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.3)',
     paddingVertical: 16,
-    borderRadius: 14,
+    borderRadius: 100,
     alignItems: 'center',
   },
   loginButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 15,
+    fontWeight: '600',
+    letterSpacing: 0.15,
   },
   registerButton: {
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.3)',
     paddingVertical: 16,
-    borderRadius: 14,
+    borderRadius: 100,
     alignItems: 'center',
   },
   registerButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 15,
     fontWeight: '600',
+    letterSpacing: 0.15,
   },
   guestButton: {
     flexDirection: 'row',
