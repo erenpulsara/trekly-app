@@ -38,6 +38,9 @@ export class AdminController {
   @Delete('tours/:id')
   deleteTour(@Param('id') id: string) { return this.adminService.deleteTour(id); }
 
+  @Post('tours/recalculate-points')
+  recalculateTourPoints() { return this.adminService.recalculateAllTourPoints(); }
+
   // ── Bookings ──────────────────────────────────────────────────────────────
   @Get('bookings')
   getAllBookings() { return this.adminService.getAllBookings(); }

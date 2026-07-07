@@ -38,6 +38,15 @@ export class MediaController {
     FileInterceptor('file', {
       storage: memoryStorage(),
       limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+      // Yalnızca görsel dosyalarına izin ver — yürütülebilir/diğer tipleri reddet
+      fileFilter: (_req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
+        if (allowed.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new BadRequestException('Yalnızca görsel dosyaları yüklenebilir (JPEG, PNG, WEBP, GIF, AVIF)'), false);
+        }
+      },
     }),
   )
   uploadFile(@UploadedFile() file: Express.Multer.File) {

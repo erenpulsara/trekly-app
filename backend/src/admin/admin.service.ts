@@ -9,6 +9,7 @@ import { Category } from '../entities/category.entity';
 import { User } from '../entities/user.entity';
 import { AuditLog, AuditLogLevel } from '../entities/audit-log.entity';
 import { PlatformSettings } from '../entities/platform-settings.entity';
+import { calculatePoints } from '../common/points.calculator';
 
 const DEFAULT_CATEGORIES = [
   'trekking', 'dağcılık', 'bisiklet', 'kamp', 'dalış',
@@ -164,6 +165,29 @@ export class AdminService implements OnModuleInit {
     await this.tourRepo.remove(tour);
     await this.log('warning', 'Tur Silindi', `"${tour.name}" turu silindi`, 'admin');
     return { message: 'Tur silindi' };
+  }
+
+  // Tüm turların XP puanını güncel formüle göre yeniden hesaplar.
+  // Puan sistemi öncesi oluşturulan ya da 0 puanla kalmış turları düzeltmek için
+  // bir kez çalıştırılır (admin panelinden tetiklenir). Kazanılmış puanları etkilemez —
+  // sadece turların gösterilen/kazanılacak XP değerini günceller.
+  async recalculateAllTourPoints() {
+    const tours = await this.tourRepo.find();
+    let updated = 0;
+    for (const tour of tours) {
+      const newPoints = calculatePoints(
+        tour.altitude_meters ?? 0,
+        Number(tour.distance_km ?? 0),
+        tour.difficulty,
+      );
+      if (tour.points !== newPoints) {
+        tour.points = newPoints;
+        await this.tourRepo.save(tour);
+        updated++;
+      }
+    }
+    await this.log('info', 'Tur Puanları Güncellendi', `${updated}/${tours.length} tur yeniden hesaplandı`, 'admin');
+    return { message: 'Tur puanları yeniden hesaplandı', total: tours.length, updated };
   }
 
   // ── Bookings ──────────────────────────────────────────────────────────────

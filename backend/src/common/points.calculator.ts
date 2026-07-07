@@ -17,6 +17,19 @@ const DIFFICULTY_MULTIPLIER: Record<Difficulty, number> = {
   extreme: 3,
 };
 
+// Zorluk-bazlı taban puan: rakım/mesafe girilmemiş ya da düşük olsa bile
+// (ör. su sporları, günübirlik etkinlikler) her tur en az bu kadar XP verir.
+// Böylece hiçbir yayınlanan tur 0 puanla kalmaz.
+const DIFFICULTY_BASE: Record<Difficulty, number> = {
+  easy: 100,
+  easy_medium: 150,
+  medium: 200,
+  medium_hard: 300,
+  hard: 400,
+  very_hard: 550,
+  extreme: 750,
+};
+
 export function calculatePoints(
   altitudeMeters: number,
   distanceKm: number,
@@ -25,5 +38,8 @@ export function calculatePoints(
   const altitudePoints = Math.floor(altitudeMeters / 500) * 100;
   const distancePoints = Math.floor(distanceKm / 10) * 50;
   const multiplier = DIFFICULTY_MULTIPLIER[difficulty];
-  return Math.floor((altitudePoints + distancePoints) * multiplier);
+  const computed = Math.floor((altitudePoints + distancePoints) * multiplier);
+  // Taban ile hesaplananın büyüğünü döndür — rakım/mesafe bonusu korunur,
+  // ama düşük değerli turlar da zorluğuna göre garanti bir XP alır.
+  return Math.max(computed, DIFFICULTY_BASE[difficulty]);
 }
