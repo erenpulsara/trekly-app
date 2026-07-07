@@ -94,7 +94,7 @@ function GirisForm() {
 
 export default function GirisPage() {
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <LandingNav navLinks={[
         { label: 'Anasayfa',    href: '/anasayfa' },
         { label: 'Etkinlikler', href: '/etkinlikler' },
@@ -109,7 +109,7 @@ export default function GirisPage() {
           .auth-main { padding: 32px 16px !important; }
         }
       `}</style>
-      <main className="auth-main" style={{ minHeight: '70vh', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px' }}>
+      <main className="auth-main" style={{ flex: 1, background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px' }}>
         <div className="auth-card" style={{ width: '100%', maxWidth: '420px', background: 'white', border: '1px solid #EAEAEA', borderRadius: '20px', padding: '40px 36px' }}>
           <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#FF5533', margin: '0 0 10px' }}>
             Trekly Üyelik
@@ -127,7 +127,7 @@ export default function GirisPage() {
       </main>
 
       <SiteFooter />
-    </>
+    </div>
   );
 }
 
