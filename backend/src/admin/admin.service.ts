@@ -57,6 +57,18 @@ export class AdminService implements OnModuleInit {
     } catch (err) {
       this.logger.warn(`Category seed skipped: ${err}`);
     }
+
+    // Her başlatmada tur XP puanlarını güncel formülle senkronla. Idempotent:
+    // yalnızca puanı değişen turları kaydeder, doğru olanlara dokunmaz. Böylece
+    // deploy sonrası mevcut turların puanı elle tetikleme olmadan otomatik dolar.
+    try {
+      const result = await this.recalculateAllTourPoints();
+      if (result.updated > 0) {
+        this.logger.log(`Recalculated tour points: ${result.updated}/${result.total} updated`);
+      }
+    } catch (err) {
+      this.logger.warn(`Tour points recalculation skipped: ${err}`);
+    }
   }
 
   private async log(level: AuditLogLevel, action: string, detail: string | null, user: string | null) {
