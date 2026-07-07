@@ -22,12 +22,14 @@ import { getUserLevel, getLevelProgress, getPointsToNextLevel } from '@/lib/leve
 const STATUS_LABEL: Record<string, string> = {
   pending: 'Bekliyor',
   confirmed: 'Onaylandı',
+  completed: 'Tamamlandı',
   cancelled: 'İptal',
 };
 
 const STATUS_STYLE: Record<string, { bg: string; text: string }> = {
   pending:   { bg: '#FEF3C7', text: '#92400E' },
   confirmed: { bg: '#D1FAE5', text: '#065F46' },
+  completed: { bg: '#E0E7FF', text: '#3730A3' },
   cancelled: { bg: '#FEE2E2', text: '#991B1B' },
 };
 

@@ -105,7 +105,7 @@ export interface PointsLog {
 export interface UserWebBooking {
   id: string;
   participant_count: number;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   created_at: string;
   tour: Tour | null;
 }

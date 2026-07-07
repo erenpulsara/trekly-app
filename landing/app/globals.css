@@ -30,6 +30,9 @@ body {
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   margin: 0; padding: 0;
+  /* clip (hidden değil): yatay taşmayı keser ama scroll container
+     oluşturmadığı için position:sticky çalışmaya devam eder */
+  overflow-x: clip;
 }
 
 a { text-decoration: none; color: inherit; }

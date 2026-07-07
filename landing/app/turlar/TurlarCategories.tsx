@@ -122,15 +122,22 @@ export default function TurlarCategories({ activeCategory, dynamicCategories, ba
         .cat-photo-card.active { border-color: #FF5533; box-shadow: 0 0 0 3px rgba(255,85,51,0.18); }
         .cat-photo-img { transition: transform 0.45s cubic-bezier(0.4,0,0.2,1); }
         .cat-photo-card:hover .cat-photo-img { transform: scale(1.08); }
+        @media (max-width: 900px) {
+          .cat-photo-row { flex-wrap: wrap !important; padding: 0 16px; }
+        }
+        @media (max-width: 480px) {
+          .cat-photo-row { gap: 8px !important; }
+          .cat-photo-card { width: 104px !important; height: 72px !important; }
+        }
       `}</style>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '20px 0', alignItems: 'center' }}>
         {/* Top row — wider */}
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+        <div className="cat-photo-row" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {topRow.map(renderCard)}
         </div>
         {/* Bottom row — centered under top (inverted pyramid) */}
         {bottomRow.length > 0 && (
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <div className="cat-photo-row" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             {bottomRow.map(renderCard)}
           </div>
         )}

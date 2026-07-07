@@ -60,6 +60,11 @@ function GirisForm() {
           placeholder="••••••••"
           style={inputStyle}
         />
+        <div style={{ textAlign: 'right', marginTop: '8px' }}>
+          <Link href="/sifremi-unuttum" style={{ fontSize: '0.78rem', color: '#FF5533', fontWeight: 600, textDecoration: 'none' }}>
+            Şifremi Unuttum?
+          </Link>
+        </div>
       </div>
       {error && (
         <p style={{ fontSize: '0.82rem', color: '#DC2626', background: '#FEF2F2', padding: '10px 14px', borderRadius: '10px', margin: 0 }}>
@@ -98,8 +103,14 @@ export default function GirisPage() {
         { label: 'İletişim',   href: '/iletisim' },
       ]} />
 
-      <main style={{ minHeight: '70vh', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px' }}>
-        <div style={{ width: '100%', maxWidth: '420px', background: 'white', border: '1px solid #EAEAEA', borderRadius: '20px', padding: '40px 36px' }}>
+      <style>{`
+        @media (max-width: 480px) {
+          .auth-card { padding: 28px 20px !important; }
+          .auth-main { padding: 32px 16px !important; }
+        }
+      `}</style>
+      <main className="auth-main" style={{ minHeight: '70vh', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px' }}>
+        <div className="auth-card" style={{ width: '100%', maxWidth: '420px', background: 'white', border: '1px solid #EAEAEA', borderRadius: '20px', padding: '40px 36px' }}>
           <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#FF5533', margin: '0 0 10px' }}>
             Trekly Üyelik
           </p>

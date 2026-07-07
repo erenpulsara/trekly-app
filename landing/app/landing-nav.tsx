@@ -13,7 +13,7 @@ interface NavLink {
 }
 
 export default function LandingNav({
-  logoHref = '/',
+  logoHref = '/anasayfa',
   navLinks,
 }: {
   logoHref?: string;
@@ -62,14 +62,25 @@ export default function LandingNav({
         .ln-mobile-link:last-child { border-bottom: none; }
         .ln-mobile-link:hover { color: #FF5533; }
         @media (max-width: 768px) {
-          .ln-nav { padding: 0 20px !important; }
+          .ln-nav { padding: 0 16px !important; }
           .ln-links { display: none !important; }
           .ln-hamburger { display: flex !important; align-items: center; justify-content: center; }
+          .ln-right { gap: 12px !important; }
+        }
+        @media (max-width: 480px) {
+          .ln-nav { padding: 0 12px !important; height: 68px !important; }
+          .ln-mobile-menu { top: 68px !important; }
+          .ln-logo img { width: 44px !important; height: 44px !important; }
+          .ln-logo span { font-size: 1.25rem !important; }
+          .ln-right { gap: 8px !important; }
+          .ln-user-name { display: none !important; }
+          .ln-user-chip { padding: 4px !important; }
+          .ln-lang button { padding: 4px 8px !important; font-size: 0.72rem !important; }
         }
       `}</style>
 
       <nav className="ln-nav">
-        <Link href={logoHref} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+        <Link href={logoHref} className="ln-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
           <Image src="/logo.png" alt="Trekly" width={60} height={60} style={{ objectFit: 'contain' }} />
           <span style={{
             fontFamily: '"Montserrat", sans-serif',
@@ -81,7 +92,7 @@ export default function LandingNav({
           }}>Trekly</span>
         </Link>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+        <div className="ln-right" style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
           {/* Desktop nav links */}
           {navLinks && navLinks.length > 0 && (
             <div className="ln-links">
@@ -110,6 +121,7 @@ export default function LandingNav({
                 <>
                   <button
                     onClick={() => setUserMenuOpen((v) => !v)}
+                    className="ln-user-chip"
                     style={{
                       display: 'flex', alignItems: 'center', gap: '8px',
                       background: 'rgba(255,85,51,0.08)', border: 'none', borderRadius: '20px',
@@ -123,7 +135,7 @@ export default function LandingNav({
                     }}>
                       {user.name.charAt(0).toUpperCase()}
                     </span>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1A1A1A' }}>
+                    <span className="ln-user-name" style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1A1A1A' }}>
                       {user.name}
                     </span>
                   </button>
@@ -193,7 +205,7 @@ export default function LandingNav({
           )}
 
           {/* Lang switcher */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'rgba(0,0,0,0.05)', borderRadius: '8px', padding: '3px' }}>
+          <div className="ln-lang" style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'rgba(0,0,0,0.05)', borderRadius: '8px', padding: '3px' }}>
             {(['tr', 'en'] as const).map((l) => (
               <button
                 key={l}
@@ -251,6 +263,40 @@ export default function LandingNav({
               style={{ color: link.active ? '#FF5533' : undefined }}
             >
               {link.label}
+            </Link>
+          ))}
+
+          {/* Üyelik linkleri — mobil menü */}
+          {!isLoading && (user ? (
+            <>
+              <Link href="/profilim" className="ln-mobile-link" onClick={() => setMenuOpen(false)}>
+                Profilim
+              </Link>
+              <Link href="/favorilerim" className="ln-mobile-link" onClick={() => setMenuOpen(false)}>
+                Favorilerim
+              </Link>
+              <Link href="/liderlik" className="ln-mobile-link" onClick={() => setMenuOpen(false)}>
+                Liderlik Tablosu
+              </Link>
+              <button
+                onClick={() => { logout(); setMenuOpen(false); }}
+                className="ln-mobile-link"
+                style={{
+                  background: 'none', border: 'none', borderBottom: 'none', textAlign: 'left',
+                  cursor: 'pointer', fontFamily: 'inherit', color: '#DC2626', width: '100%',
+                }}
+              >
+                Çıkış Yap
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/giris"
+              className="ln-mobile-link"
+              onClick={() => setMenuOpen(false)}
+              style={{ color: '#FF5533', fontWeight: 700 }}
+            >
+              Giriş Yap
             </Link>
           ))}
         </div>

@@ -23,7 +23,7 @@ export interface PointsLogEntry {
 export interface UserWebBooking {
   id: string;
   participant_count: number;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   created_at: string;
   tour: { id: string; name: string; start_date?: string | null; photo_urls?: string[] } | null;
 }
@@ -108,6 +108,24 @@ export async function userRegister(
   if (!res.ok) throw new UserApiError(res.status, await parseErrorMessage(res));
   const data = (await res.json()) as LoginResponse;
   return storeSession(data);
+}
+
+export async function forgotPassword(email: string): Promise<void> {
+  const res = await fetch(`${API_URL}/auth/user/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw new UserApiError(res.status, await parseErrorMessage(res));
+}
+
+export async function resetPassword(email: string, code: string, newPassword: string): Promise<void> {
+  const res = await fetch(`${API_URL}/auth/user/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code, new_password: newPassword }),
+  });
+  if (!res.ok) throw new UserApiError(res.status, await parseErrorMessage(res));
 }
 
 export async function fetchMe(): Promise<WebUser | null> {

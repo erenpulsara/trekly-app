@@ -55,7 +55,7 @@ export default async function BlogPage() {
               <p style={{ fontSize: '0.9rem' }}>Yakında burada güzel içerikler olacak.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '28px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '28px' }}>
               {posts.map((post) => (
                 <Link key={post.id} href={`/blog/${post.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }}>
                   <article className="blog-card" style={{
