@@ -209,6 +209,10 @@ export function ExploreScreen({ navigation, route }: Props) {
     setOpenDropdown(null);
   }
 
+  function clearCategory() { setSelectedCategory('all'); setOpenDropdown(null); }
+  function clearLocation() { setSelectedLocation(''); setOpenDropdown(null); }
+  function clearMonth() { setSelectedMonth(null); setOpenDropdown(null); }
+
   function toggleDropdown(key: DropdownKey) {
     setOpenDropdown((cur) => (cur === key ? null : key));
   }
@@ -280,7 +284,7 @@ export function ExploreScreen({ navigation, route }: Props) {
           <>
             {/* Screen title — mirrors web's Etkinlikler heading */}
             <View style={styles.titleWrap}>
-              <Text style={styles.screenTitle}>YAKLAŞAN ETKİNLİKLER</Text>
+              <Text style={styles.screenTitle}>TÜM ETKİNLİKLER</Text>
             </View>
 
             {/* Search */}
@@ -326,11 +330,17 @@ export function ExploreScreen({ navigation, route }: Props) {
                 >
                   {selectedCategory !== 'all' ? selectedCategory : 'Kategori'}
                 </Text>
-                <Ionicons
-                  name={openDropdown === 'category' ? 'chevron-up' : 'chevron-down'}
-                  size={14}
-                  color={selectedCategory !== 'all' || openDropdown === 'category' ? '#FF5A1F' : '#9CA3AF'}
-                />
+                {selectedCategory !== 'all' ? (
+                  <TouchableOpacity onPress={clearCategory} hitSlop={{ top: 8, bottom: 8, left: 6, right: 8 }}>
+                    <Ionicons name="close-circle" size={16} color="#FF5A1F" />
+                  </TouchableOpacity>
+                ) : (
+                  <Ionicons
+                    name={openDropdown === 'category' ? 'chevron-up' : 'chevron-down'}
+                    size={14}
+                    color={openDropdown === 'category' ? '#FF5A1F' : '#9CA3AF'}
+                  />
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -348,11 +358,17 @@ export function ExploreScreen({ navigation, route }: Props) {
                 >
                   {selectedLocation || 'Lokasyon'}
                 </Text>
-                <Ionicons
-                  name={openDropdown === 'location' ? 'chevron-up' : 'chevron-down'}
-                  size={14}
-                  color={selectedLocation || openDropdown === 'location' ? '#FF5A1F' : '#9CA3AF'}
-                />
+                {selectedLocation ? (
+                  <TouchableOpacity onPress={clearLocation} hitSlop={{ top: 8, bottom: 8, left: 6, right: 8 }}>
+                    <Ionicons name="close-circle" size={16} color="#FF5A1F" />
+                  </TouchableOpacity>
+                ) : (
+                  <Ionicons
+                    name={openDropdown === 'location' ? 'chevron-up' : 'chevron-down'}
+                    size={14}
+                    color={openDropdown === 'location' ? '#FF5A1F' : '#9CA3AF'}
+                  />
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -370,19 +386,18 @@ export function ExploreScreen({ navigation, route }: Props) {
                 >
                   {selectedMonth !== null ? MONTHS[selectedMonth] : 'Ay'}
                 </Text>
-                <Ionicons
-                  name={openDropdown === 'month' ? 'chevron-up' : 'chevron-down'}
-                  size={14}
-                  color={selectedMonth !== null || openDropdown === 'month' ? '#FF5A1F' : '#9CA3AF'}
-                />
+                {selectedMonth !== null ? (
+                  <TouchableOpacity onPress={clearMonth} hitSlop={{ top: 8, bottom: 8, left: 6, right: 8 }}>
+                    <Ionicons name="close-circle" size={16} color="#FF5A1F" />
+                  </TouchableOpacity>
+                ) : (
+                  <Ionicons
+                    name={openDropdown === 'month' ? 'chevron-up' : 'chevron-down'}
+                    size={14}
+                    color={openDropdown === 'month' ? '#FF5A1F' : '#9CA3AF'}
+                  />
+                )}
               </TouchableOpacity>
-
-              {hasAnyFilter && (
-                <TouchableOpacity style={styles.clearBtn} onPress={clearFilters}>
-                  <Ionicons name="close" size={14} color="#6B7280" />
-                  <Text style={styles.clearBtnText}>Temizle</Text>
-                </TouchableOpacity>
-              )}
             </ScrollView>
 
             {/* Inline dropdown panel */}

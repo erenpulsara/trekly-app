@@ -121,7 +121,7 @@ function HeroCarousel() {
       <View style={[StyleSheet.absoluteFill, styles.heroOverlay]} />
 
       <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit>
-        SIRADAKİ MACERANI KEŞFET
+        Sıradaki Maceranı Keşfet
       </Text>
 
       {/* Dot nav */}
@@ -467,12 +467,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.32)',
   },
   heroTitle: {
-    color: '#FF5533',
-    fontSize: 16,
-    fontWeight: '800',
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '500',
     fontStyle: 'italic',
     textAlign: 'center',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
     textShadowColor: 'rgba(0,0,0,0.45)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 8,
