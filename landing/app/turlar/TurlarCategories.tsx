@@ -122,25 +122,37 @@ export default function TurlarCategories({ activeCategory, dynamicCategories, ba
         .cat-photo-card.active { border-color: #FF5533; box-shadow: 0 0 0 3px rgba(255,85,51,0.18); }
         .cat-photo-img { transition: transform 0.45s cubic-bezier(0.4,0,0.2,1); }
         .cat-photo-card:hover .cat-photo-img { transform: scale(1.08); }
-        @media (max-width: 900px) {
-          .cat-photo-row { flex-wrap: wrap !important; padding: 0 16px; }
-        }
-        @media (max-width: 480px) {
-          .cat-photo-row { gap: 8px !important; }
-          .cat-photo-card { width: 104px !important; height: 72px !important; }
+        /* Telefonda piramit yerine tek satır yatay kaydırmalı şerit (mobil uygulamadaki gibi) */
+        .cat-strip { display: none; }
+        @media (max-width: 768px) {
+          .cat-pyramid { display: none !important; }
+          .cat-strip {
+            /* yatay padding üst container (.tr-cat-pad) tarafından veriliyor */
+            display: flex; gap: 10px; overflow-x: auto; padding: 16px 0 18px;
+            scrollbar-width: none; -webkit-overflow-scrolling: touch;
+          }
+          .cat-strip::-webkit-scrollbar { display: none; }
+          .cat-strip .cat-photo-card { width: 112px !important; height: 76px !important; }
         }
       `}</style>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '20px 0', alignItems: 'center' }}>
+
+      {/* Tablet + masaüstü: ters piramit düzeni */}
+      <div className="cat-pyramid" style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '20px 0', alignItems: 'center' }}>
         {/* Top row — wider */}
-        <div className="cat-photo-row" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {topRow.map(renderCard)}
         </div>
         {/* Bottom row — centered under top (inverted pyramid) */}
         {bottomRow.length > 0 && (
-          <div className="cat-photo-row" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             {bottomRow.map(renderCard)}
           </div>
         )}
+      </div>
+
+      {/* Telefon: tek satır yatay kaydırma */}
+      <div className="cat-strip">
+        {allCategories.map(renderCard)}
       </div>
     </>
   );

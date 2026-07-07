@@ -9,6 +9,7 @@ import type { Tour } from '@/lib/types';
 import { T, type Lang } from '@/lib/i18n';
 import { splitCategories } from '@/lib/category-utils';
 import TurlarSidebar from '../turlar/TurlarSidebar';
+import MobileFilterBar from '../turlar/MobileFilterBar';
 
 export const dynamic = 'force-dynamic';
 
@@ -151,8 +152,8 @@ export default async function EtkinliklerPage({
           .etr-page-pad { padding: 40px 24px 56px !important; }
         }
         @media (max-width: 768px) {
-          .etr-sidebar-wrap { flex-direction: column !important; }
-          .turlar-sidebar { width: 100% !important; position: static !important; }
+          /* Telefonda sidebar tamamen gizlenir; yerine MobileFilterBar (çip + dropdown) gelir */
+          .turlar-sidebar { display: none !important; }
           .etr-page-pad { padding: 32px 20px 48px !important; }
           .footer-etr-inner { flex-direction: column !important; gap: 20px !important; align-items: flex-start !important; }
         }
@@ -216,6 +217,19 @@ export default async function EtkinliklerPage({
               </Link>
             </div>
           </div>
+
+          {/* Telefon: kompakt filtre barı (çip + dropdown) — tablet/masaüstünde gizli */}
+          <Suspense>
+            <MobileFilterBar
+              basePath="/etkinlikler"
+              activeCategory={activeCategory}
+              activeLocation={activeLocation}
+              activeMonth={activeMonth}
+              activeSearch={activeSearch}
+              dynamicCategories={categories}
+              locations={allLocations}
+            />
+          </Suspense>
 
           {/* Sidebar + grid */}
           <div className="etr-sidebar-wrap">
