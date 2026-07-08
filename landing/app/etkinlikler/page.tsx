@@ -150,6 +150,9 @@ export default async function EtkinliklerPage({
         @media (max-width: 1024px) {
           .etr-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .etr-page-pad { padding: 40px 24px 56px !important; }
+          /* "Tüm Turlar" buton satırı yalnızca masaüstünde görünsün — mobil/tablette
+             filtreleme MobileFilterBar ile yapıldığı için bu buton gereksiz ve kaba duruyor */
+          .etr-header-actions { display: none !important; }
         }
         @media (max-width: 768px) {
           /* Telefonda sidebar tamamen gizlenir; yerine MobileFilterBar (çip + dropdown) gelir */
@@ -187,7 +190,7 @@ export default async function EtkinliklerPage({
             }}>
               Tüm Etkinlikler
             </h2>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
+            <div className="etr-header-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
               {(activeCategory || activeLocation || activeMonth || activeSearch) && (
                 <Link href="/etkinlikler" style={{ fontSize: '0.78rem', color: '#9A9A9A', fontWeight: 600, textDecoration: 'none' }}>
                   ← Filtreleri Temizle
