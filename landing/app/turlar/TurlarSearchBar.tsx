@@ -281,10 +281,13 @@ export default function TurlarSearchBar({ labels, categories = [], basePath = '/
     <>
     <style>{`
       @media (max-width: 540px) {
-        .tsb-form { flex-wrap: wrap !important; height: auto !important; border-radius: 16px !important; padding-bottom: 6px !important; }
-        .tsb-form > * { flex: 1 1 45% !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.10) !important; min-width: 0 !important; }
-        .tsb-form > *:last-child { flex: 1 1 100% !important; border-bottom: none !important; padding: 0 6px !important; }
-        .tsb-form > *:last-child > button { width: 100% !important; border-radius: 10px !important; height: 40px !important; }
+        /* Üç filtre (Tarih · Lokasyon · Kategori) tek satırda eşit üçe bölünür;
+           Macera Bul butonu alt satıra tam genişlikte geçer. */
+        .tsb-form { flex-wrap: wrap !important; height: auto !important; border-radius: 20px !important; padding: 3px !important; }
+        .tsb-form > *:not(:last-child) { flex: 1 1 0 !important; min-width: 0 !important; height: 56px !important; padding: 0 4px !important; }
+        .tsb-form > *:not(:last-child) > button { padding: 0 4px !important; height: 56px !important; }
+        .tsb-form > *:last-child { flex: 1 1 100% !important; padding: 4px !important; }
+        .tsb-form > *:last-child > button { width: 100% !important; border-radius: 12px !important; height: 44px !important; }
       }
     `}</style>
     <form

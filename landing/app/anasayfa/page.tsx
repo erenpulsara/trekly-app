@@ -136,6 +136,15 @@ export default async function AnasayfaPage() {
           .tr-cat-pad { padding-left: 16px !important; padding-right: 16px !important; }
           .tr-principles-pad { padding: 32px 16px 40px !important; }
         }
+        /* Android tarayıcılarda serif font iOS'a göre daha geniş çizildiğinden hero
+           yazısı taşabiliyor — küçük ekranlarda boyutu ve harf aralığını daraltıp
+           iki satıra düzgün sığmasını garanti ediyoruz. */
+        @media (max-width: 480px) {
+          .tr-hero-title { font-size: 1.55rem !important; letter-spacing: -0.02em !important; }
+        }
+        @media (max-width: 360px) {
+          .tr-hero-title { font-size: 1.4rem !important; }
+        }
         .footer-social { color: rgba(255,255,255,0.45); text-decoration: none; font-size: 0.8rem; font-weight: 600; transition: color 0.15s; }
         .footer-social:hover { color: white; }
       `}</style>
@@ -153,7 +162,7 @@ export default async function AnasayfaPage() {
 
       {/* Hero */}
       <TurlarHero>
-        <p style={{
+        <p className="tr-hero-title" style={{
           fontFamily: '"Cormorant Garamond", serif',
           fontSize: 'clamp(1.8rem, 3vw, 2.8rem)',
           fontWeight: 400,
