@@ -1,7 +1,5 @@
-import Link from 'next/link';
 import SiteFooter from '@/app/components/SiteFooter';
-
-const AGENCY_URL = process.env.NEXT_PUBLIC_AGENCY_URL ?? 'https://acenta.treklyapp.com';
+import LandingNav from '../landing-nav';
 
 export const metadata = {
   title: 'Kullanım Koşulları — Trekly',
@@ -10,13 +8,16 @@ export const metadata = {
 export default function TermsPage() {
   return (
     <div style={{ background: '#fff', minHeight: '100vh' }}>
-      <nav className="navbar">
-        <Link href="/" className="logo">Trekly</Link>
-        <div className="nav-links">
-          <Link href="/" className="nav-link">← Ana Sayfa</Link>
-          <a href={AGENCY_URL} target="_blank" rel="noopener noreferrer" className="nav-cta">Acenta Ol</a>
-        </div>
-      </nav>
+      <LandingNav
+        logoHref="/anasayfa"
+        navLinks={[
+          { label: 'Anasayfa',    href: '/anasayfa' },
+          { label: 'Etkinlikler', href: '/etkinlikler' },
+          { label: 'Blog',        href: '/blog' },
+          { label: 'Hakkımızda', href: '/hakkimizda' },
+          { label: 'İletişim',   href: '/iletisim' },
+        ]}
+      />
 
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '60px 40px 100px' }}>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', marginBottom: '12px' }}>Son güncelleme: 21 Haziran 2026</p>
