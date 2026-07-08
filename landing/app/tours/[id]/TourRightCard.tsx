@@ -56,7 +56,7 @@ function InfoRow({ icon, label, value, href }: { icon: React.ReactNode; label: s
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '11px 0', borderBottom: '1px solid #F5F5F5' }}>
       <div style={{ width: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>{icon}</div>
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, minWidth: 0, overflowWrap: 'break-word', wordBreak: 'break-word' }}>
         <div style={{ fontSize: '0.6rem', color: '#BBBBBB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>{label}</div>
         {val}
       </div>

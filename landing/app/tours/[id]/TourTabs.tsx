@@ -52,6 +52,8 @@ export default function TourTabs({ tabs }: { tabs: TabItem[] }) {
         color: '#5A5A5A',
         lineHeight: 1.85,
         whiteSpace: 'pre-line',
+        overflowWrap: 'break-word',
+        wordBreak: 'break-word',
         margin: 0,
       }}>
         {visible[active].content}

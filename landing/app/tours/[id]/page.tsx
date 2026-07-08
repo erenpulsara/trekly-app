@@ -134,9 +134,14 @@ export default async function TourDetailPage({ params }: { params: { id: string 
     <div style={{ background: '#fff', minHeight: '100vh' }}>
       <style>{`
         .td-grid { display: grid; grid-template-columns: 1fr 340px; gap: 40px; max-width: 1100px; margin: 24px auto 0; padding: 0 40px 80px; }
+        /* Grid öğeleri varsayılan min-width:auto olduğundan içindeki geniş içerik
+           (kaydırmalı sekmeler, uzun metin) sütunu viewport dışına taşırabiliyor.
+           min-width:0 ile öğeler grid track'ine sığacak şekilde daralabilir. */
+        .td-grid > * { min-width: 0; }
         @media (max-width: 768px) {
           .td-grid { grid-template-columns: 1fr !important; padding: 0 16px 60px !important; gap: 24px !important; }
-          .navbar { padding: 0 16px !important; }
+          .navbar { padding: 0 16px !important; gap: 12px; }
+          .navbar .nav-links { gap: 14px !important; }
           .td-related-pad { padding: 40px 16px !important; }
         }
         .related-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
@@ -164,10 +169,11 @@ export default async function TourDetailPage({ params }: { params: { id: string 
               fontSize: 'clamp(1.4rem, 2.6vw, 2rem)',
               fontWeight: 800, color: '#1A1A1A',
               letterSpacing: '-0.03em', lineHeight: 1.2,
-              margin: 0,
+              margin: 0, minWidth: 0, overflowWrap: 'break-word', wordBreak: 'break-word',
             }}>
               {tour.name}
             </h1>
+
             <TourActions tourId={tour.id} tourName={tour.name} />
           </div>
 
