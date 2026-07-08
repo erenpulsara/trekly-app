@@ -38,6 +38,7 @@ function CustomDropdown({
   label,
   divider,
   columns = 1,
+  align = 'center',
 }: {
   options: DropdownOption[];
   value: string;
@@ -46,6 +47,7 @@ function CustomDropdown({
   label: string;
   divider?: boolean;
   columns?: number;
+  align?: 'left' | 'center' | 'right';
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -107,8 +109,13 @@ function CustomDropdown({
         <div style={{
           position: 'absolute',
           top: 'calc(100% + 10px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
+          // Kenara yakın tetikleyicilerde menü ekran dışına taşmasın diye
+          // sola/sağa hizalanır; ortadakiler eskisi gibi ortalanır.
+          ...(align === 'left'
+            ? { left: 0 }
+            : align === 'right'
+              ? { right: 0 }
+              : { left: '50%', transform: 'translateX(-50%)' }),
           background: 'rgba(255,255,255,0.97)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -118,6 +125,8 @@ function CustomDropdown({
           zIndex: 999,
           padding: '8px',
           minWidth: isGrid ? 'unset' : '180px',
+          // Hiçbir zaman ekran genişliğini aşmasın
+          maxWidth: 'calc(100vw - 24px)',
         }}>
           {/* Tümü / Tüm Aylar — full width always */}
           <DropdownItem
@@ -315,6 +324,7 @@ export default function TurlarSearchBar({ labels, categories = [], basePath = '/
         onChange={handleMonthChange}
         divider
         columns={3}
+        align="left"
       />
 
       {/* Location */}
@@ -361,6 +371,7 @@ export default function TurlarSearchBar({ labels, categories = [], basePath = '/
         onChange={handleCategoryChange}
         divider
         columns={2}
+        align="right"
       />
 
       {/* Submit */}
