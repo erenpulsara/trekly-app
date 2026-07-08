@@ -85,7 +85,7 @@ export default function TurlarHero({ children }: { children: React.ReactNode }) 
       {/* Dot nav */}
       <div style={{
         position: 'absolute',
-        bottom: 18,
+        bottom: 40,
         right: 32,
         display: 'flex',
         gap: 6,
