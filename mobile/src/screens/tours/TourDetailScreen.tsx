@@ -367,9 +367,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
                 <Text style={styles.infoCellLabel}>Puan</Text>
                 <Text style={styles.infoCellValue}>{tour.points} XP</Text>
               </View>
-            ) : (
-              <View style={styles.infoCell} />
-            )}
+            ) : null}
           </View>
 
           {/* TURSAB verified badge */}

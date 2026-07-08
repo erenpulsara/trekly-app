@@ -243,19 +243,17 @@ export function ExploreScreen({ navigation, route }: Props) {
 
     return (
       <>
-      <FlatList
-        data={displayed}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+      {/* İç içe FlatList yerine düz View+map — böylece listContent dolgusu (kenar
+          boşluğu) düzgün uygulanır ve kartlar ekran kenarına yapışmaz. */}
+      <View style={styles.listContent}>
+        {displayed.map((item) => (
           <TourEventCard
+            key={item.id}
             tour={item}
             onPress={() => navigation.navigate('TourDetail', { tourId: item.id })}
           />
-        )}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        scrollEnabled={false}
-      />
+        ))}
+      </View>
       {!showAll && filteredTours.length > 9 && (
         <TouchableOpacity
           style={styles.showAllBtn}
