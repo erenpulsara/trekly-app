@@ -61,7 +61,7 @@ function TourCard({ tour, index }: { tour: Tour; index: number }) {
 
   return (
     <Link
-      href={`/tours/${tour.id}`}
+      href={`/tours/${tour.slug ?? tour.id}`}
       className="card card-enter"
       style={{ animationDelay: `${Math.min(index, 7) * 55}ms` }}
     >

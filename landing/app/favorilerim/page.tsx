@@ -80,7 +80,7 @@ export default function FavorilerimPage() {
               {tours.map((tour) => (
                 <Link
                   key={tour.id}
-                  href={`/tours/${tour.id}`}
+                  href={`/tours/${tour.slug ?? tour.id}`}
                   style={{
                     borderRadius: '16px', overflow: 'hidden', background: 'white',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.07)', textDecoration: 'none', color: 'inherit',

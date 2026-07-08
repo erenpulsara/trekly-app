@@ -37,6 +37,11 @@ export class Tour {
   @Column({ type: 'varchar', nullable: false })
   name!: string;
 
+  // URL-dostu slug (ör. "hakkari-cilo-buzullari-ve-sat-golleri"). Ada göre
+  // otomatik üretilir; nullable — eski turlar açılışta backfill ile doldurulur.
+  @Column({ type: 'varchar', nullable: true })
+  slug!: string | null;
+
   @Column({ type: 'text', nullable: true })
   description!: string | null;
 

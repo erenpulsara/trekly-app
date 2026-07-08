@@ -20,6 +20,7 @@ import { CreateTourDateDto } from './dto/create-tour-date.dto';
 import { CreateWebBookingDto } from './dto/create-web-booking.dto';
 import { TourQueryDto } from './dto/tour-query.dto';
 import { calculatePoints } from '../common/points.calculator';
+import { slugify } from '../common/slugify';
 import { MediaService } from '../media/media.service';
 import { EmailService } from '../email/email.service';
 
@@ -133,13 +134,19 @@ export class ToursService {
     return result;
   }
 
-  async findOnePublished(id: string): Promise<Tour & { booking_count: number }> {
+  async findOnePublished(idOrSlug: string): Promise<Tour & { booking_count: number }> {
+    // Geriye-uyumlu: parametre UUID ise id ile, değilse slug ile aranır.
+    // Böylece eski /tours/{uuid} linkleri de çalışmaya devam eder.
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
     const tour = await this.tourRepo.findOne({
-      where: { id, status: 'published' },
+      where: isUuid
+        ? { id: idOrSlug, status: 'published' }
+        : { slug: idOrSlug, status: 'published' },
       relations: ['dates', 'agency'],
     });
     if (!tour) throw new NotFoundException('Tour not found');
 
+    const id = tour.id;
     const [mobileCount, webCountRow] = await Promise.all([
       this.bookingRepo
         .createQueryBuilder('b')
@@ -227,6 +234,21 @@ export class ToursService {
     return this.withProxyUrls(tour);
   }
 
+  // Ada göre benzersiz slug üretir. Aynı slug başka bir turda varsa "-2", "-3"
+  // ekler. excludeId verilirse o turun kendi slug'ı çakışma sayılmaz (güncelleme).
+  private async generateUniqueSlug(name: string, excludeId?: string): Promise<string> {
+    const base = slugify(name);
+    let candidate = base;
+    let n = 2;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const existing = await this.tourRepo.findOne({ where: { slug: candidate } });
+      if (!existing || existing.id === excludeId) break;
+      candidate = `${base}-${n++}`;
+    }
+    return candidate;
+  }
+
   async createTour(agencyId: string, dto: CreateTourDto): Promise<Tour> {
     const points = calculatePoints(
       dto.altitude_meters ?? 0,
@@ -234,9 +256,12 @@ export class ToursService {
       dto.difficulty,
     );
 
+    const slug = await this.generateUniqueSlug(dto.name);
+
     const tour = this.tourRepo.create({
       agency_id: agencyId,
       name: dto.name,
+      slug,
       description: dto.description ?? null,
       location_name: dto.location_name,
       latitude: dto.latitude ?? null,
@@ -284,11 +309,19 @@ export class ToursService {
     const difficulty = dto.difficulty ?? tour.difficulty;
     const points = calculatePoints(altitude, Number(distance), difficulty);
 
+    // İsim değiştiyse slug'ı yenile; hiç slug yoksa üret. Aksi halde dokunma.
+    let slug = tour.slug;
+    if (dto.name && dto.name !== tour.name) {
+      slug = await this.generateUniqueSlug(dto.name, tour.id);
+    } else if (!slug) {
+      slug = await this.generateUniqueSlug(tour.name, tour.id);
+    }
+
     // Only assign fields explicitly sent in the request — undefined means "don't touch"
     const defined = Object.fromEntries(
       Object.entries(dto as Record<string, unknown>).filter(([, v]) => v !== undefined),
     );
-    Object.assign(tour, { ...defined, points });
+    Object.assign(tour, { ...defined, points, slug });
 
     return this.tourRepo.save(tour);
   }

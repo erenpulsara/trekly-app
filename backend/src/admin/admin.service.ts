@@ -10,6 +10,7 @@ import { User } from '../entities/user.entity';
 import { AuditLog, AuditLogLevel } from '../entities/audit-log.entity';
 import { PlatformSettings } from '../entities/platform-settings.entity';
 import { calculatePoints } from '../common/points.calculator';
+import { slugify } from '../common/slugify';
 
 const DEFAULT_CATEGORIES = [
   'trekking', 'dağcılık', 'bisiklet', 'kamp', 'dalış',
@@ -68,6 +69,31 @@ export class AdminService implements OnModuleInit {
       }
     } catch (err) {
       this.logger.warn(`Tour points recalculation skipped: ${err}`);
+    }
+
+    // Slug'ı olmayan (puan sistemi öncesi / eski) turlara ada göre benzersiz slug
+    // üret. Idempotent — slug'ı olan turlara dokunmaz. try/catch ile sarıldığı için
+    // bir hata olsa bile uygulamanın açılmasını engellemez.
+    try {
+      const all = await this.tourRepo.find();
+      const used = new Set(all.map((t) => t.slug).filter(Boolean) as string[]);
+      let slugified = 0;
+      for (const t of all) {
+        if (t.slug) continue;
+        const base = slugify(t.name);
+        let candidate = base;
+        let n = 2;
+        while (used.has(candidate)) candidate = `${base}-${n++}`;
+        t.slug = candidate;
+        used.add(candidate);
+        await this.tourRepo.save(t);
+        slugified++;
+      }
+      if (slugified > 0) {
+        this.logger.log(`Backfilled ${slugified} tour slugs`);
+      }
+    } catch (err) {
+      this.logger.warn(`Tour slug backfill skipped: ${err}`);
     }
   }
 

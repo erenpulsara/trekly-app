@@ -36,7 +36,7 @@ export default function SearchBar({ tours }: Props) {
   function pick(tour: Tour) {
     setQuery(tour.name);
     setOpen(false);
-    router.push(`/tours/${tour.id}`);
+    router.push(`/tours/${tour.slug ?? tour.id}`);
   }
 
   return (

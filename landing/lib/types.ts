@@ -15,6 +15,7 @@ export interface TourDate {
 
 export interface Tour {
   id: string;
+  slug?: string | null;
   agency_id: string;
   name: string;
   description: string | null;

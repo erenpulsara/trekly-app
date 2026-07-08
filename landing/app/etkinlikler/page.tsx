@@ -263,7 +263,7 @@ export default async function EtkinliklerPage({
                       const photo = getCardPhoto(tour);
                       const cats = splitCategories(tour.category);
                       return (
-                        <Link key={tour.id} href={`/tours/${tour.id}`} className="etr-card">
+                        <Link key={tour.id} href={`/tours/${tour.slug ?? tour.id}`} className="etr-card">
                           <div style={{ position: 'relative', height: '230px', overflow: 'hidden', background: '#D8D8D8', flexShrink: 0 }}>
                             <Image
                               src={photo}
