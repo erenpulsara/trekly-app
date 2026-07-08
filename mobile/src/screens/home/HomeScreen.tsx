@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   },
   heroDots: {
     position: 'absolute',
-    bottom: 28,
+    top: 12,
     right: 16,
     flexDirection: 'row',
     gap: 5,
