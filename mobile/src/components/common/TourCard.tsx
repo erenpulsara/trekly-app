@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tour } from '../../types';
 import { DifficultyBadge } from './DifficultyBadge';
 import { formatShortDate, formatPoints } from '../../utils/formatting';
+import { REWARDS_ENABLED } from '../../config/features';
 
 const { width } = Dimensions.get('window');
 
@@ -45,7 +46,7 @@ export function TourCard({ tour, onPress, variant = 'full', style }: TourCardPro
             <Ionicons name="location-outline" size={11} color="#6B7280" />
             <Text style={styles.compactLocationText} numberOfLines={1}>{tour.location_name}</Text>
           </View>
-          <Text style={styles.compactPoints}>{tour.points} XP</Text>
+          {REWARDS_ENABLED && <Text style={styles.compactPoints}>{tour.points} XP</Text>}
         </View>
       </TouchableOpacity>
     );
@@ -75,7 +76,7 @@ export function TourCard({ tour, onPress, variant = 'full', style }: TourCardPro
           <View style={styles.dateRow}>
             <Ionicons name="calendar-outline" size={13} color="#6B7280" />
             <Text style={styles.dateText}>{formatShortDate(dateStr)}</Text>
-            <Text style={styles.pointsBadge}>{formatPoints(tour.points)}</Text>
+            {REWARDS_ENABLED && <Text style={styles.pointsBadge}>{formatPoints(tour.points)}</Text>}
           </View>
         )}
       </View>

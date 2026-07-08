@@ -18,6 +18,7 @@ import { StatusBadge } from '../../components/common/StatusBadge';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { formatDate } from '../../utils/formatting';
+import { REWARDS_ENABLED } from '../../config/features';
 
 const STATUS_ORDER: Record<string, number> = {
   confirmed: 0,
@@ -162,9 +163,11 @@ export function MyBookingsScreen({ navigation }: Props) {
                     </View>
                   )}
                   <View style={styles.pointsRow}>
-                    <Text style={styles.points}>
-                      {item.kind === 'web' ? 'Web Rezervasyonu' : `${tour?.points ?? 0} XP`}
-                    </Text>
+                    {(item.kind === 'web' || REWARDS_ENABLED) && (
+                      <Text style={styles.points}>
+                        {item.kind === 'web' ? 'Web Rezervasyonu' : `${tour?.points ?? 0} XP`}
+                      </Text>
+                    )}
                     <Text style={styles.participants}>
                       {booking.participant_count} kişi
                     </Text>

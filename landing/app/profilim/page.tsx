@@ -18,6 +18,7 @@ import {
 } from '@/lib/user-api';
 import { getFavorites } from '@/lib/favorites-api';
 import { getUserLevel, getLevelProgress, getPointsToNextLevel } from '@/lib/levels';
+import { REWARDS_ENABLED } from '@/lib/features';
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'Bekliyor',
@@ -159,40 +160,50 @@ export default function ProfilimPage() {
                   }}>
                     {display.name.charAt(0).toUpperCase()}
                   </div>
-                  <span style={{
-                    position: 'absolute', bottom: '-6px', left: '50%', transform: 'translateX(-50%)',
-                    background: '#1A1A1A', color: 'white', fontSize: '0.62rem', fontWeight: 700,
-                    padding: '3px 10px', borderRadius: '10px', whiteSpace: 'nowrap',
-                  }}>
-                    LVL {levelInfo.level}
-                  </span>
+                  {REWARDS_ENABLED && (
+                    <span style={{
+                      position: 'absolute', bottom: '-6px', left: '50%', transform: 'translateX(-50%)',
+                      background: '#1A1A1A', color: 'white', fontSize: '0.62rem', fontWeight: 700,
+                      padding: '3px 10px', borderRadius: '10px', whiteSpace: 'nowrap',
+                    }}>
+                      LVL {levelInfo.level}
+                    </span>
+                  )}
                 </div>
 
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1A1A1A', margin: '0 0 4px' }}>
                   {display.name} {display.surname}
                 </h1>
-                <p style={{ fontSize: '0.85rem', color: '#9A9A9A', margin: '0 0 6px' }}>{display.email}</p>
-                <p style={{ fontSize: '0.85rem', color: '#FF5533', fontWeight: 700, margin: '0 0 20px' }}>
-                  Seviye {levelInfo.level} — {levelInfo.title}
-                </p>
+                <p style={{ fontSize: '0.85rem', color: '#9A9A9A', margin: REWARDS_ENABLED ? '0 0 6px' : '0 0 12px' }}>{display.email}</p>
+                {REWARDS_ENABLED && (
+                  <>
+                    <p style={{ fontSize: '0.85rem', color: '#FF5533', fontWeight: 700, margin: '0 0 20px' }}>
+                      Seviye {levelInfo.level} — {levelInfo.title}
+                    </p>
 
-                {/* Progress bar */}
-                <div style={{ maxWidth: '360px', margin: '0 auto' }}>
-                  <div style={{ height: '8px', background: '#E5E7EB', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
-                    <div style={{ height: '100%', width: `${Math.round(progress * 100)}%`, background: '#FF5533', borderRadius: '4px' }} />
-                  </div>
-                  <p style={{ fontSize: '0.68rem', color: '#9CA3AF', fontWeight: 600, letterSpacing: '0.05em', margin: 0 }}>
-                    SONRAKİ SEVİYE: {toNext > 0 ? `${toNext} XP` : 'MAX'}
-                  </p>
-                </div>
+                    {/* Progress bar */}
+                    <div style={{ maxWidth: '360px', margin: '0 auto' }}>
+                      <div style={{ height: '8px', background: '#E5E7EB', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
+                        <div style={{ height: '100%', width: `${Math.round(progress * 100)}%`, background: '#FF5533', borderRadius: '4px' }} />
+                      </div>
+                      <p style={{ fontSize: '0.68rem', color: '#9CA3AF', fontWeight: 600, letterSpacing: '0.05em', margin: 0 }}>
+                        SONRAKİ SEVİYE: {toNext > 0 ? `${toNext} XP` : 'MAX'}
+                      </p>
+                    </div>
+                  </>
+                )}
 
                 {/* Stats */}
                 <div style={{
                   display: 'flex', borderTop: '1px solid #F3F3F3', marginTop: '24px', paddingTop: '20px',
                 }}>
                   <StatItem label="Etkinlik" value={String(points.length)} />
-                  <div style={{ width: '1px', background: '#F3F3F3' }} />
-                  <StatItem label="Toplam XP" value={totalPoints.toLocaleString('tr-TR')} />
+                  {REWARDS_ENABLED && (
+                    <>
+                      <div style={{ width: '1px', background: '#F3F3F3' }} />
+                      <StatItem label="Toplam XP" value={totalPoints.toLocaleString('tr-TR')} />
+                    </>
+                  )}
                   <div style={{ width: '1px', background: '#F3F3F3' }} />
                   <StatItem label="Favori" value={favCount !== null ? String(favCount) : '—'} />
                 </div>
@@ -329,6 +340,7 @@ export default function ProfilimPage() {
               </div>
 
               {/* ── Katıldığım Turlar ── */}
+              {REWARDS_ENABLED && (
               <div style={{
                 background: 'white', border: '1px solid #EAEAEA', borderRadius: '20px',
                 padding: '24px 28px', marginBottom: '16px',
@@ -367,6 +379,7 @@ export default function ProfilimPage() {
                   </div>
                 )}
               </div>
+              )}
 
               {/* ── Quick links ── */}
               <div style={{
@@ -383,14 +396,18 @@ export default function ProfilimPage() {
                   )}
                   <ChevronRight />
                 </Link>
-                <div style={{ height: '1px', background: '#F3F3F3' }} />
-                <Link href="/liderlik" style={menuRowStyle}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF5533" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-                  </svg>
-                  <span style={{ flex: 1, fontWeight: 600, color: '#1A1A1A' }}>Liderlik Tablosu</span>
-                  <ChevronRight />
-                </Link>
+                {REWARDS_ENABLED && (
+                  <>
+                    <div style={{ height: '1px', background: '#F3F3F3' }} />
+                    <Link href="/liderlik" style={menuRowStyle}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF5533" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                      </svg>
+                      <span style={{ flex: 1, fontWeight: 600, color: '#1A1A1A' }}>Liderlik Tablosu</span>
+                      <ChevronRight />
+                    </Link>
+                  </>
+                )}
                 <div style={{ height: '1px', background: '#F3F3F3' }} />
                 <Link href="/etkinlikler" style={menuRowStyle}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF5533" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

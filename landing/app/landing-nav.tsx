@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { type Lang, getLangClient, setLangCookie } from '@/lib/i18n';
+import { REWARDS_ENABLED } from '@/lib/features';
 import { useUserAuth } from './UserAuthContext';
 
 interface NavLink {
@@ -169,13 +170,15 @@ export default function LandingNav({
                       >
                         Favorilerim
                       </Link>
-                      <Link
-                        href="/liderlik"
-                        onClick={() => setUserMenuOpen(false)}
-                        style={{ display: 'block', padding: '11px 16px', fontSize: '0.82rem', fontWeight: 600, color: '#3A3A3A', textDecoration: 'none' }}
-                      >
-                        Liderlik Tablosu
-                      </Link>
+                      {REWARDS_ENABLED && (
+                        <Link
+                          href="/liderlik"
+                          onClick={() => setUserMenuOpen(false)}
+                          style={{ display: 'block', padding: '11px 16px', fontSize: '0.82rem', fontWeight: 600, color: '#3A3A3A', textDecoration: 'none' }}
+                        >
+                          Liderlik Tablosu
+                        </Link>
+                      )}
                       <button
                         onClick={() => { logout(); setUserMenuOpen(false); }}
                         style={{
@@ -275,9 +278,11 @@ export default function LandingNav({
               <Link href="/favorilerim" className="ln-mobile-link" onClick={() => setMenuOpen(false)}>
                 Favorilerim
               </Link>
-              <Link href="/liderlik" className="ln-mobile-link" onClick={() => setMenuOpen(false)}>
-                Liderlik Tablosu
-              </Link>
+              {REWARDS_ENABLED && (
+                <Link href="/liderlik" className="ln-mobile-link" onClick={() => setMenuOpen(false)}>
+                  Liderlik Tablosu
+                </Link>
+              )}
               <button
                 onClick={() => { logout(); setMenuOpen(false); }}
                 className="ln-mobile-link"

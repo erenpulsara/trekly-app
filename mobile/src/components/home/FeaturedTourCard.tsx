@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tour } from '../../types';
 import { DifficultyBadge } from '../common/DifficultyBadge';
 import { formatShortDate } from '../../utils/formatting';
+import { REWARDS_ENABLED } from '../../config/features';
 
 const { width } = Dimensions.get('window');
 
@@ -64,10 +65,12 @@ export function FeaturedTourCard({ tour, onPress, onBook }: FeaturedTourCardProp
           </View>
         )}
         <View style={styles.footer}>
-          <View style={styles.pointsBadge}>
-            <Ionicons name="star-outline" size={14} color="#FF5A1F" />
-            <Text style={styles.pointsText}>{tour.points} XP</Text>
-          </View>
+          {REWARDS_ENABLED && (
+            <View style={styles.pointsBadge}>
+              <Ionicons name="star-outline" size={14} color="#FF5A1F" />
+              <Text style={styles.pointsText}>{tour.points} XP</Text>
+            </View>
+          )}
           <TouchableOpacity style={styles.bookButton} onPress={onBook} activeOpacity={0.85}>
             <Text style={styles.bookButtonText}>Maceraya Katıl</Text>
           </TouchableOpacity>

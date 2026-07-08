@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { REWARDS_ENABLED } from '@/lib/features';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
@@ -278,7 +279,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
           {organizer && <InfoRow icon={iconOrganizer} label="Düzenleyen" value={organizer} />}
           {tour.guide_name && <InfoRow icon={iconGuide} label="Rehber" value={tour.guide_name} href={tour.guide_instagram ?? undefined} />}
           {tour.difficulty_label && <InfoRow icon={iconDifficulty} label="Zorluk Derecesi" value={tour.difficulty_label} />}
-          {tour.points != null && tour.points > 0 && (
+          {REWARDS_ENABLED && tour.points != null && tour.points > 0 && (
             <InfoRow icon={iconXp} label="Kazanacağınız Puan" value={`${tour.points} XP`} />
           )}
           <InfoRow icon={iconCap} label="Kapasite" value={`${tour.max_participants} Kişi`} />

@@ -23,6 +23,7 @@ import { toursService, CategoryItem } from '../../services/api';
 import { Tour } from '../../types';
 import { formatDate, formatShortDate, formatPrice } from '../../utils/formatting';
 import { splitCategories, sortByStartDate } from '../../utils/category';
+import { REWARDS_ENABLED } from '../../config/features';
 import { MainStackParamList } from '../../navigation/AppNavigator';
 import { BottomTabParamList } from '../../navigation/BottomTabNavigator';
 
@@ -101,7 +102,7 @@ function TourEventCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
                   {formatPrice(Number(tour.price), tour.price_currency)}
                 </Text>
               )}
-              {tour.points > 0 && (
+              {REWARDS_ENABLED && tour.points > 0 && (
                 <View style={styles.eventPoints}>
                   <Ionicons name="star" size={11} color="#FF5A1F" />
                   <Text style={styles.eventPointsText}>{tour.points} XP</Text>

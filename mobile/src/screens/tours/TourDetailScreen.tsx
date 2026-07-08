@@ -24,6 +24,7 @@ import { TourCard } from '../../components/common/TourCard';
 import { toursService, favoritesService } from '../../services/api';
 import { Tour, Difficulty } from '../../types';
 import { formatDate, formatDateRange, formatDateWithDay, formatDistance, formatPrice } from '../../utils/formatting';
+import { REWARDS_ENABLED } from '../../config/features';
 import { splitCategories } from '../../utils/category';
 import { useAuth } from '../../context/AuthContext';
 
@@ -360,12 +361,14 @@ export function TourDetailScreen({ navigation, route }: Props) {
                 <Text style={styles.infoCellLabel}>Mesafe</Text>
                 <Text style={styles.infoCellValue}>{formatDistance(tour.distance_km)}</Text>
               </View>
-            ) : (
+            ) : REWARDS_ENABLED ? (
               <View style={styles.infoCell}>
                 <Ionicons name="star-outline" size={20} color="#FF5A1F" />
                 <Text style={styles.infoCellLabel}>Puan</Text>
                 <Text style={styles.infoCellValue}>{tour.points} XP</Text>
               </View>
+            ) : (
+              <View style={styles.infoCell} />
             )}
           </View>
 
@@ -562,10 +565,12 @@ export function TourDetailScreen({ navigation, route }: Props) {
 
       {/* Bottom sticky bar */}
       <View style={[styles.stickyBar, { paddingBottom: Math.max(insets.bottom, 14) }]}>
-        <View style={styles.stickyPoints}>
-          <Ionicons name="star" size={16} color="#FF5A1F" />
-          <Text style={styles.stickyPointsValue}>{tour.points} XP</Text>
-        </View>
+        {REWARDS_ENABLED && (
+          <View style={styles.stickyPoints}>
+            <Ionicons name="star" size={16} color="#FF5A1F" />
+            <Text style={styles.stickyPointsValue}>{tour.points} XP</Text>
+          </View>
+        )}
         <TouchableOpacity
           style={styles.bookButton}
           onPress={() => {

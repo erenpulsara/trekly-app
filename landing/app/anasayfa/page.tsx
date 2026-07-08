@@ -9,6 +9,7 @@ import TourCardImage from '../turlar/TourCardImage';
 import type { Tour } from '@/lib/types';
 import { T, type Lang } from '@/lib/i18n';
 import { splitCategories } from '@/lib/category-utils';
+import { REWARDS_ENABLED } from '@/lib/features';
 import TurlarCategories from '../turlar/TurlarCategories';
 import TurlarSearchBar from '../turlar/TurlarSearchBar';
 import TurlarHero from '../turlar/TurlarHero';
@@ -291,7 +292,7 @@ export default async function AnasayfaPage() {
                           {tour.price !== undefined && tour.price !== null && (
                             <InfoRow icon="💰" label={tt.price} value={fmtPrice(tour.price, tt.free)} orange />
                           )}
-                          {tour.points > 0 && (
+                          {REWARDS_ENABLED && tour.points > 0 && (
                             <InfoRow icon="⭐" label="Kazanılacak XP" value={`${tour.points} XP`} orange />
                           )}
                         </div>

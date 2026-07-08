@@ -19,6 +19,7 @@ import { useAuth } from '../../context/AuthContext';
 import { usersService } from '../../services/api';
 import { User, PointsLog } from '../../types';
 import { getUserLevel, getLevelProgress, getPointsToNextLevel } from '../../utils/levels';
+import { REWARDS_ENABLED } from '../../config/features';
 import { MainStackParamList } from '../../navigation/AppNavigator';
 import { BottomTabParamList } from '../../navigation/BottomTabNavigator';
 
@@ -156,79 +157,89 @@ export function ProfileScreen({ navigation }: Props) {
           {displayUser?.phone ? (
             <Text style={styles.userEmail}>{displayUser.phone}</Text>
           ) : null}
-          <View style={styles.levelRow}>
-            <Ionicons name="compass" size={14} color="#FF5A1F" />
-            <Text style={styles.levelLabel}>
-              Seviye {levelInfo.level} – {levelInfo.title}
-            </Text>
-          </View>
+          {REWARDS_ENABLED && (
+            <>
+              <View style={styles.levelRow}>
+                <Ionicons name="compass" size={14} color="#FF5A1F" />
+                <Text style={styles.levelLabel}>
+                  Seviye {levelInfo.level} – {levelInfo.title}
+                </Text>
+              </View>
 
-          {/* Progress bar */}
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
-            </View>
-            <Text style={styles.progressLabel}>
-              SONRAKİ SEVİYE: {toNext > 0 ? `${toNext} XP` : 'MAX'}
-            </Text>
-          </View>
+              {/* Progress bar */}
+              <View style={styles.progressContainer}>
+                <View style={styles.progressBar}>
+                  <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
+                </View>
+                <Text style={styles.progressLabel}>
+                  SONRAKİ SEVİYE: {toNext > 0 ? `${toNext} XP` : 'MAX'}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
 
         {/* Stats */}
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Etkinlik</Text>
-            <Text style={styles.statValue}>{pointsLog.length}</Text>
+        {REWARDS_ENABLED && (
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Etkinlik</Text>
+              <Text style={styles.statValue}>{pointsLog.length}</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Toplam XP</Text>
+              <Text style={styles.statValue}>{totalPoints.toLocaleString('tr-TR')}</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Seviye</Text>
+              <Text style={styles.statValue}>{levelInfo.level}</Text>
+            </View>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Toplam XP</Text>
-            <Text style={styles.statValue}>{totalPoints.toLocaleString('tr-TR')}</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Seviye</Text>
-            <Text style={styles.statValue}>{levelInfo.level}</Text>
-          </View>
-        </View>
+        )}
 
         {/* Badges */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Rozetler</Text>
+        {REWARDS_ENABLED && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Rozetler</Text>
+            </View>
+            <View style={styles.emptyCollection}>
+              <Ionicons name="ribbon-outline" size={40} color="#D1D5DB" />
+              <Text style={styles.emptyText}>Henüz rozet kazanılmadı</Text>
+            </View>
           </View>
-          <View style={styles.emptyCollection}>
-            <Ionicons name="ribbon-outline" size={40} color="#D1D5DB" />
-            <Text style={styles.emptyText}>Henüz rozet kazanılmadı</Text>
-          </View>
-        </View>
+        )}
 
         {/* Points history / Collection */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Koleksiyon</Text>
-          </View>
-          {pointsLog.length === 0 ? (
-            <View style={styles.emptyCollection}>
-              <Ionicons name="images-outline" size={40} color="#D1D5DB" />
-              <Text style={styles.emptyText}>Henüz tamamlanan tur yok</Text>
+        {REWARDS_ENABLED && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Koleksiyon</Text>
             </View>
-          ) : (
-            <View style={styles.collectionGrid}>
-              {pointsLog.map((log) => (
-                <View key={log.id} style={styles.collectionCard}>
-                  <View style={styles.collectionImagePlaceholder}>
-                    <Ionicons name="image-outline" size={28} color="#D1D5DB" />
+            {pointsLog.length === 0 ? (
+              <View style={styles.emptyCollection}>
+                <Ionicons name="images-outline" size={40} color="#D1D5DB" />
+                <Text style={styles.emptyText}>Henüz tamamlanan tur yok</Text>
+              </View>
+            ) : (
+              <View style={styles.collectionGrid}>
+                {pointsLog.map((log) => (
+                  <View key={log.id} style={styles.collectionCard}>
+                    <View style={styles.collectionImagePlaceholder}>
+                      <Ionicons name="image-outline" size={28} color="#D1D5DB" />
+                    </View>
+                    <Text style={styles.collectionName} numberOfLines={2}>
+                      {log.tour.name}
+                    </Text>
+                    <Text style={styles.collectionPoints}>+{log.points_earned} XP</Text>
                   </View>
-                  <Text style={styles.collectionName} numberOfLines={2}>
-                    {log.tour.name}
-                  </Text>
-                  <Text style={styles.collectionPoints}>+{log.points_earned} XP</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Menu links */}
         <View style={styles.menuSection}>
@@ -256,14 +267,16 @@ export function ProfileScreen({ navigation }: Props) {
             <Text style={styles.menuItemText}>Rezervasyonlarım</Text>
             <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('Leaderboard')}
-          >
-            <Ionicons name="trophy-outline" size={20} color="#374151" />
-            <Text style={styles.menuItemText}>Liderlik Tablosu</Text>
-            <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
-          </TouchableOpacity>
+          {REWARDS_ENABLED && (
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => navigation.navigate('Leaderboard')}
+            >
+              <Ionicons name="trophy-outline" size={20} color="#374151" />
+              <Text style={styles.menuItemText}>Liderlik Tablosu</Text>
+              <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => navigation.navigate('About')}

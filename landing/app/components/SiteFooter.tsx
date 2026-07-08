@@ -13,28 +13,40 @@ const linkStyle: React.CSSProperties = {
 export default function SiteFooter() {
   return (
     <footer style={{ background: '#1A1A1A', padding: '14px 48px 10px' }}>
-      <div style={{
+      <style>{`
+        @media (max-width: 768px) {
+          .sf-inner { flex-direction: column !important; align-items: center !important; gap: 16px !important; text-align: center; }
+          .sf-left  { flex-direction: column !important; align-items: center !important; gap: 12px !important; }
+          .sf-divider { display: none !important; }
+          .sf-links { justify-content: center !important; }
+          .sf-right { justify-content: center !important; }
+        }
+      `}</style>
+      <div className="sf-inner" style={{
         maxWidth: '1200px', margin: '0 auto',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         gap: '24px', flexWrap: 'wrap',
       }}>
         {/* Left: logo + nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+        <div className="sf-left" style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Image src="/logo.png" alt="Trekly" width={22} height={22} style={{ objectFit: 'contain' }} />
             <span style={{ fontSize: '1rem', fontWeight: 800, color: '#FF5533', letterSpacing: '-0.04em' }}>Trekly</span>
           </div>
-          <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.12)' }} />
-          <Link href="/privacy"    style={linkStyle}>Gizlilik</Link>
-          <Link href="/terms"      style={linkStyle}>Koşullar</Link>
-          <Link href="/hakkimizda" style={linkStyle}>Hakkımızda</Link>
-          <a href={AGENCY_URL} target="_blank" rel="noopener noreferrer" style={linkStyle}>Acenta Paneli →</a>
+          <div className="sf-divider" style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.12)' }} />
+          <div className="sf-links" style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+            <Link href="/hakkimizda" style={linkStyle}>Hakkımızda</Link>
+            <Link href="/privacy"    style={linkStyle}>Gizlilik</Link>
+            <Link href="/terms"      style={linkStyle}>Koşullar</Link>
+            <a href={AGENCY_URL} target="_blank" rel="noopener noreferrer" style={linkStyle}>Acenta Paneli</a>
+          </div>
         </div>
 
         {/* Right: social + app stores */}
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="sf-right" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           {/* Instagram */}
           <a href="https://www.instagram.com/gettrekly" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style={{
+            order: 3,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             width: '36px', height: '36px', borderRadius: '9px',
             background: 'radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)',
@@ -49,6 +61,7 @@ export default function SiteFooter() {
 
           {/* YouTube */}
           <a href="#" aria-label="YouTube" style={{
+            order: 4,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             width: '36px', height: '36px', borderRadius: '9px',
             background: '#FF0000', textDecoration: 'none', flexShrink: 0,
@@ -61,6 +74,7 @@ export default function SiteFooter() {
 
           {/* App Store */}
           <a href="#" aria-label="App Store" style={{
+            order: 1,
             display: 'inline-flex', alignItems: 'center', gap: '7px',
             background: '#000', border: '1px solid rgba(255,255,255,0.18)',
             borderRadius: '9px', padding: '5px 11px', textDecoration: 'none',
@@ -76,6 +90,7 @@ export default function SiteFooter() {
 
           {/* Google Play */}
           <a href="#" aria-label="Google Play" style={{
+            order: 2,
             display: 'inline-flex', alignItems: 'center', gap: '7px',
             background: '#000', border: '1px solid rgba(255,255,255,0.18)',
             borderRadius: '9px', padding: '5px 11px', textDecoration: 'none',

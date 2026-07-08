@@ -17,6 +17,7 @@ import { bookingsService, toursService } from '../../services/api';
 import { Booking, Tour } from '../../types';
 import { DifficultyBadge } from '../../components/common/DifficultyBadge';
 import { formatShortDate } from '../../utils/formatting';
+import { REWARDS_ENABLED } from '../../config/features';
 
 type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'BookingSuccess'>;
@@ -127,7 +128,7 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
             <View style={styles.tourInfo}>
               <View style={styles.tourInfoRow}>
                 <DifficultyBadge difficulty={cardTour.difficulty} />
-                <Text style={styles.tourPoints}>{cardTour.points} XP</Text>
+                {REWARDS_ENABLED && <Text style={styles.tourPoints}>{cardTour.points} XP</Text>}
               </View>
               <Text style={styles.tourName}>{cardTour.name}</Text>
               <View style={styles.locationRow}>

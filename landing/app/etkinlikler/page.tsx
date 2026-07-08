@@ -8,6 +8,7 @@ import Link from 'next/link';
 import type { Tour } from '@/lib/types';
 import { T, type Lang } from '@/lib/i18n';
 import { splitCategories } from '@/lib/category-utils';
+import { REWARDS_ENABLED } from '@/lib/features';
 import TurlarSidebar from '../turlar/TurlarSidebar';
 import MobileFilterBar from '../turlar/MobileFilterBar';
 
@@ -186,7 +187,7 @@ export default async function EtkinliklerPage({
             <h2 style={{
               fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(1.5rem, 2.8vw, 2.1rem)',
               fontWeight: 700, color: '#1A1A1A', margin: '0 0 16px', textTransform: 'uppercase',
-              letterSpacing: '0.02em', lineHeight: 1.3,
+              letterSpacing: '0.02em', lineHeight: 1.5,
             }}>
               Tüm Etkinlikler
             </h2>
@@ -316,7 +317,7 @@ export default async function EtkinliklerPage({
                               {tour.price !== undefined && tour.price !== null && (
                                 <InfoRow icon="💰" label={tt.price} value={fmtPrice(tour.price, tt.free)} orange />
                               )}
-                              {tour.points > 0 && (
+                              {REWARDS_ENABLED && tour.points > 0 && (
                                 <InfoRow icon="⭐" label="Kazanılacak XP" value={`${tour.points} XP`} orange />
                               )}
                             </div>

@@ -23,6 +23,7 @@ import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { toursService, CategoryItem } from '../../services/api';
 import { Tour } from '../../types';
 import { formatShortDate, formatPrice } from '../../utils/formatting';
+import { REWARDS_ENABLED } from '../../config/features';
 import { splitCategories, sortByStartDate } from '../../utils/category';
 import { useAuth } from '../../context/AuthContext';
 import { MainStackParamList } from '../../navigation/AppNavigator';
@@ -202,7 +203,7 @@ function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }
           </View>
         )}
 
-        {tour.points > 0 && (
+        {REWARDS_ENABLED && tour.points > 0 && (
           <View style={styles.upCardInfoRow}>
             <Ionicons name="star-outline" size={14} color="#9CA3AF" />
             <View style={{ flex: 1 }}>
@@ -379,7 +380,7 @@ export function HomeScreen({ navigation }: Props) {
                 </View>
 
                 {/* XP Progress Card */}
-                {user && (
+                {REWARDS_ENABLED && user && (
                   <View style={styles.xpCard}>
                     <View style={styles.xpCardHeader}>
                       <Ionicons name="trophy-outline" size={20} color="#FF5A1F" />
