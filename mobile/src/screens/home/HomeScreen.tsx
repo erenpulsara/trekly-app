@@ -280,7 +280,7 @@ export function HomeScreen({ navigation }: Props) {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TreklyLogo size="medium" />
+          <TreklyLogo size="medium" showIcon />
           <TouchableOpacity
             style={styles.avatarContainer}
             onPress={() => navigation.navigate('Profile' as never)}
