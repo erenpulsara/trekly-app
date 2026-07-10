@@ -8,6 +8,7 @@ import Link from 'next/link';
 import type { Tour } from '@/lib/types';
 import { T, type Lang } from '@/lib/i18n';
 import { splitCategories } from '@/lib/category-utils';
+import { displayCategory } from '@/lib/category-i18n';
 import { REWARDS_ENABLED } from '@/lib/features';
 import TurlarSidebar from '../turlar/TurlarSidebar';
 import MobileFilterBar from '../turlar/MobileFilterBar';
@@ -189,12 +190,12 @@ export default async function EtkinliklerPage({
               fontWeight: 700, color: '#1A1A1A', margin: '0 0 16px', textTransform: 'uppercase',
               letterSpacing: '0.02em', lineHeight: 1.5,
             }}>
-              Tüm Etkinlikler
+              {tt.allEventsTitle}
             </h2>
             <div className="etr-header-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
               {(activeCategory || activeLocation || activeMonth || activeSearch) && (
                 <Link href="/etkinlikler" style={{ fontSize: '0.78rem', color: '#9A9A9A', fontWeight: 600, textDecoration: 'none' }}>
-                  ← Filtreleri Temizle
+                  ← {tt.clearAllFilters}
                 </Link>
               )}
               <Link
@@ -216,7 +217,7 @@ export default async function EtkinliklerPage({
                   <rect x="14" y="14" width="7" height="7" rx="1.5"/>
                 </svg>
                 <span style={{ color: (activeCategory || activeLocation || activeMonth || activeSearch) ? '#FF5533' : 'white' }}>
-                  Tüm Turlar
+                  {tt.allToursBtn}
                 </span>
               </Link>
             </div>
@@ -232,6 +233,7 @@ export default async function EtkinliklerPage({
               activeSearch={activeSearch}
               dynamicCategories={categories}
               locations={allLocations}
+              lang={lang}
             />
           </Suspense>
 
@@ -246,6 +248,7 @@ export default async function EtkinliklerPage({
                 activeSearch={activeSearch}
                 dynamicCategories={categories}
                 locations={allLocations}
+                lang={lang}
               />
             </Suspense>
 
@@ -284,7 +287,7 @@ export default async function EtkinliklerPage({
                                     padding: '3px 9px', borderRadius: '6px',
                                     letterSpacing: '0.04em', textTransform: 'uppercase',
                                   }}>
-                                    {cat}
+                                    {displayCategory(cat, lang)}
                                   </span>
                                 ))}
                               </div>

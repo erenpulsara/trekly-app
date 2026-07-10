@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUserAuth } from '@/app/UserAuthContext';
 import { getFavoriteIds, addFavorite, removeFavorite } from '@/lib/favorites-api';
+import { T, type Lang, getLangClient } from '@/lib/i18n';
 
 interface Props {
   tourId: string;
@@ -16,6 +17,9 @@ export default function TourActions({ tourId, tourName }: Props) {
   const { user, isLoading: authLoading } = useUserAuth();
   const [liked, setLiked] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [lang, setLang] = useState<Lang>('tr');
+  useEffect(() => { setLang(getLangClient()); }, []);
+  const tt = T[lang].td;
 
   useEffect(() => {
     if (!user) { setLiked(false); return; }
@@ -68,7 +72,7 @@ export default function TourActions({ tourId, tourName }: Props) {
       {/* Favori */}
       <button
         onClick={toggleFav}
-        title={liked ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+        title={liked ? tt.removeFav : tt.addFav}
         style={{
           ...btnBase,
           borderColor: liked ? '#FF5533' : '#E5E7EB',
@@ -85,7 +89,7 @@ export default function TourActions({ tourId, tourName }: Props) {
       {/* Paylaş */}
       <button
         onClick={handleShare}
-        title="Turu paylaş"
+        title={tt.shareTour}
         style={{
           ...btnBase,
           borderColor: copied ? '#10B981' : '#E5E7EB',
@@ -109,7 +113,7 @@ export default function TourActions({ tourId, tourName }: Props) {
 
       {copied && (
         <span style={{ fontSize: '0.72rem', color: '#10B981', fontWeight: 600, whiteSpace: 'nowrap' }}>
-          Link kopyalandı!
+          {tt.linkCopied}
         </span>
       )}
     </div>

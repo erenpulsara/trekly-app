@@ -19,6 +19,7 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { formatDate } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
+import { useLanguage } from '../../context/LanguageContext';
 
 const STATUS_ORDER: Record<string, number> = {
   confirmed: 0,
@@ -45,6 +46,7 @@ type ListItem =
   | { kind: 'web'; id: string; booking: UserWebBooking };
 
 export function MyBookingsScreen({ navigation }: Props) {
+  const { t, lang } = useLanguage();
   const [items, setItems] = useState<ListItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -65,7 +67,7 @@ export function MyBookingsScreen({ navigation }: Props) {
       ];
       setItems(merged);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Rezervasyonlar yüklenemedi.');
+      setError(err instanceof Error ? err.message : t.myBookings.loadError);
     } finally {
       if (showSpinner) setIsLoading(false);
     }
@@ -92,7 +94,7 @@ export function MyBookingsScreen({ navigation }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#1A1A1A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Rezervasyonlarım</Text>
+        <Text style={styles.headerTitle}>{t.myBookings.title}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -113,15 +115,15 @@ export function MyBookingsScreen({ navigation }: Props) {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Ionicons name="bookmarks-outline" size={56} color="#D1D5DB" />
-              <Text style={styles.emptyTitle}>Henüz rezervasyon yok</Text>
+              <Text style={styles.emptyTitle}>{t.myBookings.emptyTitle}</Text>
               <Text style={styles.emptySubtext}>
-                Turları keşfederek rezervasyon yapabilirsiniz.
+                {t.myBookings.emptySub}
               </Text>
               <TouchableOpacity
                 style={styles.exploreBtn}
                 onPress={() => navigation.navigate('Main')}
               >
-                <Text style={styles.exploreBtnText}>Turları Keşfet</Text>
+                <Text style={styles.exploreBtnText}>{t.myBookings.exploreTours}</Text>
               </TouchableOpacity>
             </View>
           }
@@ -153,7 +155,7 @@ export function MyBookingsScreen({ navigation }: Props) {
                   {dateStr && (
                     <View style={styles.metaRow}>
                       <Ionicons name="calendar-outline" size={13} color="#6B7280" />
-                      <Text style={styles.metaText}>{formatDate(dateStr)}</Text>
+                      <Text style={styles.metaText}>{formatDate(dateStr, lang)}</Text>
                     </View>
                   )}
                   {tour?.location_name && (
@@ -165,11 +167,11 @@ export function MyBookingsScreen({ navigation }: Props) {
                   <View style={styles.pointsRow}>
                     {(item.kind === 'web' || REWARDS_ENABLED) && (
                       <Text style={styles.points}>
-                        {item.kind === 'web' ? 'Web Rezervasyonu' : `${tour?.points ?? 0} XP`}
+                        {item.kind === 'web' ? t.myBookings.webBooking : `${tour?.points ?? 0} XP`}
                       </Text>
                     )}
                     <Text style={styles.participants}>
-                      {booking.participant_count} kişi
+                      {booking.participant_count} {t.myBookings.people}
                     </Text>
                   </View>
                 </View>

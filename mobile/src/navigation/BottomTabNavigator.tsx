@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../context/LanguageContext';
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { ExploreScreen } from '../screens/explore/ExploreScreen';
 import { BlogScreen } from '../screens/blog/BlogScreen';
@@ -25,16 +26,17 @@ const TAB_ICONS: Record<keyof BottomTabParamList, { active: IoniconName; inactiv
   Profile: { active: 'person', inactive: 'person-outline' },
 };
 
-const TAB_LABELS: Record<keyof BottomTabParamList, string> = {
-  Home: 'Ana Sayfa',
-  Explore: 'Etkinlikler',
-  Blog: 'Blog',
-  Profile: 'Profil',
-};
-
 export function BottomTabNavigator() {
   const insets = useSafeAreaInsets();
   const bottomPad = insets.bottom > 0 ? insets.bottom : 8;
+  const { t } = useLanguage();
+
+  const TAB_LABELS: Record<keyof BottomTabParamList, string> = {
+    Home: t.tabs.home,
+    Explore: t.tabs.explore,
+    Blog: t.tabs.blog,
+    Profile: t.tabs.profile,
+  };
 
   return (
     <Tab.Navigator

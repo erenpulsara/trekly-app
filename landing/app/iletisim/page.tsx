@@ -1,21 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SiteFooter from '@/app/components/SiteFooter';
 import LandingNav from '../landing-nav';
-import Link from 'next/link';
-
-const KONU_OPTIONS = [
-  'Acenteyim, iş ortağı olmak istiyorum',
-  'Tur hakkında bilgi almak istiyorum',
-  'Teknik destek',
-  'Basın & medya',
-  'Diğer',
-];
+import { T, type Lang, getLangClient } from '@/lib/i18n';
 
 export default function IletisimPage() {
   const [form, setForm] = useState({ name: '', email: '', konu: '', message: '' });
   const [sent, setSent] = useState(false);
+  const [lang, setLang] = useState<Lang>('tr');
+  useEffect(() => { setLang(getLangClient()); }, []);
+  const tc = T[lang].contact;
+  const KONU_OPTIONS = tc.options;
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -57,7 +53,7 @@ export default function IletisimPage() {
             {/* Left */}
             <div>
               <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#FF5533', margin: '0 0 20px' }}>
-                İletişim
+                {tc.eyebrow}
               </p>
               <h1 className="il-title" style={{
                 fontFamily: '"Cormorant Garamond", serif',
@@ -68,26 +64,26 @@ export default function IletisimPage() {
                 letterSpacing: '-0.02em',
                 margin: '0 0 32px',
               }}>
-                Doğayı Keşfetmenin En{' '}
-                <em style={{ color: '#FF5533', fontStyle: 'italic' }}>Düzenli</em>{' '}
-                Yolu
+                {tc.titleA}{' '}
+                <em style={{ color: '#FF5533', fontStyle: 'italic' }}>{tc.titleEm}</em>{' '}
+                {tc.titleB}
               </h1>
 
               <p style={{ fontSize: '1rem', lineHeight: 1.85, color: '#4A4A4A', margin: '0 0 18px' }}>
-                Trekly; doğa tutkunlarını, Türkiye&apos;nin nitelikli outdoor deneyimleriyle buluşturan yeni nesil bir dijital platformdur.
+                {tc.intro1}
               </p>
 
               <p style={{ fontSize: '1rem', lineHeight: 1.85, color: '#4A4A4A', margin: '0 0 40px' }}>
-                Amacımız; yürüyüşten kampçılığa, bisiklet rotalarından su sporlarına kadar{' '}
-                <strong style={{ color: '#1A1A1A', fontWeight: 700 }}>tüm doğa faaliyetlerini</strong>,
-                {' '}herkes için düzenli ve kolayca filtrelenebilir{' '}
-                <strong style={{ color: '#1A1A1A', fontWeight: 700 }}>tek bir vitrinde</strong> toplamak.
+                {tc.intro2a}
+                <strong style={{ color: '#1A1A1A', fontWeight: 700 }}>{tc.intro2b}</strong>
+                {tc.intro2c}
+                <strong style={{ color: '#1A1A1A', fontWeight: 700 }}>{tc.intro2d}</strong>{tc.intro2e}
               </p>
 
               <div style={{ height: '1px', background: '#EAEAEA', margin: '0 0 32px' }} />
 
               <p style={{ fontSize: '0.9rem', color: '#6B7280', lineHeight: 1.7, margin: '0 0 14px' }}>
-                Soru ve görüşleriniz için iletişim adresimiz:
+                {tc.contactLine}
               </p>
               <a
                 href="mailto:hello@treklyapp.com"
@@ -111,24 +107,24 @@ export default function IletisimPage() {
               {sent ? (
                 <div style={{ textAlign: 'center', padding: '40px 0' }}>
                   <div style={{ fontSize: '2rem', marginBottom: '16px' }}>✓</div>
-                  <p style={{ fontWeight: 700, color: '#1A1A1A', margin: '0 0 8px' }}>Teşekkürler!</p>
-                  <p style={{ fontSize: '0.9rem', color: '#6B7280' }}>Mesajınız iletildi, en kısa sürede geri döneceğiz.</p>
+                  <p style={{ fontWeight: 700, color: '#1A1A1A', margin: '0 0 8px' }}>{tc.thanks}</p>
+                  <p style={{ fontSize: '0.9rem', color: '#6B7280' }}>{tc.thanksSub}</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <div>
-                    <label style={labelStyle}>Ad Soyad</label>
+                    <label style={labelStyle}>{tc.fullName}</label>
                     <input
                       type="text"
                       required
-                      placeholder="Adınız ve soyadınız"
+                      placeholder={tc.fullNamePh}
                       value={form.name}
                       onChange={e => set('name', e.target.value)}
                       style={inputStyle}
                     />
                   </div>
                   <div>
-                    <label style={labelStyle}>Mail Adresiniz</label>
+                    <label style={labelStyle}>{tc.emailLabel}</label>
                     <input
                       type="email"
                       required
@@ -139,22 +135,22 @@ export default function IletisimPage() {
                     />
                   </div>
                   <div>
-                    <label style={labelStyle}>Konu</label>
+                    <label style={labelStyle}>{tc.subject}</label>
                     <select
                       value={form.konu}
                       onChange={e => set('konu', e.target.value)}
                       style={{ ...inputStyle, appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center', cursor: 'pointer' }}
                     >
-                      <option value="">Konu seçiniz</option>
+                      <option value="">{tc.subjectSelect}</option>
                       {KONU_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label style={labelStyle}>Mesajınız</label>
+                    <label style={labelStyle}>{tc.message}</label>
                     <textarea
                       required
                       rows={5}
-                      placeholder="Mesajınızı buraya yazın..."
+                      placeholder={tc.messagePh}
                       value={form.message}
                       onChange={e => set('message', e.target.value)}
                       style={{ ...inputStyle, resize: 'vertical', minHeight: '120px' }}
@@ -177,7 +173,7 @@ export default function IletisimPage() {
                     onMouseEnter={e => (e.currentTarget.style.background = '#E8421E')}
                     onMouseLeave={e => (e.currentTarget.style.background = '#FF5533')}
                   >
-                    Gönder
+                    {tc.send}
                   </button>
                 </form>
               )}

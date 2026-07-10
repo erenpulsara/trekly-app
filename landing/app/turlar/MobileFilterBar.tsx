@@ -7,8 +7,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { CategoryItem } from '@/lib/api';
+import { getLangClient, type Lang, T } from '@/lib/i18n';
+import { displayCategory, monthNames } from '@/lib/category-i18n';
 
-const MONTHS = [
+// Filtre key'i her zaman Türkçe kalır (URL & backend uyumu); yalnızca ETİKET çevrilir.
+const MONTHS_TR = [
   'Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
   'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık',
 ];
@@ -23,20 +26,26 @@ interface Props {
   dynamicCategories: CategoryItem[];
   locations: string[];
   basePath?: string;
+  lang?: Lang;
 }
 
 export default function MobileFilterBar({
   activeCategory, activeLocation, activeMonth, activeSearch,
-  dynamicCategories, locations, basePath = '/etkinlikler',
+  dynamicCategories, locations, basePath = '/etkinlikler', lang: langProp,
 }: Props) {
   const router = useRouter();
   const params = useSearchParams();
   const [openDropdown, setOpenDropdown] = useState<DropdownKey>(null);
   const [searchInput, setSearchInput] = useState(activeSearch);
+  const [lang, setLang] = useState<Lang>(langProp ?? 'tr');
 
   useEffect(() => { setSearchInput(activeSearch); }, [activeSearch]);
+  useEffect(() => { if (!langProp) setLang(getLangClient()); }, [langProp]);
   // Filtre değişince (yeni sayfa render'ı) açık panel kapansın
   useEffect(() => { setOpenDropdown(null); }, [activeCategory, activeLocation, activeMonth]);
+
+  const tt = T[lang].tours;
+  const monthLabels = monthNames(lang);
 
   function navigateTo(updates: { category?: string; location?: string; month?: string; search?: string }) {
     const q = new URLSearchParams();
@@ -59,19 +68,19 @@ export default function MobileFilterBar({
   }
 
   const BLOCKED = new Set(['kano', 'rafting', 'yamaç paraşütü']);
-  const capitalize = (s: string) => s.charAt(0).toLocaleUpperCase('tr') + s.slice(1);
   const allCats = dynamicCategories
     .filter(c => !BLOCKED.has(c.name.toLowerCase()))
-    .map(c => ({ key: c.name, label: capitalize(c.name) }));
+    .map(c => ({ key: c.name, label: displayCategory(c.name, lang) }));
 
-  const activeMonthLabel = activeMonth
-    ? (MONTHS.find(m => m.toLowerCase() === activeMonth) ?? activeMonth)
-    : '';
+  const activeMonthIdx = activeMonth
+    ? MONTHS_TR.findIndex(m => m.toLowerCase() === activeMonth)
+    : -1;
+  const activeMonthLabel = activeMonthIdx >= 0 ? monthLabels[activeMonthIdx] : '';
 
   const chips: { key: Exclude<DropdownKey, null>; placeholder: string; value: string }[] = [
-    { key: 'category', placeholder: 'Kategori', value: activeCategory ? capitalize(activeCategory) : '' },
-    { key: 'location', placeholder: 'Lokasyon', value: activeLocation },
-    { key: 'month',    placeholder: 'Tarih',    value: activeMonthLabel },
+    { key: 'category', placeholder: tt.searchCategory, value: activeCategory ? displayCategory(activeCategory, lang) : '' },
+    { key: 'location', placeholder: tt.searchLocation, value: activeLocation },
+    { key: 'month',    placeholder: tt.searchDate,     value: activeMonthLabel },
   ];
 
   const renderOptions = () => {
@@ -84,9 +93,9 @@ export default function MobileFilterBar({
         navigateTo({ location: activeLocation === loc ? '' : loc })));
     }
     if (openDropdown === 'month') {
-      return MONTHS.map(month => {
-        const key = month.toLowerCase();
-        return renderOption(month, activeMonth === key, () =>
+      return MONTHS_TR.map((monthTr, i) => {
+        const key = monthTr.toLowerCase();
+        return renderOption(monthLabels[i], activeMonth === key, () =>
           navigateTo({ month: activeMonth === key ? '' : key }));
       });
     }
@@ -135,7 +144,7 @@ export default function MobileFilterBar({
           type="text"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Tur veya etiket ara..."
+          placeholder={tt.searchPlaceholder}
           style={{
             width: '100%', padding: '11px 40px 11px 14px',
             borderRadius: '12px', border: '1.5px solid #EAEAEA',
@@ -203,7 +212,7 @@ export default function MobileFilterBar({
             <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
-            Temizle
+            {tt.clearFilters}
           </button>
         )}
       </div>

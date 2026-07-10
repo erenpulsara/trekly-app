@@ -18,6 +18,7 @@ import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { blogService } from '../../services/api';
 import { BlogPost } from '../../types';
 import { formatDate } from '../../utils/formatting';
+import { useLanguage } from '../../context/LanguageContext';
 import { MainStackParamList } from '../../navigation/AppNavigator';
 import { BottomTabParamList } from '../../navigation/BottomTabNavigator';
 
@@ -29,6 +30,7 @@ type BlogNavProp = CompositeNavigationProp<
 type Props = { navigation: BlogNavProp };
 
 function BlogCard({ post, onPress }: { post: BlogPost; onPress: () => void }) {
+  const { lang } = useLanguage();
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.88}>
       <View style={styles.cardImage}>
@@ -48,7 +50,7 @@ function BlogCard({ post, onPress }: { post: BlogPost; onPress: () => void }) {
         <View style={styles.cardMeta}>
           <Ionicons name="calendar-outline" size={13} color="#9CA3AF" />
           <Text style={styles.cardDate}>
-            {formatDate(post.published_at ?? post.created_at)}
+            {formatDate(post.published_at ?? post.created_at, lang)}
           </Text>
         </View>
       </View>
@@ -57,6 +59,7 @@ function BlogCard({ post, onPress }: { post: BlogPost; onPress: () => void }) {
 }
 
 export function BlogScreen({ navigation }: Props) {
+  const { t } = useLanguage();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +71,7 @@ export function BlogScreen({ navigation }: Props) {
       const data = await blogService.getAll();
       setPosts(data ?? []);
     } catch {
-      setError('Blog yazıları yüklenirken hata oluştu.');
+      setError(t.blogScreen.loadError);
     }
   }, []);
 
@@ -85,8 +88,8 @@ export function BlogScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Blog</Text>
-        <Text style={styles.headerSubtitle}>Doğa ve macera üzerine yazılar</Text>
+        <Text style={styles.headerTitle}>{t.blogScreen.title}</Text>
+        <Text style={styles.headerSubtitle}>{t.blogScreen.subtitle}</Text>
       </View>
 
       {isLoading ? (
@@ -96,7 +99,7 @@ export function BlogScreen({ navigation }: Props) {
       ) : posts.length === 0 ? (
         <View style={styles.emptyState}>
           <Ionicons name="newspaper-outline" size={48} color="#E5E5E5" />
-          <Text style={styles.emptyText}>Henüz blog yazısı yok</Text>
+          <Text style={styles.emptyText}>{t.blogScreen.empty}</Text>
         </View>
       ) : (
         <FlatList

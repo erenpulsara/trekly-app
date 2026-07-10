@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Space_Grotesk } from 'next/font/google';
+import { cookies } from 'next/headers';
 import { UserAuthProvider } from './UserAuthContext';
 import './globals.css';
 
@@ -39,8 +40,13 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // html lang aktif dile göre ayarlanır — CSS text-transform:uppercase browser
+  // tarafından dile göre uygulanır (Türkçe'de küçük "i" → noktalı "İ" olur).
+  // lang="tr" sabit kalsaydı, EN modda "diving" gibi kelimeler CSS ile büyütülünce
+  // yanlışlıkla "DİVİNG" (noktalı İ) olurdu; doğrusu "DIVING" (noktasız I).
+  const lang = cookies().get('lang')?.value === 'en' ? 'en' : 'tr';
   return (
-    <html lang="tr" className={spaceGrotesk.variable}>
+    <html lang={lang} className={spaceGrotesk.variable}>
       <body>
         <UserAuthProvider>{children}</UserAuthProvider>
       </body>

@@ -18,6 +18,7 @@ import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { blogService } from '../../services/api';
 import { BlogPost } from '../../types';
 import { formatDate } from '../../utils/formatting';
+import { useLanguage } from '../../context/LanguageContext';
 
 type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'BlogDetail'>;
@@ -25,6 +26,7 @@ type Props = {
 };
 
 export function BlogDetailScreen({ navigation, route }: Props) {
+  const { lang } = useLanguage();
   const { slug } = route.params;
   const [post, setPost] = useState<BlogPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,7 +80,7 @@ export function BlogDetailScreen({ navigation, route }: Props) {
         <View style={styles.meta}>
           <Ionicons name="calendar-outline" size={14} color="#9CA3AF" />
           <Text style={styles.metaText}>
-            {formatDate(post.published_at ?? post.created_at)}
+            {formatDate(post.published_at ?? post.created_at, lang)}
           </Text>
         </View>
 

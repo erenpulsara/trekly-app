@@ -3,22 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { CategoryItem } from '@/lib/api';
-
-
-const MONTHS = [
-  { label: 'Ocak',    value: '01' },
-  { label: 'Şubat',   value: '02' },
-  { label: 'Mart',    value: '03' },
-  { label: 'Nisan',   value: '04' },
-  { label: 'Mayıs',   value: '05' },
-  { label: 'Haziran', value: '06' },
-  { label: 'Temmuz',  value: '07' },
-  { label: 'Ağustos', value: '08' },
-  { label: 'Eylül',   value: '09' },
-  { label: 'Ekim',    value: '10' },
-  { label: 'Kasım',   value: '11' },
-  { label: 'Aralık',  value: '12' },
-];
+import { getLangClient, type Lang } from '@/lib/i18n';
+import { displayCategory, monthNames } from '@/lib/category-i18n';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -226,19 +212,24 @@ interface Props {
     searchCategory: string;
     searchBtn: string;
     allCategories: string;
+    allMonths: string;
   };
   categories?: CategoryItem[];
   basePath?: string;
+  lang?: Lang;
 }
 
 /* ── Main Component ─────────────────────────────────── */
-export default function TurlarSearchBar({ labels, categories = [], basePath = '/anasayfa' }: Props) {
+export default function TurlarSearchBar({ labels, categories = [], basePath = '/anasayfa', lang: langProp }: Props) {
   const router = useRouter();
   const params = useSearchParams();
 
   const [month, setMonth] = useState('');
   const [location, setLocation] = useState('');
   const [category, setCategory] = useState('');
+  const [lang, setLang] = useState<Lang>(langProp ?? 'tr');
+
+  useEffect(() => { if (!langProp) setLang(getLangClient()); }, [langProp]);
 
   useEffect(() => {
     const d = params.get('start_date') ?? '';
@@ -246,6 +237,11 @@ export default function TurlarSearchBar({ labels, categories = [], basePath = '/
     setLocation(params.get('location') ?? '');
     setCategory(params.get('category') ?? '');
   }, [params]);
+
+  const MONTHS: DropdownOption[] = monthNames(lang).map((label, i) => ({
+    label,
+    value: String(i + 1).padStart(2, '0'),
+  }));
 
   function monthToDate(m: string) {
     return m ? `${CURRENT_YEAR}-${m}-01` : '';
@@ -283,7 +279,7 @@ export default function TurlarSearchBar({ labels, categories = [], basePath = '/
 
   const categoryOptions: DropdownOption[] = activeCategories.map((c) => ({
     value: c,
-    label: c.charAt(0).toUpperCase() + c.slice(1),
+    label: displayCategory(c, lang),
   }));
 
   return (
@@ -320,7 +316,7 @@ export default function TurlarSearchBar({ labels, categories = [], basePath = '/
         label={labels.searchDate}
         options={MONTHS}
         value={month}
-        placeholder="Tüm Aylar"
+        placeholder={labels.allMonths}
         onChange={handleMonthChange}
         divider
         columns={3}

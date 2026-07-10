@@ -18,6 +18,7 @@ import { Booking, Tour } from '../../types';
 import { DifficultyBadge } from '../../components/common/DifficultyBadge';
 import { formatShortDate } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
+import { useLanguage } from '../../context/LanguageContext';
 
 type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'BookingSuccess'>;
@@ -25,6 +26,7 @@ type Props = {
 };
 
 export function BookingSuccessScreen({ navigation, route }: Props) {
+  const { t, lang } = useLanguage();
   const { bookingId, tourId, isWebBooking, participantCount } = route.params;
   const [booking, setBooking] = useState<Booking | null>(null);
   const [tour, setTour] = useState<Tour | null>(null);
@@ -78,8 +80,8 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
           style={styles.iconBtn}
           onPress={() => Share.share({
             message: cardTour
-              ? `${cardTour.name} turuna kaydoldum! Trekly'de keşfet: https://treklyapp.com`
-              : 'Trekly\'de bir tura kaydoldum! https://treklyapp.com',
+              ? `${cardTour.name}${t.booking.shareTourSuffix}`
+              : t.booking.shareApp,
           })}
         >
           <Ionicons name="share-outline" size={22} color="#1A1A1A" />
@@ -93,18 +95,16 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
             <Ionicons name="checkmark" size={36} color="#FF5A1F" />
           </View>
           <Text style={styles.successTitle}>
-            {isWebBooking ? 'Rezervasyonunuz Alındı!' : 'Kayıt işleminiz başarılı!'}
+            {isWebBooking ? t.booking.successTitle : t.booking.successTitleApp}
           </Text>
           <Text style={styles.successSubtext}>
-            {isWebBooking
-              ? 'Rezervasyonunuz acentaya iletildi. Onay için\nsizinle en kısa sürede iletişime geçilecek.'
-              : 'Maceranız için her şey hazır. Sizin için harika\nbir deneyim hazırlıyoruz.'}
+            {isWebBooking ? t.booking.successMsg : t.booking.successMsgApp}
           </Text>
         </View>
 
         {/* Reservation code */}
         <View style={styles.codeCard}>
-          <Text style={styles.codeLabel}>REZERVASYON KODU</Text>
+          <Text style={styles.codeLabel}>{t.booking.reservationCode}</Text>
           <Text style={styles.codeValue}>{reservationCode}</Text>
         </View>
 
@@ -112,7 +112,7 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
         {isLoading ? (
           <ActivityIndicator color="#FF5A1F" style={{ marginTop: 24 }} />
         ) : fetchError || !cardTour ? (
-          <Text style={styles.fetchErrorText}>Tur detayları yüklenemedi.</Text>
+          <Text style={styles.fetchErrorText}>{t.booking.fetchError}</Text>
         ) : (
           <View style={styles.tourCard}>
             {cardTour.photo_urls.length > 0 ? (
@@ -140,9 +140,9 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
                   <View style={styles.detailItem}>
                     <Ionicons name="calendar-outline" size={16} color="#6B7280" />
                     <View style={{ marginLeft: 6 }}>
-                      <Text style={styles.detailLabel}>Tarih</Text>
+                      <Text style={styles.detailLabel}>{t.booking.dateLabel}</Text>
                       <Text style={styles.detailValue}>
-                        {formatShortDate(cardDate)}
+                        {formatShortDate(cardDate, lang)}
                       </Text>
                     </View>
                   </View>
@@ -150,9 +150,9 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
                 <View style={styles.detailItem}>
                   <Ionicons name="people-outline" size={16} color="#6B7280" />
                   <View style={{ marginLeft: 6 }}>
-                    <Text style={styles.detailLabel}>Kişi</Text>
+                    <Text style={styles.detailLabel}>{t.booking.peopleLabel}</Text>
                     <Text style={styles.detailValue}>
-                      {cardCount} Yetişkin
+                      {cardCount} {t.booking.adult}
                     </Text>
                   </View>
                 </View>
@@ -168,7 +168,7 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
           style={styles.primaryBtn}
           onPress={() => navigation.navigate('TourDetail', { tourId })}
         >
-          <Text style={styles.primaryBtnText}>Etkinliğe Git →</Text>
+          <Text style={styles.primaryBtnText}>{t.booking.goToEvent}</Text>
         </TouchableOpacity>
         {isWebBooking ? (
           <TouchableOpacity
@@ -176,7 +176,7 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
             onPress={() => navigation.navigate('Main')}
           >
             <Ionicons name="home-outline" size={18} color="#1A1A1A" />
-            <Text style={styles.secondaryBtnText}>Ana Sayfaya Dön</Text>
+            <Text style={styles.secondaryBtnText}>{t.booking.backHome}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -184,7 +184,7 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
             onPress={() => navigation.navigate('MyBookings')}
           >
             <Ionicons name="bookmarks-outline" size={18} color="#1A1A1A" />
-            <Text style={styles.secondaryBtnText}>Rezervasyonlarım</Text>
+            <Text style={styles.secondaryBtnText}>{t.booking.viewBookings}</Text>
           </TouchableOpacity>
         )}
       </View>

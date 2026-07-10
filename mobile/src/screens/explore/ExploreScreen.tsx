@@ -24,6 +24,8 @@ import { Tour } from '../../types';
 import { formatDate, formatShortDate, formatPrice } from '../../utils/formatting';
 import { splitCategories, sortByStartDate } from '../../utils/category';
 import { REWARDS_ENABLED } from '../../config/features';
+import { useLanguage } from '../../context/LanguageContext';
+import { displayCategory, localeUpper } from '../../i18n/categories';
 import { MainStackParamList } from '../../navigation/AppNavigator';
 import { BottomTabParamList } from '../../navigation/BottomTabNavigator';
 
@@ -39,11 +41,6 @@ type Props = {
 
 type DropdownKey = 'category' | 'location' | 'month' | null;
 
-const MONTHS = [
-  'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-  'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
-];
-
 function tourMonth(tour: Tour): number | null {
   const s = tour.start_date ?? tour.dates?.[0]?.date;
   if (!s) return null;
@@ -52,6 +49,7 @@ function tourMonth(tour: Tour): number | null {
 }
 
 function TourEventCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
+  const { t, lang } = useLanguage();
   const startStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
   const endStr = tour.end_date ?? null;
   const hasPrice = tour.price != null && Number(tour.price) > 0;
@@ -72,7 +70,7 @@ function TourEventCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
           <View style={styles.eventCategoryRow}>
             {splitCategories(tour.category).map((cat) => (
               <View key={cat} style={styles.eventCategoryBadge}>
-                <Text style={styles.eventCategoryText}>{cat}</Text>
+                <Text style={styles.eventCategoryText}>{localeUpper(displayCategory(cat, lang), lang)}</Text>
               </View>
             ))}
           </View>
@@ -86,8 +84,8 @@ function TourEventCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
               <Ionicons name="calendar-outline" size={13} color="#6B7280" />
               <Text style={styles.eventMetaText}>
                 {endStr
-                  ? `${formatShortDate(startStr)} – ${formatShortDate(endStr)}`
-                  : formatDate(startStr)}
+                  ? `${formatShortDate(startStr, lang)} – ${formatShortDate(endStr, lang)}`
+                  : formatDate(startStr, lang)}
               </Text>
             </View>
           )}
@@ -110,7 +108,7 @@ function TourEventCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
               )}
             </View>
             <View style={styles.eventDetailBtn}>
-              <Text style={styles.eventDetailText}>Detayları Gör</Text>
+              <Text style={styles.eventDetailText}>{t.explore.details}</Text>
               <Ionicons name="arrow-forward" size={12} color="#FF5A1F" />
             </View>
           </View>
@@ -121,6 +119,7 @@ function TourEventCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
 }
 
 export function ExploreScreen({ navigation, route }: Props) {
+  const { t, lang } = useLanguage();
   const [tours, setTours] = useState<Tour[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -145,7 +144,7 @@ export function ExploreScreen({ navigation, route }: Props) {
       setTours(toursData);
       setCategories(categoriesData.filter((c) => c?.name));
     } catch {
-      setError('Veriler yüklenirken hata oluştu.');
+      setError(t.explore.loadError);
     }
   }, []);
 
@@ -227,7 +226,7 @@ export function ExploreScreen({ navigation, route }: Props) {
         <View style={styles.emptyState}>
           <Ionicons name="calendar-outline" size={48} color="#E5E5E5" />
           <Text style={styles.emptyText}>
-            {hasAnyFilter ? 'Filtrelere uygun tur bulunamadı' : 'Yaklaşan etkinlik yok'}
+            {hasAnyFilter ? t.explore.noFilterMatch : t.explore.noUpcoming}
           </Text>
           {hasAnyFilter && (
             <TouchableOpacity onPress={clearFilters}>
@@ -260,7 +259,7 @@ export function ExploreScreen({ navigation, route }: Props) {
           activeOpacity={0.85}
           onPress={() => setShowAll(true)}
         >
-          <Text style={styles.showAllBtnText}>Tümünü Listele</Text>
+          <Text style={styles.showAllBtnText}>{t.explore.showAll}</Text>
           <Ionicons name="arrow-forward" size={15} color="#FFFFFF" />
         </TouchableOpacity>
       )}
@@ -283,7 +282,7 @@ export function ExploreScreen({ navigation, route }: Props) {
           <>
             {/* Screen title — mirrors web's Etkinlikler heading */}
             <View style={styles.titleWrap}>
-              <Text style={styles.screenTitle}>TÜM ETKİNLİKLER</Text>
+              <Text style={styles.screenTitle}>{t.explore.title}</Text>
             </View>
 
             {/* Search */}
@@ -294,7 +293,7 @@ export function ExploreScreen({ navigation, route }: Props) {
                   style={styles.searchInput}
                   value={search}
                   onChangeText={setSearch}
-                  placeholder="Tur veya etiket ara..."
+                  placeholder={t.explore.searchPh}
                   placeholderTextColor="#9CA3AF"
                   returnKeyType="search"
                 />
@@ -327,7 +326,7 @@ export function ExploreScreen({ navigation, route }: Props) {
                   style={[styles.dropdownBtnText, (selectedCategory !== 'all' || openDropdown === 'category') && styles.dropdownBtnTextActive]}
                   numberOfLines={1}
                 >
-                  {selectedCategory !== 'all' ? selectedCategory : 'Kategori'}
+                  {selectedCategory !== 'all' ? displayCategory(selectedCategory, lang) : t.explore.category}
                 </Text>
                 {selectedCategory !== 'all' ? (
                   <TouchableOpacity onPress={clearCategory} hitSlop={{ top: 8, bottom: 8, left: 6, right: 8 }}>
@@ -355,7 +354,7 @@ export function ExploreScreen({ navigation, route }: Props) {
                   style={[styles.dropdownBtnText, (selectedLocation || openDropdown === 'location') && styles.dropdownBtnTextActive]}
                   numberOfLines={1}
                 >
-                  {selectedLocation || 'Lokasyon'}
+                  {selectedLocation || t.explore.location}
                 </Text>
                 {selectedLocation ? (
                   <TouchableOpacity onPress={clearLocation} hitSlop={{ top: 8, bottom: 8, left: 6, right: 8 }}>
@@ -383,7 +382,7 @@ export function ExploreScreen({ navigation, route }: Props) {
                   style={[styles.dropdownBtnText, (selectedMonth !== null || openDropdown === 'month') && styles.dropdownBtnTextActive]}
                   numberOfLines={1}
                 >
-                  {selectedMonth !== null ? MONTHS[selectedMonth] : 'Ay'}
+                  {selectedMonth !== null ? t.explore.months[selectedMonth] : t.explore.month}
                 </Text>
                 {selectedMonth !== null ? (
                   <TouchableOpacity onPress={clearMonth} hitSlop={{ top: 8, bottom: 8, left: 6, right: 8 }}>
@@ -404,7 +403,7 @@ export function ExploreScreen({ navigation, route }: Props) {
               <View style={styles.dropdownPanel}>
                 <ScrollView style={styles.dropdownScroll} nestedScrollEnabled showsVerticalScrollIndicator>
                   {categories.length === 0 ? (
-                    <Text style={styles.dropdownEmpty}>Kategori bulunamadı</Text>
+                    <Text style={styles.dropdownEmpty}>{t.explore.noCategoryFound}</Text>
                   ) : (
                     categories.map((cat) => {
                       const isActive = selectedCategory === cat.name;
@@ -418,7 +417,7 @@ export function ExploreScreen({ navigation, route }: Props) {
                           }}
                         >
                           <Text style={[styles.dropdownItemText, isActive && styles.dropdownItemTextActive]}>
-                            {cat.name}
+                            {displayCategory(cat.name, lang)}
                           </Text>
                           {isActive && <Ionicons name="checkmark" size={16} color="#FF5A1F" />}
                         </TouchableOpacity>
@@ -433,7 +432,7 @@ export function ExploreScreen({ navigation, route }: Props) {
               <View style={styles.dropdownPanel}>
                 <ScrollView style={styles.dropdownScroll} nestedScrollEnabled showsVerticalScrollIndicator>
                   {allLocations.length === 0 ? (
-                    <Text style={styles.dropdownEmpty}>Lokasyon bulunamadı</Text>
+                    <Text style={styles.dropdownEmpty}>{t.explore.noLocationFound}</Text>
                   ) : (
                     allLocations.map((loc) => {
                       const isActive = selectedLocation === loc;
@@ -461,7 +460,7 @@ export function ExploreScreen({ navigation, route }: Props) {
             {openDropdown === 'month' && (
               <View style={styles.dropdownPanel}>
                 <ScrollView style={styles.dropdownScroll} nestedScrollEnabled showsVerticalScrollIndicator>
-                  {MONTHS.map((month, idx) => {
+                  {t.explore.months.map((month, idx) => {
                     const isActive = selectedMonth === idx;
                     return (
                       <TouchableOpacity

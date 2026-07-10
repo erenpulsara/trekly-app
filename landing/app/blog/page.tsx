@@ -3,14 +3,18 @@ import SiteFooter from '@/app/components/SiteFooter';
 import LandingNav from '../landing-nav';
 import Image from 'next/image';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { T } from '@/lib/i18n';
 
 export const revalidate = 60;
 
-function fmtDate(s: string) {
-  return new Date(s).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+function fmtDate(s: string, locale = 'tr-TR') {
+  return new Date(s).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export default async function BlogPage() {
+  const lang = cookies().get('lang')?.value === 'en' ? 'en' : 'tr';
+  const tb = T[lang].blog;
   const posts = await getBlogPosts();
 
   return (
@@ -40,10 +44,10 @@ export default async function BlogPage() {
         <div className="blog-header-pad" style={{ background: 'white', borderBottom: '1px solid #EAEAEA', padding: '56px 48px 48px' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
             <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#FF5533', margin: '0 0 12px' }}>
-              Trekly Blog
+              {tb.eyebrow}
             </p>
             <h1 style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(2rem, 5vw, 3.6rem)', fontWeight: 400, color: '#0D0D1A', margin: 0, lineHeight: 1.1 }}>
-              Doğadan Hikayeler
+              {tb.title}
             </h1>
           </div>
         </div>
@@ -51,8 +55,8 @@ export default async function BlogPage() {
         <div className="blog-list-pad" style={{ maxWidth: '1100px', margin: '0 auto', padding: '56px 48px 80px' }}>
           {posts.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '80px 0', color: '#9A9A9A' }}>
-              <p style={{ fontSize: '1.1rem', marginBottom: '8px' }}>Henüz blog yazısı yok.</p>
-              <p style={{ fontSize: '0.9rem' }}>Yakında burada güzel içerikler olacak.</p>
+              <p style={{ fontSize: '1.1rem', marginBottom: '8px' }}>{tb.empty}</p>
+              <p style={{ fontSize: '0.9rem' }}>{tb.emptySub}</p>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '28px' }}>
@@ -83,7 +87,7 @@ export default async function BlogPage() {
                     <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                       {post.published_at && (
                         <p style={{ fontSize: '0.7rem', color: '#B0A098', margin: '0 0 10px', fontWeight: 500, letterSpacing: '0.04em' }}>
-                          {fmtDate(post.published_at)}
+                          {fmtDate(post.published_at, tb.locale)}
                         </p>
                       )}
                       <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#1A1A1A', margin: '0 0 10px', lineHeight: 1.35 }}>
@@ -95,7 +99,7 @@ export default async function BlogPage() {
                         </p>
                       )}
                       <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#FF5533', display: 'flex', alignItems: 'center', gap: '4px', marginTop: 'auto' }}>
-                        Devamını Oku
+                        {tb.readMore}
                         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M2 6h8M6 2l4 4-4 4"/>
                         </svg>

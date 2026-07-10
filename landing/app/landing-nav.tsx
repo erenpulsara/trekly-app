@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { type Lang, getLangClient, setLangCookie } from '@/lib/i18n';
+import { T, type Lang, getLangClient, setLangCookie } from '@/lib/i18n';
 import { REWARDS_ENABLED } from '@/lib/features';
 import { useUserAuth } from './UserAuthContext';
 
@@ -25,6 +25,18 @@ export default function LandingNav({
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { user, isLoading, logout } = useUserAuth();
+  const tn = T[lang].nav;
+
+  // Standart üst nav linklerini sayfaları değiştirmeden href'e göre çevir;
+  // bilinmeyen bir href gelirse sayfanın verdiği etiketi kullan.
+  const NAV_LABELS: Record<string, string> = {
+    '/anasayfa': tn.home,
+    '/etkinlikler': tn.events,
+    '/blog': tn.blog,
+    '/hakkimizda': tn.about,
+    '/iletisim': tn.contact,
+  };
+  const navLabel = (link: NavLink) => NAV_LABELS[link.href] ?? link.label;
 
   useEffect(() => {
     setLangState(getLangClient());
@@ -109,7 +121,7 @@ export default function LandingNav({
                     transition: 'color 0.15s',
                   }}
                 >
-                  {link.label}
+                  {navLabel(link)}
                 </Link>
               ))}
             </div>
@@ -161,14 +173,14 @@ export default function LandingNav({
                         onClick={() => setUserMenuOpen(false)}
                         style={{ display: 'block', padding: '11px 16px', fontSize: '0.82rem', fontWeight: 600, color: '#3A3A3A', textDecoration: 'none' }}
                       >
-                        Profilim
+                        {tn.profile}
                       </Link>
                       <Link
                         href="/favorilerim"
                         onClick={() => setUserMenuOpen(false)}
                         style={{ display: 'block', padding: '11px 16px', fontSize: '0.82rem', fontWeight: 600, color: '#3A3A3A', textDecoration: 'none' }}
                       >
-                        Favorilerim
+                        {tn.favorites}
                       </Link>
                       {REWARDS_ENABLED && (
                         <Link
@@ -176,7 +188,7 @@ export default function LandingNav({
                           onClick={() => setUserMenuOpen(false)}
                           style={{ display: 'block', padding: '11px 16px', fontSize: '0.82rem', fontWeight: 600, color: '#3A3A3A', textDecoration: 'none' }}
                         >
-                          Liderlik Tablosu
+                          {tn.leaderboard}
                         </Link>
                       )}
                       <button
@@ -187,7 +199,7 @@ export default function LandingNav({
                           border: 'none', borderTop: '1px solid #F0F0F0', cursor: 'pointer', fontFamily: 'inherit',
                         }}
                       >
-                        Çıkış Yap
+                        {tn.logout}
                       </button>
                     </div>
                   )}
@@ -201,7 +213,7 @@ export default function LandingNav({
                     border: '1.5px solid rgba(255,85,51,0.3)',
                   }}
                 >
-                  Giriş Yap
+                  {tn.login}
                 </Link>
               )}
             </div>
@@ -265,7 +277,7 @@ export default function LandingNav({
               onClick={() => setMenuOpen(false)}
               style={{ color: link.active ? '#FF5533' : undefined }}
             >
-              {link.label}
+              {navLabel(link)}
             </Link>
           ))}
 
@@ -273,14 +285,14 @@ export default function LandingNav({
           {!isLoading && (user ? (
             <>
               <Link href="/profilim" className="ln-mobile-link" onClick={() => setMenuOpen(false)}>
-                Profilim
+                {tn.profile}
               </Link>
               <Link href="/favorilerim" className="ln-mobile-link" onClick={() => setMenuOpen(false)}>
-                Favorilerim
+                {tn.favorites}
               </Link>
               {REWARDS_ENABLED && (
                 <Link href="/liderlik" className="ln-mobile-link" onClick={() => setMenuOpen(false)}>
-                  Liderlik Tablosu
+                  {tn.leaderboard}
                 </Link>
               )}
               <button
@@ -291,7 +303,7 @@ export default function LandingNav({
                   cursor: 'pointer', fontFamily: 'inherit', color: '#DC2626', width: '100%',
                 }}
               >
-                Çıkış Yap
+                {tn.logout}
               </button>
             </>
           ) : (
@@ -301,7 +313,7 @@ export default function LandingNav({
               onClick={() => setMenuOpen(false)}
               style={{ color: '#FF5533', fontWeight: 700 }}
             >
-              Giriş Yap
+              {tn.login}
             </Link>
           ))}
         </div>

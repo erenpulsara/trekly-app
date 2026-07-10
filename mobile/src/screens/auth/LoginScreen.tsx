@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 type Props = {
   navigation: StackNavigationProp<AuthStackParamList, 'Login'>;
@@ -24,6 +25,7 @@ type Props = {
 
 export function LoginScreen({ navigation }: Props) {
   const { login } = useAuth();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -32,10 +34,10 @@ export function LoginScreen({ navigation }: Props) {
 
   function validate(): boolean {
     const newErrors: typeof errors = {};
-    if (!email.trim()) newErrors.email = 'E-posta gerekli';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Geçerli bir e-posta girin';
-    if (!password) newErrors.password = 'Şifre gerekli';
-    else if (password.length < 6) newErrors.password = 'Şifre en az 6 karakter olmalı';
+    if (!email.trim()) newErrors.email = t.auth.emailRequired;
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = t.auth.emailInvalid;
+    if (!password) newErrors.password = t.auth.passwordRequired;
+    else if (password.length < 6) newErrors.password = t.auth.passwordMin;
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -47,8 +49,8 @@ export function LoginScreen({ navigation }: Props) {
       await login(email.trim().toLowerCase(), password);
     } catch (err) {
       Alert.alert(
-        'Giriş Başarısız',
-        err instanceof Error ? err.message : 'E-posta veya şifre hatalı.'
+        t.auth.loginFailed,
+        err instanceof Error ? err.message : t.auth.loginFailedMsg
       );
     } finally {
       setIsLoading(false);
@@ -88,21 +90,21 @@ export function LoginScreen({ navigation }: Props) {
               />
               <Text style={styles.logoWord}>Trekly</Text>
             </View>
-            <Text style={styles.title}>Giriş Yap</Text>
-            <Text style={styles.subtitle}>Hesabınıza giriş yapın ve maceraya başlayın.</Text>
+            <Text style={styles.title}>{t.auth.loginTitle}</Text>
+            <Text style={styles.subtitle}>{t.auth.loginSubtitle}</Text>
           </View>
 
           {/* Form */}
           <View style={styles.form}>
             <View style={styles.field}>
-              <Text style={styles.label}>E-posta</Text>
+              <Text style={styles.label}>{t.auth.email}</Text>
               <View style={[styles.inputContainer, errors.email ? styles.inputError : null]}>
                 <Ionicons name="mail-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   value={email}
-                  onChangeText={(t) => { setEmail(t); setErrors((e) => ({ ...e, email: undefined })); }}
-                  placeholder="ornek@email.com"
+                  onChangeText={(v) => { setEmail(v); setErrors((e) => ({ ...e, email: undefined })); }}
+                  placeholder={t.auth.emailPh}
                   placeholderTextColor="#9CA3AF"
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -114,14 +116,14 @@ export function LoginScreen({ navigation }: Props) {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Şifre</Text>
+              <Text style={styles.label}>{t.auth.password}</Text>
               <View style={[styles.inputContainer, errors.password ? styles.inputError : null]}>
                 <Ionicons name="lock-closed-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   value={password}
-                  onChangeText={(t) => { setPassword(t); setErrors((e) => ({ ...e, password: undefined })); }}
-                  placeholder="••••••••"
+                  onChangeText={(v) => { setPassword(v); setErrors((e) => ({ ...e, password: undefined })); }}
+                  placeholder={t.auth.passwordPh}
                   placeholderTextColor="#9CA3AF"
                   secureTextEntry={!showPassword}
                   returnKeyType="done"
@@ -142,7 +144,7 @@ export function LoginScreen({ navigation }: Props) {
               style={styles.forgotPassword}
               onPress={() => navigation.navigate('ForgotPassword')}
             >
-              <Text style={styles.forgotPasswordText}>Şifremi Unuttum?</Text>
+              <Text style={styles.forgotPasswordText}>{t.auth.forgotPassword}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -152,18 +154,18 @@ export function LoginScreen({ navigation }: Props) {
               activeOpacity={0.85}
             >
               {isLoading ? (
-                <Text style={styles.submitButtonText}>Giriş yapılıyor...</Text>
+                <Text style={styles.submitButtonText}>{t.auth.loggingIn}</Text>
               ) : (
-                <Text style={styles.submitButtonText}>Giriş Yap</Text>
+                <Text style={styles.submitButtonText}>{t.auth.loginBtn}</Text>
               )}
             </TouchableOpacity>
           </View>
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Hesabın yok mu? </Text>
+            <Text style={styles.footerText}>{t.auth.noAccount} </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.footerLink}>Kayıt ol</Text>
+              <Text style={styles.footerLink}>{t.auth.signUp}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

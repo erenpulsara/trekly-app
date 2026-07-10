@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 const heroVideoSource = require('../../../assets/hero-video.mp4');
 const AGENCY_REGISTER_URL = 'https://acenta.treklyapp.com/register';
@@ -25,6 +26,7 @@ type Props = {
 
 export function WelcomeScreen({ navigation }: Props) {
   const { continueAsGuest } = useAuth();
+  const { t } = useLanguage();
 
   const player = useVideoPlayer(heroVideoSource, (p) => {
     p.loop = true;
@@ -63,12 +65,12 @@ export function WelcomeScreen({ navigation }: Props) {
           {/* Hero text */}
           <View style={styles.heroSection}>
             <Text style={styles.headline}>
-              Türkiye'nin{'\n'}
-              <Text style={styles.headlineAccent}>Doğa ve Su Sporları</Text>{'\n'}
-              Ekosistemi
+              {t.welcome.title1}{'\n'}
+              <Text style={styles.headlineAccent}>{t.welcome.title2}</Text>{'\n'}
+              {t.welcome.title3}
             </Text>
             <Text style={styles.subtext}>
-              Türkiye'nin en seçkin doğa ve su sporları turları, akredite profesyonel eğitmenlerle tek platformda.
+              {t.welcome.subtitle}
             </Text>
           </View>
 
@@ -79,7 +81,7 @@ export function WelcomeScreen({ navigation }: Props) {
               onPress={() => navigation.navigate('Login')}
               activeOpacity={0.85}
             >
-              <Text style={styles.loginButtonText}>Maceraya Ortak Ol</Text>
+              <Text style={styles.loginButtonText}>{t.welcome.joinAdventure}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -87,7 +89,7 @@ export function WelcomeScreen({ navigation }: Props) {
               onPress={() => Linking.openURL(AGENCY_REGISTER_URL)}
               activeOpacity={0.85}
             >
-              <Text style={styles.registerButtonText}>Ekosisteme Katıl</Text>
+              <Text style={styles.registerButtonText}>{t.welcome.joinEcosystem}</Text>
             </TouchableOpacity>
           </View>
 
@@ -96,22 +98,22 @@ export function WelcomeScreen({ navigation }: Props) {
             onPress={continueAsGuest}
             activeOpacity={0.7}
           >
-            <Text style={styles.guestButtonText}>Misafir olarak devam et</Text>
+            <Text style={styles.guestButtonText}>{t.welcome.continueGuest}</Text>
             <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.5)" />
           </TouchableOpacity>
 
           <Text style={styles.terms}>
-            Devam ederek{' '}
+            {t.welcome.termsPre}{' '}
             <Text
               style={styles.termsLink}
               onPress={() => Linking.openURL('https://treklyapp.com/terms')}
-            >Kullanım Koşulları</Text>
-            {' '}ve{' '}
+            >{t.welcome.terms}</Text>
+            {' '}{t.welcome.and}{' '}
             <Text
               style={styles.termsLink}
               onPress={() => Linking.openURL('https://treklyapp.com/privacy')}
-            >Gizlilik Politikası</Text>
-            'nı kabul etmiş olursunuz.
+            >{t.welcome.privacy}</Text>
+            {t.welcome.termsPost}
           </Text>
         </View>
       </SafeAreaView>

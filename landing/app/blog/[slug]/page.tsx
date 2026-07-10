@@ -1,17 +1,21 @@
 import { getBlogPost } from '@/lib/api';
 import SiteFooter from '@/app/components/SiteFooter';
 import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
 import LandingNav from '../../landing-nav';
 import Image from 'next/image';
 import Link from 'next/link';
+import { T } from '@/lib/i18n';
 
 export const revalidate = 60;
 
-function fmtDate(s: string) {
-  return new Date(s).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+function fmtDate(s: string, locale: string) {
+  return new Date(s).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const lang = cookies().get('lang')?.value === 'en' ? 'en' : 'tr';
+  const tb = T[lang].blog;
   const post = await getBlogPost(params.slug);
   if (!post) notFound();
 
@@ -40,12 +44,12 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M10 7H4M7 10L4 7l3-3"/>
             </svg>
-            Blog'a Dön
+            {tb.backToBlog}
           </Link>
 
           {post.published_at && (
             <p style={{ fontSize: '0.72rem', color: '#B0A098', margin: '0 0 16px', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              {fmtDate(post.published_at)}
+              {fmtDate(post.published_at, tb.locale)}
             </p>
           )}
 

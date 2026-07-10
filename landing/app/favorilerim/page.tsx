@@ -8,6 +8,8 @@ import LandingNav from '../landing-nav';
 import { useUserAuth } from '../UserAuthContext';
 import { getFavorites } from '@/lib/favorites-api';
 import { splitCategories } from '@/lib/category-utils';
+import { displayCategory } from '@/lib/category-i18n';
+import { getLangClient, type Lang } from '@/lib/i18n';
 import type { Tour } from '@/lib/types';
 
 const PH_GRADIENT = 'linear-gradient(135deg,#1a4d2e,#2d7a4f)';
@@ -16,6 +18,9 @@ export default function FavorilerimPage() {
   const { user, isLoading: authLoading } = useUserAuth();
   const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lang, setLang] = useState<Lang>('tr');
+
+  useEffect(() => { setLang(getLangClient()); }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -99,7 +104,7 @@ export default function FavorilerimPage() {
                           background: '#FFF4F1', color: '#FF5533', fontSize: '0.62rem', fontWeight: 700,
                           padding: '3px 9px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.04em',
                         }}>
-                          {cat}
+                          {displayCategory(cat, lang)}
                         </span>
                       ))}
                     </div>

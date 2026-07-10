@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import SiteFooter from '@/app/components/SiteFooter';
 import LandingNav from '../landing-nav';
 import { useUserAuth } from '../UserAuthContext';
 import { UserApiError } from '@/lib/user-api';
+import { T, type Lang, getLangClient } from '@/lib/i18n';
 
 function KayitForm() {
   const router = useRouter();
@@ -20,6 +21,9 @@ function KayitForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [lang, setLang] = useState<Lang>('tr');
+  useEffect(() => { setLang(getLangClient()); }, []);
+  const ta = T[lang].auth;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,8 +36,8 @@ function KayitForm() {
     } catch (err) {
       setError(
         err instanceof UserApiError
-          ? (err.status === 409 ? 'Bu e-posta ile zaten bir hesap var.' : err.message)
-          : 'Kayıt oluşturulamadı. Lütfen tekrar deneyin.',
+          ? (err.status === 409 ? ta.emailExists : err.message)
+          : ta.registerFailed,
       );
     } finally {
       setLoading(false);
@@ -44,25 +48,25 @@ function KayitForm() {
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div className="auth-name-row" style={{ display: 'flex', gap: '12px' }}>
         <div style={{ flex: 1 }}>
-          <label style={labelStyle}>Ad</label>
-          <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Adınız" style={inputStyle} />
+          <label style={labelStyle}>{ta.name}</label>
+          <input required value={name} onChange={(e) => setName(e.target.value)} placeholder={ta.namePh} style={inputStyle} />
         </div>
         <div style={{ flex: 1 }}>
-          <label style={labelStyle}>Soyad</label>
-          <input required value={surname} onChange={(e) => setSurname(e.target.value)} placeholder="Soyadınız" style={inputStyle} />
+          <label style={labelStyle}>{ta.surname}</label>
+          <input required value={surname} onChange={(e) => setSurname(e.target.value)} placeholder={ta.surnamePh} style={inputStyle} />
         </div>
       </div>
       <div>
-        <label style={labelStyle}>E-posta</label>
+        <label style={labelStyle}>{ta.email}</label>
         <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@mail.com" style={inputStyle} />
       </div>
       <div>
-        <label style={labelStyle}>Telefon <span style={{ fontWeight: 400, color: '#9CA3AF' }}>(isteğe bağlı)</span></label>
-        <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05XX XXX XX XX" style={inputStyle} />
+        <label style={labelStyle}>{ta.phone} <span style={{ fontWeight: 400, color: '#9CA3AF' }}>{ta.phoneOptional}</span></label>
+        <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={ta.phonePh} style={inputStyle} />
       </div>
       <div>
-        <label style={labelStyle}>Şifre</label>
-        <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="En az 6 karakter" style={inputStyle} />
+        <label style={labelStyle}>{ta.password}</label>
+        <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={ta.passwordMin} style={inputStyle} />
       </div>
       {error && (
         <p style={{ fontSize: '0.82rem', color: '#DC2626', background: '#FEF2F2', padding: '10px 14px', borderRadius: '10px', margin: 0 }}>
@@ -78,12 +82,12 @@ function KayitForm() {
           opacity: loading ? 0.7 : 1, letterSpacing: '0.01em', marginTop: '4px',
         }}
       >
-        {loading ? 'Hesap oluşturuluyor...' : 'Üye Ol'}
+        {loading ? ta.creatingAccount : ta.registerBtn}
       </button>
       <p style={{ fontSize: '0.85rem', color: '#6B7280', textAlign: 'center', margin: 0 }}>
-        Zaten hesabın var mı?{' '}
+        {ta.haveAccount}{' '}
         <Link href="/giris" style={{ color: '#FF5533', fontWeight: 700, textDecoration: 'none' }}>
-          Giriş Yap
+          {ta.loginLink}
         </Link>
       </p>
     </form>
@@ -91,6 +95,9 @@ function KayitForm() {
 }
 
 export default function KayitOlPage() {
+  const [lang, setLang] = useState<Lang>('tr');
+  useEffect(() => { setLang(getLangClient()); }, []);
+  const ta = T[lang].auth;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <LandingNav navLinks={[
@@ -111,13 +118,13 @@ export default function KayitOlPage() {
       <main className="auth-main" style={{ flex: 1, background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px' }}>
         <div className="auth-card" style={{ width: '100%', maxWidth: '440px', background: 'white', border: '1px solid #EAEAEA', borderRadius: '20px', padding: '40px 36px' }}>
           <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#FF5533', margin: '0 0 10px' }}>
-            Trekly Üyelik
+            {ta.membership}
           </p>
           <h1 style={{
             fontFamily: '"Cormorant Garamond", serif', fontSize: '1.9rem', fontWeight: 400,
             color: '#0D0D1A', margin: '0 0 28px',
           }}>
-            Üye Ol
+            {ta.registerTitle}
           </h1>
           <Suspense>
             <KayitForm />

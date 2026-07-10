@@ -14,18 +14,21 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { MainStackParamList } from '../../navigation/AppNavigator';
 import { favoritesService } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 import { Tour } from '../../types';
 import { DifficultyBadge } from '../../components/common/DifficultyBadge';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { formatShortDate } from '../../utils/formatting';
 import { splitCategories } from '../../utils/category';
+import { displayCategory, localeUpper } from '../../i18n/categories';
 
 type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'Favorites'>;
 };
 
 export function FavoritesScreen({ navigation }: Props) {
+  const { t, lang } = useLanguage();
   const [tours, setTours] = useState<Tour[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -40,7 +43,7 @@ export function FavoritesScreen({ navigation }: Props) {
       const data = await favoritesService.getAll();
       setTours(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Favoriler yüklenemedi.');
+      setError(err instanceof Error ? err.message : t.favorites.loadError);
     } finally {
       if (showSpinner) setIsLoading(false);
     }
@@ -78,7 +81,7 @@ export function FavoritesScreen({ navigation }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#1A1A1A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Favorilerim</Text>
+        <Text style={styles.headerTitle}>{t.favorites.title}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -89,9 +92,9 @@ export function FavoritesScreen({ navigation }: Props) {
       ) : tours.length === 0 ? (
         <View style={styles.emptyState}>
           <Ionicons name="heart-outline" size={56} color="#E5E5E5" />
-          <Text style={styles.emptyTitle}>Henüz favori turunuz yok</Text>
+          <Text style={styles.emptyTitle}>{t.favorites.emptyTitle}</Text>
           <Text style={styles.emptySubtitle}>
-            Beğendiğiniz turları kalp ikonuyla favorilerinize ekleyin.
+            {t.favorites.emptySub}
           </Text>
         </View>
       ) : (
@@ -132,7 +135,7 @@ export function FavoritesScreen({ navigation }: Props) {
                     <View style={styles.catRow}>
                       {cats.map((cat) => (
                         <View key={cat} style={styles.catBadge}>
-                          <Text style={styles.catText}>{cat}</Text>
+                          <Text style={styles.catText}>{localeUpper(displayCategory(cat, lang), lang)}</Text>
                         </View>
                       ))}
                     </View>
@@ -144,7 +147,7 @@ export function FavoritesScreen({ navigation }: Props) {
                     {dateStr && (
                       <>
                         <Ionicons name="calendar-outline" size={13} color="#6B7280" style={{ marginLeft: 8 }} />
-                        <Text style={styles.cardMetaText}>{formatShortDate(dateStr)}</Text>
+                        <Text style={styles.cardMetaText}>{formatShortDate(dateStr, lang)}</Text>
                       </>
                     )}
                   </View>

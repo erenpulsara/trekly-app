@@ -17,6 +17,7 @@ import { RouteProp } from '@react-navigation/native';
 import { MainStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../context/AuthContext';
 import { bookingsService, toursService } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 
 type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'BookingForm'>;
@@ -26,6 +27,7 @@ type Props = {
 export function BookingFormScreen({ navigation, route }: Props) {
   const { tourId, tourDateId } = route.params;
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const [name, setName] = useState(user?.name ?? '');
   const [surname, setSurname] = useState(user?.surname ?? '');
@@ -78,7 +80,7 @@ export function BookingFormScreen({ navigation, route }: Props) {
         });
       }
     } catch (err) {
-      Alert.alert('Hata', err instanceof Error ? err.message : 'Rezervasyon oluşturulamadı.');
+      Alert.alert(t.common.error, err instanceof Error ? err.message : t.booking.failed);
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +97,7 @@ export function BookingFormScreen({ navigation, route }: Props) {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={22} color="#1A1A1A" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Rezervasyon</Text>
+          <Text style={styles.headerTitle}>{t.booking.title}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -104,33 +106,33 @@ export function BookingFormScreen({ navigation, route }: Props) {
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.sectionTitle}>Kişisel Bilgiler</Text>
+          <Text style={styles.sectionTitle}>{t.booking.personalInfo}</Text>
 
           <View style={styles.row}>
             <View style={styles.halfField}>
-              <Text style={styles.label}>Ad *</Text>
+              <Text style={styles.label}>{t.booking.name} *</Text>
               <TextInput
                 style={styles.input}
                 value={name}
                 onChangeText={setName}
-                placeholder="Adınız"
+                placeholder={t.booking.namePh}
                 placeholderTextColor="#9CA3AF"
               />
             </View>
             <View style={styles.halfField}>
-              <Text style={styles.label}>Soyad *</Text>
+              <Text style={styles.label}>{t.booking.surname} *</Text>
               <TextInput
                 style={styles.input}
                 value={surname}
                 onChangeText={setSurname}
-                placeholder="Soyadınız"
+                placeholder={t.booking.surnamePh}
                 placeholderTextColor="#9CA3AF"
               />
             </View>
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>E-posta *</Text>
+            <Text style={styles.label}>{t.booking.email} *</Text>
             <TextInput
               style={styles.input}
               value={email}
@@ -143,7 +145,7 @@ export function BookingFormScreen({ navigation, route }: Props) {
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Telefon *</Text>
+            <Text style={styles.label}>{t.booking.phone} *</Text>
             <TextInput
               style={styles.input}
               value={phone}
@@ -155,7 +157,7 @@ export function BookingFormScreen({ navigation, route }: Props) {
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Kişi Sayısı</Text>
+            <Text style={styles.label}>{t.booking.participants}</Text>
             <View style={styles.stepper}>
               <TouchableOpacity
                 style={styles.stepperBtn}
@@ -174,12 +176,12 @@ export function BookingFormScreen({ navigation, route }: Props) {
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Notlar (isteğe bağlı)</Text>
+            <Text style={styles.label}>{t.booking.notes}</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
               value={notes}
               onChangeText={setNotes}
-              placeholder="Özel istekleriniz veya notlarınız..."
+              placeholder={t.booking.notesPh}
               placeholderTextColor="#9CA3AF"
               multiline
               numberOfLines={4}
@@ -197,7 +199,7 @@ export function BookingFormScreen({ navigation, route }: Props) {
             {isLoading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.submitBtnText}>Rezervasyonu Tamamla</Text>
+              <Text style={styles.submitBtnText}>{t.booking.submit}</Text>
             )}
           </TouchableOpacity>
         </View>

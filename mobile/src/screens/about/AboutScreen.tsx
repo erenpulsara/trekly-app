@@ -12,30 +12,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { MainStackParamList } from '../../navigation/AppNavigator';
 import { TreklyLogo } from '../../components/common/TreklyLogo';
+import { useLanguage } from '../../context/LanguageContext';
 
 type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'About'>;
 };
 
-const PILLARS: Array<{ icon: React.ComponentProps<typeof Ionicons>['name']; title: string; body: string }> = [
-  {
-    icon: 'leaf-outline',
-    title: 'Nitelikli Deneyimler',
-    body: 'Sadece en popüler olanları değil, en nitelikli ve gerçek doğa deneyimlerini bir araya getiriyoruz.',
-  },
-  {
-    icon: 'shield-checkmark-outline',
-    title: 'Güvenilir Acentalar',
-    body: 'Platformdaki acentaları TURSAB kayıtlarıyla doğruluyor, güvenli rezervasyon imkanı sunuyoruz.',
-  },
-  {
-    icon: 'people-outline',
-    title: 'Gerçek Topluluk',
-    body: 'Doğa tutkunlarını nitelikli outdoor deneyimleriyle buluşturan yeni nesil bir dijital platformuz.',
-  },
+const PILLAR_ICONS: Array<React.ComponentProps<typeof Ionicons>['name']> = [
+  'leaf-outline',
+  'shield-checkmark-outline',
+  'people-outline',
 ];
 
 export function AboutScreen({ navigation }: Props) {
+  const { t } = useLanguage();
+  const pillars = t.about.pillars.map((p, i) => ({ ...p, icon: PILLAR_ICONS[i] }));
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       {/* Header */}
@@ -43,7 +34,7 @@ export function AboutScreen({ navigation }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#1A1A1A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Hakkımızda</Text>
+        <Text style={styles.headerTitle}>{t.about.title}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -52,21 +43,19 @@ export function AboutScreen({ navigation }: Props) {
           <TreklyLogo size="medium" />
         </View>
 
-        <Text style={styles.title}>Doğayı Keşfetmenin En Düzenli Yolu</Text>
+        <Text style={styles.title}>{t.about.heroTitle}</Text>
 
         <Text style={styles.body}>
-          Trekly; doğa tutkunlarını, Türkiye'nin nitelikli outdoor deneyimleriyle buluşturan
-          yeni nesil bir dijital platformdur.
+          {t.about.body1}
         </Text>
 
         <Text style={styles.body}>
-          Amacımız; yürüyüşten kampçılığa, bisiklet rotalarından su sporlarına kadar tüm doğa
-          faaliyetlerini, herkes için düzenli ve kolayca filtrelenebilir tek bir vitrinde toplamak.
+          {t.about.body2}
         </Text>
 
         {/* Pillars */}
         <View style={styles.pillars}>
-          {PILLARS.map((p) => (
+          {pillars.map((p) => (
             <View key={p.title} style={styles.pillarCard}>
               <View style={styles.pillarIcon}>
                 <Ionicons name={p.icon} size={22} color="#FF5A1F" />
@@ -79,8 +68,8 @@ export function AboutScreen({ navigation }: Props) {
 
         {/* Contact */}
         <View style={styles.contactCard}>
-          <Text style={styles.contactTitle}>Bize Ulaşın</Text>
-          <Text style={styles.contactSub}>Soru ve görüşleriniz için:</Text>
+          <Text style={styles.contactTitle}>{t.about.contactTitle}</Text>
+          <Text style={styles.contactSub}>{t.about.contactSub}</Text>
           <TouchableOpacity
             style={styles.contactBtn}
             onPress={() => Linking.openURL('mailto:hello@treklyapp.com')}

@@ -8,12 +8,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AppNavigator';
 import { authService } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 
 type Props = { navigation: StackNavigationProp<AuthStackParamList, 'ForgotPassword'> };
 
 type Step = 'email' | 'reset';
 
 export function ForgotPasswordScreen({ navigation }: Props) {
+  const { t } = useLanguage();
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -25,8 +27,8 @@ export function ForgotPasswordScreen({ navigation }: Props) {
 
   async function handleSendCode() {
     const newErrors: Record<string, string> = {};
-    if (!email.trim()) newErrors.email = 'E-posta gerekli';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Geçerli bir e-posta girin';
+    if (!email.trim()) newErrors.email = t.auth.emailRequired;
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = t.auth.emailInvalid;
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
@@ -35,7 +37,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
       await authService.forgotPassword(email.trim().toLowerCase());
       setStep('reset');
     } catch {
-      Alert.alert('Hata', 'Bir sorun oluştu, lütfen tekrar deneyin.');
+      Alert.alert(t.common.error, t.auth.somethingWrong);
     } finally {
       setIsLoading(false);
     }
@@ -43,9 +45,9 @@ export function ForgotPasswordScreen({ navigation }: Props) {
 
   async function handleResetPassword() {
     const newErrors: Record<string, string> = {};
-    if (!code.trim() || code.length !== 6) newErrors.code = '6 haneli kodu girin';
-    if (!newPassword || newPassword.length < 6) newErrors.newPassword = 'Şifre en az 6 karakter olmalı';
-    if (newPassword !== confirmPassword) newErrors.confirmPassword = 'Şifreler eşleşmiyor';
+    if (!code.trim() || code.length !== 6) newErrors.code = t.auth.codeError;
+    if (!newPassword || newPassword.length < 6) newErrors.newPassword = t.auth.passwordMin;
+    if (newPassword !== confirmPassword) newErrors.confirmPassword = t.auth.passwordsNoMatch;
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
@@ -53,12 +55,12 @@ export function ForgotPasswordScreen({ navigation }: Props) {
     try {
       await authService.resetPassword(email.trim().toLowerCase(), code.trim(), newPassword);
       Alert.alert(
-        'Başarılı',
-        'Şifreniz başarıyla güncellendi. Giriş yapabilirsiniz.',
-        [{ text: 'Giriş Yap', onPress: () => navigation.navigate('Login') }],
+        t.auth.resetSuccess,
+        t.auth.resetSuccessMsg,
+        [{ text: t.auth.loginBtn, onPress: () => navigation.navigate('Login') }],
       );
     } catch (err) {
-      Alert.alert('Hata', err instanceof Error ? err.message : 'Geçersiz veya süresi dolmuş kod.');
+      Alert.alert(t.common.error, err instanceof Error ? err.message : t.auth.resetError);
     } finally {
       setIsLoading(false);
     }
@@ -79,25 +81,25 @@ export function ForgotPasswordScreen({ navigation }: Props) {
             <View style={styles.titleIcon}>
               <Ionicons name="lock-open-outline" size={24} color="#FF5A1F" />
             </View>
-            <Text style={styles.title}>Şifremi Unuttum</Text>
+            <Text style={styles.title}>{t.auth.forgotTitle}</Text>
             <Text style={styles.subtitle}>
               {step === 'email'
-                ? 'E-posta adresinize doğrulama kodu göndereceğiz.'
-                : `${email} adresine gönderilen kodu ve yeni şifrenizi girin.`}
+                ? t.auth.forgotSubEmail
+                : `${t.auth.forgotSubResetA}${email}${t.auth.forgotSubResetB}`}
             </Text>
           </View>
 
           {step === 'email' ? (
             <View style={styles.form}>
               <View style={styles.field}>
-                <Text style={styles.label}>E-posta</Text>
+                <Text style={styles.label}>{t.auth.email}</Text>
                 <View style={[styles.inputContainer, errors.email ? styles.inputError : null]}>
                   <Ionicons name="mail-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
                     value={email}
-                    onChangeText={(t) => { setEmail(t); setErrors((e) => ({ ...e, email: undefined as any })); }}
-                    placeholder="ornek@email.com"
+                    onChangeText={(v) => { setEmail(v); setErrors((e) => ({ ...e, email: undefined as any })); }}
+                    placeholder={t.auth.emailPh}
                     placeholderTextColor="#9CA3AF"
                     keyboardType="email-address"
                     autoCapitalize="none"
@@ -115,19 +117,19 @@ export function ForgotPasswordScreen({ navigation }: Props) {
                 disabled={isLoading}
                 activeOpacity={0.85}
               >
-                <Text style={styles.submitButtonText}>{isLoading ? 'Gönderiliyor...' : 'Kod Gönder'}</Text>
+                <Text style={styles.submitButtonText}>{isLoading ? t.auth.sending : t.auth.sendCode}</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={styles.form}>
               <View style={styles.field}>
-                <Text style={styles.label}>Doğrulama Kodu</Text>
+                <Text style={styles.label}>{t.auth.code}</Text>
                 <View style={[styles.inputContainer, errors.code ? styles.inputError : null]}>
                   <Ionicons name="key-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
                     value={code}
-                    onChangeText={(t) => { setCode(t); setErrors((e) => ({ ...e, code: undefined as any })); }}
+                    onChangeText={(v) => { setCode(v); setErrors((e) => ({ ...e, code: undefined as any })); }}
                     placeholder="000000"
                     placeholderTextColor="#9CA3AF"
                     keyboardType="number-pad"
@@ -139,13 +141,13 @@ export function ForgotPasswordScreen({ navigation }: Props) {
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Yeni Şifre</Text>
+                <Text style={styles.label}>{t.auth.newPassword}</Text>
                 <View style={[styles.inputContainer, errors.newPassword ? styles.inputError : null]}>
                   <Ionicons name="lock-closed-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
                     value={newPassword}
-                    onChangeText={(t) => { setNewPassword(t); setErrors((e) => ({ ...e, newPassword: undefined as any })); }}
+                    onChangeText={(v) => { setNewPassword(v); setErrors((e) => ({ ...e, newPassword: undefined as any })); }}
                     placeholder="••••••••"
                     placeholderTextColor="#9CA3AF"
                     secureTextEntry={!showPassword}
@@ -159,13 +161,13 @@ export function ForgotPasswordScreen({ navigation }: Props) {
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Şifre Tekrar</Text>
+                <Text style={styles.label}>{t.auth.confirmPassword}</Text>
                 <View style={[styles.inputContainer, errors.confirmPassword ? styles.inputError : null]}>
                   <Ionicons name="lock-closed-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
                     value={confirmPassword}
-                    onChangeText={(t) => { setConfirmPassword(t); setErrors((e) => ({ ...e, confirmPassword: undefined as any })); }}
+                    onChangeText={(v) => { setConfirmPassword(v); setErrors((e) => ({ ...e, confirmPassword: undefined as any })); }}
                     placeholder="••••••••"
                     placeholderTextColor="#9CA3AF"
                     secureTextEntry={!showPassword}
@@ -182,7 +184,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
                 disabled={isLoading}
                 activeOpacity={0.85}
               >
-                <Text style={styles.submitButtonText}>{isLoading ? 'Güncelleniyor...' : 'Şifremi Güncelle'}</Text>
+                <Text style={styles.submitButtonText}>{isLoading ? t.auth.updating : t.auth.updatePasswordBtn}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={handleSendCode} style={styles.resendRow}>

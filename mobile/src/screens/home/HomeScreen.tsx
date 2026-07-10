@@ -26,6 +26,8 @@ import { formatShortDate, formatPrice } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
 import { splitCategories, sortByStartDate } from '../../utils/category';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { displayCategory, localeUpper } from '../../i18n/categories';
 import { MainStackParamList } from '../../navigation/AppNavigator';
 import { BottomTabParamList } from '../../navigation/BottomTabNavigator';
 
@@ -76,6 +78,7 @@ const HERO_INTERVAL = 5000;
 const HERO_FADE_MS = 800;
 
 function HeroCarousel() {
+  const { t } = useLanguage();
   const [current, setCurrent] = useState(0);
   const [prev, setPrev] = useState<number | null>(null);
   const fade = useRef(new Animated.Value(1)).current;
@@ -122,7 +125,7 @@ function HeroCarousel() {
       <View style={[StyleSheet.absoluteFill, styles.heroOverlay]} />
 
       <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit>
-        Sıradaki Maceranı Keşfet
+        {t.home.heroTitle}
       </Text>
 
       {/* Dot nav */}
@@ -141,6 +144,7 @@ function HeroCarousel() {
 // Web-style upcoming event card: photo + category badges, title,
 // location / date range / price rows, "Detayları Gör" button.
 function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
+  const { t, lang } = useLanguage();
   const startStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
   const endStr = tour.end_date ?? null;
   const cats = splitCategories(tour.category);
@@ -156,7 +160,7 @@ function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }
           <View style={styles.upCardBadges}>
             {cats.map((cat) => (
               <View key={cat} style={styles.upCardCatBadge}>
-                <Text style={styles.upCardCatText}>{cat}</Text>
+                <Text style={styles.upCardCatText}>{localeUpper(displayCategory(cat, lang), lang)}</Text>
               </View>
             ))}
           </View>
@@ -173,7 +177,7 @@ function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }
         <View style={styles.upCardInfoRow}>
           <Ionicons name="location-outline" size={14} color="#9CA3AF" />
           <View style={{ flex: 1 }}>
-            <Text style={styles.upCardInfoLabel}>LOKASYON</Text>
+            <Text style={styles.upCardInfoLabel}>{t.home.locationLabel}</Text>
             <Text style={styles.upCardInfoValue} numberOfLines={1}>{tour.location_name}</Text>
           </View>
         </View>
@@ -182,10 +186,10 @@ function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }
           <View style={styles.upCardInfoRow}>
             <Ionicons name="calendar-outline" size={14} color="#9CA3AF" />
             <View style={{ flex: 1 }}>
-              <Text style={styles.upCardInfoLabel}>TARİH</Text>
+              <Text style={styles.upCardInfoLabel}>{t.home.dateLabel}</Text>
               <Text style={styles.upCardInfoValue}>
-                {formatShortDate(startStr)}
-                {endStr ? ` – ${formatShortDate(endStr)}` : ''}
+                {formatShortDate(startStr, lang)}
+                {endStr ? ` – ${formatShortDate(endStr, lang)}` : ''}
               </Text>
             </View>
           </View>
@@ -195,7 +199,7 @@ function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }
           <View style={styles.upCardInfoRow}>
             <Ionicons name="card-outline" size={14} color="#9CA3AF" />
             <View style={{ flex: 1 }}>
-              <Text style={styles.upCardInfoLabel}>ÜCRET</Text>
+              <Text style={styles.upCardInfoLabel}>{t.home.priceLabel}</Text>
               <Text style={[styles.upCardInfoValue, { color: '#FF5A1F' }]}>
                 {formatPrice(Number(tour.price), tour.price_currency)}
               </Text>
@@ -207,7 +211,7 @@ function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }
           <View style={styles.upCardInfoRow}>
             <Ionicons name="star-outline" size={14} color="#9CA3AF" />
             <View style={{ flex: 1 }}>
-              <Text style={styles.upCardInfoLabel}>KAZANILACAK XP</Text>
+              <Text style={styles.upCardInfoLabel}>{t.home.earnXP}</Text>
               <Text style={[styles.upCardInfoValue, { color: '#FF5A1F' }]}>
                 {tour.points} XP
               </Text>
@@ -218,7 +222,7 @@ function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }
         <View style={styles.upCardDivider} />
         <View style={styles.upCardFooter}>
           <View style={styles.upCardDetailBtn}>
-            <Text style={styles.upCardDetailText}>Detayları Gör</Text>
+            <Text style={styles.upCardDetailText}>{t.home.details}</Text>
             <Ionicons name="arrow-forward" size={13} color="#FF5A1F" />
           </View>
         </View>
@@ -229,6 +233,7 @@ function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }
 
 export function HomeScreen({ navigation }: Props) {
   const { user } = useAuth();
+  const { t, lang } = useLanguage();
   const [tours, setTours] = useState<Tour[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -246,7 +251,7 @@ export function HomeScreen({ navigation }: Props) {
       setTours(sortByStartDate(toursData ?? []));
       setCategories(categoriesData.filter((c) => c?.name));
     } catch {
-      setError('Turlar yüklenirken hata oluştu.');
+      setError(t.home.loadError);
     }
   }, []);
 
@@ -291,7 +296,7 @@ export function HomeScreen({ navigation }: Props) {
         {/* Greeting */}
         <View style={styles.greeting}>
           <Text style={styles.greetingText}>
-            Merhaba, {user?.name ?? 'Kaşif'}
+            {t.home.greeting}, {user?.name ?? t.home.explorer}
           </Text>
         </View>
 
@@ -304,6 +309,7 @@ export function HomeScreen({ navigation }: Props) {
             value={search}
             onChangeText={setSearch}
             onSubmit={() => navigation.navigate('Explore')}
+            placeholder={t.home.searchPh}
           />
         </View>
 
@@ -334,8 +340,13 @@ export function HomeScreen({ navigation }: Props) {
                         resizeMode="cover"
                       />
                       <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.35)' }]} />
-                      <Text style={styles.categoryCardLabel} numberOfLines={2}>
-                        {cat.name}
+                      <Text
+                        style={styles.categoryCardLabel}
+                        numberOfLines={2}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.75}
+                      >
+                        {localeUpper(displayCategory(cat.name, lang), lang)}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -346,15 +357,15 @@ export function HomeScreen({ navigation }: Props) {
             {tours.length === 0 ? (
               <View style={styles.emptyState}>
                 <Ionicons name="compass-outline" size={56} color="#E5E5E5" />
-                <Text style={styles.emptyTitle}>Henüz tur yok</Text>
-                <Text style={styles.emptySubtitle}>İçerik yakında eklenecek.</Text>
+                <Text style={styles.emptyTitle}>{t.home.emptyTitle}</Text>
+                <Text style={styles.emptySubtitle}>{t.home.emptySub}</Text>
               </View>
             ) : (
               <>
                 {/* Yaklaşan Etkinlikler — centered uppercase, soonest first */}
                 <View style={styles.section}>
                   <View style={styles.sectionTitleWrap}>
-                    <Text style={styles.sectionTitle}>YAKLAŞAN ETKİNLİKLER</Text>
+                    <Text style={styles.sectionTitle}>{t.home.upcoming}</Text>
                   </View>
 
                   <View style={styles.upList}>
@@ -373,7 +384,7 @@ export function HomeScreen({ navigation }: Props) {
                       activeOpacity={0.85}
                       onPress={() => navigation.navigate('Explore')}
                     >
-                      <Text style={styles.allBtnText}>Tüm Etkinlikleri Gör</Text>
+                      <Text style={styles.allBtnText}>{t.home.seeAll}</Text>
                       <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
                     </TouchableOpacity>
                   )}
@@ -384,7 +395,7 @@ export function HomeScreen({ navigation }: Props) {
                   <View style={styles.xpCard}>
                     <View style={styles.xpCardHeader}>
                       <Ionicons name="trophy-outline" size={20} color="#FF5A1F" />
-                      <Text style={styles.xpCardTitle}>Puanlarım</Text>
+                      <Text style={styles.xpCardTitle}>{t.home.myPoints}</Text>
                       <Text style={styles.xpValue}>{user.total_points} XP</Text>
                     </View>
                     <View style={styles.xpBarBg}>
@@ -395,7 +406,7 @@ export function HomeScreen({ navigation }: Props) {
                         ]}
                       />
                     </View>
-                    <Text style={styles.xpSubtext}>Bir sonraki seviyeye ulaşmak için etkinliklere katılın!</Text>
+                    <Text style={styles.xpSubtext}>{t.home.xpHint}</Text>
                   </View>
                 )}
               </>
@@ -525,10 +536,10 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.3,
     paddingHorizontal: 8,
     paddingBottom: 7,
-    lineHeight: 13,
+    lineHeight: 14,
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,

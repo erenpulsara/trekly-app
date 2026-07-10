@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { CategoryItem } from '@/lib/api';
+import { getLangClient, type Lang, T } from '@/lib/i18n';
+import { displayCategory, monthNames } from '@/lib/category-i18n';
 
-const MONTHS = [
+// Filtre key'i her zaman Türkçe kalır (URL & backend uyumu); yalnızca ETİKET çevrilir.
+const MONTHS_TR = [
   'Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
   'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık',
 ];
@@ -17,17 +20,23 @@ interface Props {
   dynamicCategories: CategoryItem[];
   locations: string[];
   basePath?: string;
+  lang?: Lang;
 }
 
 export default function TurlarSidebar({
   activeCategory, activeLocation, activeMonth, activeSearch,
-  dynamicCategories, locations, basePath = '/etkinlikler',
+  dynamicCategories, locations, basePath = '/etkinlikler', lang: langProp,
 }: Props) {
   const router = useRouter();
   const params = useSearchParams();
   const [searchInput, setSearchInput] = useState(activeSearch);
+  const [lang, setLang] = useState<Lang>(langProp ?? 'tr');
 
   useEffect(() => { setSearchInput(activeSearch); }, [activeSearch]);
+  useEffect(() => { if (!langProp) setLang(getLangClient()); }, [langProp]);
+
+  const tt = T[lang].tours;
+  const monthLabels = monthNames(lang);
 
   function navigateTo(updates: { category?: string; location?: string; month?: string; search?: string }) {
     const q = new URLSearchParams();
@@ -50,10 +59,9 @@ export default function TurlarSidebar({
   }
 
   const BLOCKED = new Set(['kano', 'rafting', 'yamaç paraşütü']);
-  const capitalize = (s: string) => s.charAt(0).toLocaleUpperCase('tr') + s.slice(1);
   const allCats  = dynamicCategories
     .filter(c => !BLOCKED.has(c.name.toLowerCase()))
-    .map(c => ({ key: c.name, label: capitalize(c.name) }));
+    .map(c => ({ key: c.name, label: displayCategory(c.name, lang) }));
 
   return (
     <aside className="turlar-sidebar" style={{ width: '230px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -64,7 +72,7 @@ export default function TurlarSidebar({
           type="text"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Tur veya etiket ara..."
+          placeholder={tt.searchPlaceholder}
           style={{
             width: '100%', padding: '10px 38px 10px 14px',
             borderRadius: '12px', border: '1.5px solid #EAEAEA',
@@ -91,7 +99,7 @@ export default function TurlarSidebar({
       </form>
 
       {/* Kategori */}
-      <FilterCard label="Kategori">
+      <FilterCard label={tt.searchCategory}>
         {allCats.map(({ key, label }) => {
           const isActive = activeCategory === key;
           return (
@@ -107,7 +115,7 @@ export default function TurlarSidebar({
 
       {/* Lokasyon */}
       {locations.length > 0 && (
-        <FilterCard label="Lokasyon">
+        <FilterCard label={tt.searchLocation}>
           {locations.map(loc => {
             const isActive = activeLocation === loc;
             return (
@@ -123,14 +131,14 @@ export default function TurlarSidebar({
       )}
 
       {/* Tarih */}
-      <FilterCard label="Tarih">
-        {MONTHS.map(month => {
-          const key = month.toLowerCase();
+      <FilterCard label={tt.searchDate}>
+        {MONTHS_TR.map((monthTr, i) => {
+          const key = monthTr.toLowerCase();
           const isActive = activeMonth === key;
           return (
             <FilterRow
               key={key}
-              label={month}
+              label={monthLabels[i]}
               isActive={isActive}
               onClick={() => navigateTo({ month: isActive ? '' : key })}
             />

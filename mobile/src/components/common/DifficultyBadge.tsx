@@ -1,31 +1,32 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { Difficulty } from '../../types';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface DifficultyBadgeProps {
   difficulty: Difficulty;
   style?: ViewStyle;
 }
 
-const DIFFICULTY_CONFIG: Record<
-  Difficulty,
-  { label: string; bg: string; text: string }
-> = {
-  easy: { label: 'Kolay', bg: '#22C55E', text: '#FFFFFF' },
-  easy_medium: { label: 'Kolay-Orta', bg: '#84CC16', text: '#FFFFFF' },
-  medium: { label: 'Orta', bg: '#F59E0B', text: '#FFFFFF' },
-  medium_hard: { label: 'Orta-Zor', bg: '#F97316', text: '#FFFFFF' },
-  hard: { label: 'Zor', bg: '#FF5A1F', text: '#FFFFFF' },
-  very_hard: { label: 'Çok Zor', bg: '#DC2626', text: '#FFFFFF' },
-  extreme: { label: 'Ekstrem', bg: '#B91C1C', text: '#FFFFFF' },
+// Yalnızca renkler burada; etiket dile göre t.tourDetail.diff'ten gelir.
+const DIFFICULTY_COLOR: Record<Difficulty, { bg: string; text: string }> = {
+  easy: { bg: '#22C55E', text: '#FFFFFF' },
+  easy_medium: { bg: '#84CC16', text: '#FFFFFF' },
+  medium: { bg: '#F59E0B', text: '#FFFFFF' },
+  medium_hard: { bg: '#F97316', text: '#FFFFFF' },
+  hard: { bg: '#FF5A1F', text: '#FFFFFF' },
+  very_hard: { bg: '#DC2626', text: '#FFFFFF' },
+  extreme: { bg: '#B91C1C', text: '#FFFFFF' },
 };
 
 export function DifficultyBadge({ difficulty, style }: DifficultyBadgeProps) {
-  const config = DIFFICULTY_CONFIG[difficulty] ?? DIFFICULTY_CONFIG.easy;
+  const { t } = useLanguage();
+  const color = DIFFICULTY_COLOR[difficulty] ?? DIFFICULTY_COLOR.easy;
+  const label = t.tourDetail.diff[difficulty] ?? t.tourDetail.diff.easy;
 
   return (
-    <View style={[styles.badge, { backgroundColor: config.bg }, style]}>
-      <Text style={[styles.text, { color: config.text }]}>{config.label}</Text>
+    <View style={[styles.badge, { backgroundColor: color.bg }, style]}>
+      <Text style={[styles.text, { color: color.text }]}>{label}</Text>
     </View>
   );
 }

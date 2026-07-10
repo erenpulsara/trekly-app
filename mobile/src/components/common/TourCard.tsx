@@ -13,6 +13,7 @@ import { Tour } from '../../types';
 import { DifficultyBadge } from './DifficultyBadge';
 import { formatShortDate, formatPoints } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
+import { useLanguage } from '../../context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
@@ -26,6 +27,7 @@ interface TourCardProps {
 }
 
 export function TourCard({ tour, onPress, variant = 'full', style }: TourCardProps) {
+  const { lang } = useLanguage();
   const dateStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
 
   if (variant === 'compact') {
@@ -75,7 +77,7 @@ export function TourCard({ tour, onPress, variant = 'full', style }: TourCardPro
         {dateStr && (
           <View style={styles.dateRow}>
             <Ionicons name="calendar-outline" size={13} color="#6B7280" />
-            <Text style={styles.dateText}>{formatShortDate(dateStr)}</Text>
+            <Text style={styles.dateText}>{formatShortDate(dateStr, lang)}</Text>
             {REWARDS_ENABLED && <Text style={styles.pointsBadge}>{formatPoints(tour.points)}</Text>}
           </View>
         )}

@@ -1,11 +1,14 @@
 export const dynamic = 'force-dynamic';
 
 import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
 import SiteFooter from '@/app/components/SiteFooter';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getTour, getPublishedTours } from '@/lib/api';
 import { splitCategories } from '@/lib/category-utils';
+import { displayCategory } from '@/lib/category-i18n';
+import { T } from '@/lib/i18n';
 import type { Tour, TourDifficulty } from '@/lib/types';
 import PhotoGallery from './PhotoGallery';
 import StickyCard from './StickyCard';
@@ -15,7 +18,7 @@ import TourActions from './TourActions';
 
 const AGENCY_URL = process.env.NEXT_PUBLIC_AGENCY_URL ?? 'https://acenta.treklyapp.com';
 
-const DIFF_LABEL: Record<TourDifficulty, string> = {
+const DIFF_LABEL_TR: Record<TourDifficulty, string> = {
   easy:        'Kolay',
   easy_medium: 'Kolay-Orta',
   medium:      'Orta',
@@ -23,6 +26,15 @@ const DIFF_LABEL: Record<TourDifficulty, string> = {
   hard:        'Zor',
   very_hard:   'Çok Zor',
   extreme:     'Ekstrem',
+};
+const DIFF_LABEL_EN: Record<TourDifficulty, string> = {
+  easy:        'Easy',
+  easy_medium: 'Easy-Medium',
+  medium:      'Medium',
+  medium_hard: 'Medium-Hard',
+  hard:        'Hard',
+  very_hard:   'Very Hard',
+  extreme:     'Extreme',
 };
 
 const DIFF_COLOR: Record<TourDifficulty, { bg: string; text: string }> = {
@@ -55,7 +67,8 @@ function scoreRelated(current: Tour, candidate: Tour): number {
   return score;
 }
 
-function RelatedTourCard({ tour }: { tour: Tour }) {
+function RelatedTourCard({ tour, lang }: { tour: Tour; lang: 'tr' | 'en' }) {
+  const DIFF_LABEL = lang === 'en' ? DIFF_LABEL_EN : DIFF_LABEL_TR;
   const dc = DIFF_COLOR[tour.difficulty] ?? DIFF_COLOR.easy;
   const photos = tour.photo_urls ?? [];
   const isFull = tour.max_participants <= (tour.booking_count ?? 0);
@@ -71,14 +84,14 @@ function RelatedTourCard({ tour }: { tour: Tour }) {
         </span>
         {isFull && (
           <span style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(239,68,68,0.9)', color: 'white', borderRadius: '6px', padding: '3px 10px', fontSize: '0.68rem', fontWeight: 700 }}>
-            Doldu
+            {lang === 'en' ? 'Full' : 'Doldu'}
           </span>
         )}
         {splitCategories(tour.category).length > 0 && (
           <div style={{ position: 'absolute', bottom: '10px', left: '10px', display: 'flex', gap: '5px', flexWrap: 'wrap', maxWidth: 'calc(100% - 20px)' }}>
             {splitCategories(tour.category).map((cat) => (
               <span key={cat} style={{ background: 'rgba(0,0,0,0.55)', color: 'white', borderRadius: '6px', padding: '3px 10px', fontSize: '0.65rem', fontWeight: 600, backdropFilter: 'blur(4px)' }}>
-                {cat}
+                {displayCategory(cat, lang)}
               </span>
             ))}
           </div>
@@ -103,7 +116,7 @@ function RelatedTourCard({ tour }: { tour: Tour }) {
           ) : <span />}
           {tour.start_date && (
             <span style={{ fontSize: '0.72rem', color: '#AAAAAA' }}>
-              {new Date(tour.start_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
+              {new Date(tour.start_date).toLocaleDateString(lang === 'en' ? 'en-US' : 'tr-TR', { day: 'numeric', month: 'short' })}
             </span>
           )}
         </div>
@@ -113,6 +126,9 @@ function RelatedTourCard({ tour }: { tour: Tour }) {
 }
 
 export default async function TourDetailPage({ params }: { params: { id: string } }) {
+  const lang = cookies().get('lang')?.value === 'en' ? 'en' : 'tr';
+  const tt = T[lang].td;
+  const DIFF_LABEL = lang === 'en' ? DIFF_LABEL_EN : DIFF_LABEL_TR;
   const [tour, allTours] = await Promise.all([
     getTour(params.id),
     getPublishedTours(),
@@ -152,8 +168,8 @@ export default async function TourDetailPage({ params }: { params: { id: string 
       <nav className="navbar">
         <Link href="/anasayfa" className="logo">Trekly</Link>
         <div className="nav-links">
-          <Link href="/etkinlikler" className="nav-link">← Etkinlikler</Link>
-          <a href={AGENCY_URL} target="_blank" rel="noopener noreferrer" className="nav-cta">Acenta Ol</a>
+          <Link href="/etkinlikler" className="nav-link">{tt.backToEvents}</Link>
+          <a href={AGENCY_URL} target="_blank" rel="noopener noreferrer" className="nav-cta">{tt.becomeAgency}</a>
         </div>
       </nav>
 
@@ -195,7 +211,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
                 textTransform: 'uppercase', letterSpacing: '0.06em',
                 border: '1px solid rgba(255,85,51,0.25)',
               }}>
-                {cat}
+                {displayCategory(cat, lang)}
               </span>
             ))}
             <span style={{
@@ -226,16 +242,16 @@ export default async function TourDetailPage({ params }: { params: { id: string 
 
           {/* Tab sections */}
           <TourTabs tabs={[
-            { label: 'Tur Programı',  content: tour.program },
+            { label: tt.tourProgram,  content: tour.program },
             {
-              label: 'Konaklama',
+              label: tt.accommodation,
               content: tour.accommodation,
               link: tour.accommodation_url
-                ? { url: tour.accommodation_url, label: 'Oteli Görüntüle' }
+                ? { url: tour.accommodation_url, label: tt.viewHotel }
                 : null,
             },
-            { label: 'Ulaşım',        content: tour.transportation },
-            { label: 'Önemli Notlar', content: tour.important_notes },
+            { label: tt.transport,        content: tour.transportation },
+            { label: tt.importantNotes, content: tour.important_notes },
           ]} />
         </div>
 
@@ -274,14 +290,14 @@ export default async function TourDetailPage({ params }: { params: { id: string 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px' }}>
               <div>
                 <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1A1A1A', letterSpacing: '-0.02em', margin: 0 }}>
-                  İlginizi Çekebilir
+                  {tt.related}
                 </h2>
                 <p style={{ fontSize: '0.85rem', color: '#9A9A9A', marginTop: '4px', marginBottom: 0 }}>
-                  Benzer turlar ve öneriler
+                  {tt.relatedSub}
                 </p>
               </div>
               <Link href="/etkinlikler" style={{ fontSize: '0.85rem', fontWeight: 700, color: '#FF5533', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                Tüm Turlar
+                {lang === 'en' ? 'All Tours' : 'Tüm Turlar'}
                 <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
@@ -289,7 +305,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
               {relatedTours.map((t) => (
-                <RelatedTourCard key={t.id} tour={t} />
+                <RelatedTourCard key={t.id} tour={t} lang={lang} />
               ))}
             </div>
           </div>

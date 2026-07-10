@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import SiteFooter from '@/app/components/SiteFooter';
 import LandingNav from '../landing-nav';
 import { useUserAuth } from '../UserAuthContext';
 import { UserApiError } from '@/lib/user-api';
+import { T, type Lang, getLangClient } from '@/lib/i18n';
 
 function GirisForm() {
   const router = useRouter();
@@ -17,6 +18,9 @@ function GirisForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [lang, setLang] = useState<Lang>('tr');
+  useEffect(() => { setLang(getLangClient()); }, []);
+  const ta = T[lang].auth;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,8 +33,8 @@ function GirisForm() {
     } catch (err) {
       setError(
         err instanceof UserApiError
-          ? (err.status === 401 ? 'E-posta veya şifre hatalı.' : err.message)
-          : 'Giriş yapılamadı. Lütfen tekrar deneyin.',
+          ? (err.status === 401 ? ta.loginError : err.message)
+          : ta.loginFailed,
       );
     } finally {
       setLoading(false);
@@ -40,7 +44,7 @@ function GirisForm() {
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       <div>
-        <label style={labelStyle}>E-posta</label>
+        <label style={labelStyle}>{ta.email}</label>
         <input
           type="email"
           required
@@ -51,7 +55,7 @@ function GirisForm() {
         />
       </div>
       <div>
-        <label style={labelStyle}>Şifre</label>
+        <label style={labelStyle}>{ta.password}</label>
         <input
           type="password"
           required
@@ -62,7 +66,7 @@ function GirisForm() {
         />
         <div style={{ textAlign: 'right', marginTop: '8px' }}>
           <Link href="/sifremi-unuttum" style={{ fontSize: '0.78rem', color: '#FF5533', fontWeight: 600, textDecoration: 'none' }}>
-            Şifremi Unuttum?
+            {ta.forgotPassword}
           </Link>
         </div>
       </div>
@@ -80,12 +84,12 @@ function GirisForm() {
           opacity: loading ? 0.7 : 1, letterSpacing: '0.01em', marginTop: '4px',
         }}
       >
-        {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+        {loading ? ta.loggingIn : ta.loginBtn}
       </button>
       <p style={{ fontSize: '0.85rem', color: '#6B7280', textAlign: 'center', margin: 0 }}>
-        Hesabın yok mu?{' '}
+        {ta.noAccount}{' '}
         <Link href="/kayit-ol" style={{ color: '#FF5533', fontWeight: 700, textDecoration: 'none' }}>
-          Üye Ol
+          {ta.signUpLink}
         </Link>
       </p>
     </form>
@@ -93,6 +97,9 @@ function GirisForm() {
 }
 
 export default function GirisPage() {
+  const [lang, setLang] = useState<Lang>('tr');
+  useEffect(() => { setLang(getLangClient()); }, []);
+  const ta = T[lang].auth;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <LandingNav navLinks={[
@@ -112,13 +119,13 @@ export default function GirisPage() {
       <main className="auth-main" style={{ flex: 1, background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px' }}>
         <div className="auth-card" style={{ width: '100%', maxWidth: '420px', background: 'white', border: '1px solid #EAEAEA', borderRadius: '20px', padding: '40px 36px' }}>
           <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#FF5533', margin: '0 0 10px' }}>
-            Trekly Üyelik
+            {ta.membership}
           </p>
           <h1 style={{
             fontFamily: '"Cormorant Garamond", serif', fontSize: '1.9rem', fontWeight: 400,
             color: '#0D0D1A', margin: '0 0 28px',
           }}>
-            Giriş Yap
+            {ta.loginTitle}
           </h1>
           <Suspense>
             <GirisForm />

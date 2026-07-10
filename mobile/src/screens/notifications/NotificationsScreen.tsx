@@ -8,9 +8,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { TreklyLogo } from '../../components/common/TreklyLogo';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 export function NotificationsScreen() {
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -26,12 +28,12 @@ export function NotificationsScreen() {
       </View>
 
       <View style={styles.titleRow}>
-        <Text style={styles.title}>Bildirimler</Text>
+        <Text style={styles.title}>{t.notifications.title}</Text>
       </View>
 
       <View style={styles.emptyState}>
         <Ionicons name="notifications-outline" size={56} color="#E5E5E5" />
-        <Text style={styles.emptyText}>Henüz bildiriminiz yok.</Text>
+        <Text style={styles.emptyText}>{t.notifications.empty}</Text>
       </View>
     </SafeAreaView>
   );

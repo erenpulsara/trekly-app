@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 type Props = {
   navigation: StackNavigationProp<AuthStackParamList, 'Register'>;
@@ -39,6 +40,7 @@ interface FormErrors {
 
 export function RegisterScreen({ navigation }: Props) {
   const { register } = useAuth();
+  const { t } = useLanguage();
   const [form, setForm] = useState<FormState>({
     name: '',
     surname: '',
@@ -59,14 +61,14 @@ export function RegisterScreen({ navigation }: Props) {
 
   function validate(): boolean {
     const newErrors: FormErrors = {};
-    if (!form.name.trim()) newErrors.name = 'Ad gerekli';
-    if (!form.surname.trim()) newErrors.surname = 'Soyad gerekli';
-    if (!form.email.trim()) newErrors.email = 'E-posta gerekli';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) newErrors.email = 'Geçerli bir e-posta girin';
-    if (!form.password) newErrors.password = 'Şifre gerekli';
-    else if (form.password.length < 6) newErrors.password = 'Şifre en az 6 karakter olmalı';
-    if (!form.confirmPassword) newErrors.confirmPassword = 'Şifre tekrarı gerekli';
-    else if (form.password !== form.confirmPassword) newErrors.confirmPassword = 'Şifreler eşleşmiyor';
+    if (!form.name.trim()) newErrors.name = t.auth.nameRequired;
+    if (!form.surname.trim()) newErrors.surname = t.auth.surnameRequired;
+    if (!form.email.trim()) newErrors.email = t.auth.emailRequired;
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) newErrors.email = t.auth.emailInvalid;
+    if (!form.password) newErrors.password = t.auth.passwordRequired;
+    else if (form.password.length < 6) newErrors.password = t.auth.passwordMin;
+    if (!form.confirmPassword) newErrors.confirmPassword = t.auth.confirmRequired;
+    else if (form.password !== form.confirmPassword) newErrors.confirmPassword = t.auth.passwordsNoMatch;
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -84,8 +86,8 @@ export function RegisterScreen({ navigation }: Props) {
       );
     } catch (err) {
       Alert.alert(
-        'Kayıt Başarısız',
-        err instanceof Error ? err.message : 'Kayıt sırasında bir hata oluştu.'
+        t.auth.registerFailed,
+        err instanceof Error ? err.message : t.auth.registerFailedMsg
       );
     } finally {
       setIsLoading(false);
@@ -120,8 +122,8 @@ export function RegisterScreen({ navigation }: Props) {
             <View style={styles.titleIcon}>
               <Ionicons name="person-add-outline" size={24} color="#FF5A1F" />
             </View>
-            <Text style={styles.title}>Kayıt Ol</Text>
-            <Text style={styles.subtitle}>Hesap oluşturun ve maceraya başlayın.</Text>
+            <Text style={styles.title}>{t.auth.registerTitle}</Text>
+            <Text style={styles.subtitle}>{t.auth.registerSubtitle}</Text>
           </View>
 
           {/* Form */}
@@ -129,13 +131,13 @@ export function RegisterScreen({ navigation }: Props) {
             {/* Name + Surname row */}
             <View style={styles.row}>
               <View style={[styles.field, styles.flex1]}>
-                <Text style={styles.label}>Ad</Text>
+                <Text style={styles.label}>{t.auth.name}</Text>
                 <View style={[styles.inputContainer, errors.name ? styles.inputError : null]}>
                   <TextInput
                     style={styles.input}
                     value={form.name}
-                    onChangeText={(t) => setField('name', t)}
-                    placeholder="Adınız"
+                    onChangeText={(v) => setField('name', v)}
+                    placeholder={t.auth.namePh}
                     placeholderTextColor="#9CA3AF"
                     autoCapitalize="words"
                     returnKeyType="next"
@@ -145,13 +147,13 @@ export function RegisterScreen({ navigation }: Props) {
               </View>
 
               <View style={[styles.field, styles.flex1]}>
-                <Text style={styles.label}>Soyad</Text>
+                <Text style={styles.label}>{t.auth.surname}</Text>
                 <View style={[styles.inputContainer, errors.surname ? styles.inputError : null]}>
                   <TextInput
                     style={styles.input}
                     value={form.surname}
-                    onChangeText={(t) => setField('surname', t)}
-                    placeholder="Soyadınız"
+                    onChangeText={(v) => setField('surname', v)}
+                    placeholder={t.auth.surnamePh}
                     placeholderTextColor="#9CA3AF"
                     autoCapitalize="words"
                     returnKeyType="next"
@@ -162,14 +164,14 @@ export function RegisterScreen({ navigation }: Props) {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>E-posta</Text>
+              <Text style={styles.label}>{t.auth.email}</Text>
               <View style={[styles.inputContainer, errors.email ? styles.inputError : null]}>
                 <Ionicons name="mail-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   value={form.email}
-                  onChangeText={(t) => setField('email', t)}
-                  placeholder="ornek@email.com"
+                  onChangeText={(v) => setField('email', v)}
+                  placeholder={t.auth.emailPh}
                   placeholderTextColor="#9CA3AF"
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -181,14 +183,14 @@ export function RegisterScreen({ navigation }: Props) {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Şifre</Text>
+              <Text style={styles.label}>{t.auth.password}</Text>
               <View style={[styles.inputContainer, errors.password ? styles.inputError : null]}>
                 <Ionicons name="lock-closed-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   value={form.password}
-                  onChangeText={(t) => setField('password', t)}
-                  placeholder="En az 6 karakter"
+                  onChangeText={(v) => setField('password', v)}
+                  placeholder={t.auth.passwordCreatePh}
                   placeholderTextColor="#9CA3AF"
                   secureTextEntry={!showPassword}
                   returnKeyType="next"
@@ -205,14 +207,14 @@ export function RegisterScreen({ navigation }: Props) {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Şifre Tekrarı</Text>
+              <Text style={styles.label}>{t.auth.confirmPassword}</Text>
               <View style={[styles.inputContainer, errors.confirmPassword ? styles.inputError : null]}>
                 <Ionicons name="lock-closed-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   value={form.confirmPassword}
-                  onChangeText={(t) => setField('confirmPassword', t)}
-                  placeholder="Şifrenizi tekrar girin"
+                  onChangeText={(v) => setField('confirmPassword', v)}
+                  placeholder={t.auth.confirmPasswordPh}
                   placeholderTextColor="#9CA3AF"
                   secureTextEntry={!showConfirmPassword}
                   returnKeyType="next"
@@ -229,14 +231,14 @@ export function RegisterScreen({ navigation }: Props) {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Telefon <Text style={styles.optional}>(isteğe bağlı)</Text></Text>
+              <Text style={styles.label}>{t.auth.phone} <Text style={styles.optional}>{t.auth.phoneOptional}</Text></Text>
               <View style={styles.inputContainer}>
                 <Ionicons name="call-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   value={form.phone}
-                  onChangeText={(t) => setField('phone', t)}
-                  placeholder="+90 5XX XXX XX XX"
+                  onChangeText={(v) => setField('phone', v)}
+                  placeholder={t.auth.registerPhonePh}
                   placeholderTextColor="#9CA3AF"
                   keyboardType="phone-pad"
                   returnKeyType="done"
@@ -252,16 +254,16 @@ export function RegisterScreen({ navigation }: Props) {
               activeOpacity={0.85}
             >
               <Text style={styles.submitButtonText}>
-                {isLoading ? 'Kayıt yapılıyor...' : 'Kayıt Ol'}
+                {isLoading ? t.auth.registering : t.auth.registerBtn}
               </Text>
             </TouchableOpacity>
           </View>
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Zaten hesabın var mı? </Text>
+            <Text style={styles.footerText}>{t.auth.haveAccount} </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.footerLink}>Giriş yap</Text>
+              <Text style={styles.footerLink}>{t.auth.login}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

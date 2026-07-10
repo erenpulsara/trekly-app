@@ -19,13 +19,7 @@ import {
 import { getFavorites } from '@/lib/favorites-api';
 import { getUserLevel, getLevelProgress, getPointsToNextLevel } from '@/lib/levels';
 import { REWARDS_ENABLED } from '@/lib/features';
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: 'Bekliyor',
-  confirmed: 'Onaylandı',
-  completed: 'Tamamlandı',
-  cancelled: 'İptal',
-};
+import { T, type Lang, getLangClient } from '@/lib/i18n';
 
 const STATUS_STYLE: Record<string, { bg: string; text: string }> = {
   pending:   { bg: '#FEF3C7', text: '#92400E' },
@@ -34,14 +28,24 @@ const STATUS_STYLE: Record<string, { bg: string; text: string }> = {
   cancelled: { bg: '#FEE2E2', text: '#991B1B' },
 };
 
-function fmtDate(s: string) {
+function fmtDate(s: string, locale = 'tr-TR') {
   const d = new Date(s.includes('T') ? s : s + 'T00:00:00');
-  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export default function ProfilimPage() {
   const router = useRouter();
   const { user, isLoading, logout, refreshUser } = useUserAuth();
+
+  const [lang, setLang] = useState<Lang>('tr');
+  useEffect(() => { setLang(getLangClient()); }, []);
+  const tp = T[lang].profile;
+  const STATUS_LABEL: Record<string, string> = {
+    pending: tp.statusPending,
+    confirmed: tp.statusConfirmed,
+    completed: tp.statusCompleted,
+    cancelled: tp.statusCancelled,
+  };
 
   const [profile, setProfile] = useState<WebUser | null>(null);
   const [favCount, setFavCount] = useState<number | null>(null);
@@ -100,18 +104,18 @@ export default function ProfilimPage() {
       setProfile(updated);
       refreshUser();
       setEditing(false);
-      setSaveMsg({ ok: true, text: 'Profiliniz güncellendi.' });
+      setSaveMsg({ ok: true, text: tp.profileUpdated });
     } catch {
-      setSaveMsg({ ok: false, text: 'Güncelleme başarısız oldu. Lütfen tekrar deneyin.' });
+      setSaveMsg({ ok: false, text: tp.updateFailed });
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete() {
-    const first = window.confirm('Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.');
+    const first = window.confirm(tp.deleteConfirm1);
     if (!first) return;
-    const second = window.confirm('Tüm verileriniz (favoriler, puanlar) kalıcı olarak silinecek. Onaylıyor musunuz?');
+    const second = window.confirm(tp.deleteConfirm2);
     if (!second) return;
     setDeleting(true);
     try {
@@ -120,7 +124,7 @@ export default function ProfilimPage() {
       router.push('/anasayfa');
     } catch {
       setDeleting(false);
-      alert('Hesap silinemedi. Lütfen tekrar deneyin.');
+      alert(tp.deleteFailed);
     }
   }
 
@@ -143,7 +147,7 @@ export default function ProfilimPage() {
       <main style={{ flex: 1, background: '#FAFAFA', padding: '48px 20px 64px' }}>
         <div style={{ maxWidth: '640px', margin: '0 auto' }}>
           {isLoading || !display ? (
-            <p style={{ color: '#9A9A9A', fontSize: '0.9rem', textAlign: 'center' }}>Yükleniyor...</p>
+            <p style={{ color: '#9A9A9A', fontSize: '0.9rem', textAlign: 'center' }}>{tp.loading}</p>
           ) : (
             <>
               {/* ── Hero card: avatar + level + progress + stats ── */}
@@ -178,7 +182,7 @@ export default function ProfilimPage() {
                 {REWARDS_ENABLED && (
                   <>
                     <p style={{ fontSize: '0.85rem', color: '#FF5533', fontWeight: 700, margin: '0 0 20px' }}>
-                      Seviye {levelInfo.level} — {levelInfo.title}
+                      {tp.levelWord} {levelInfo.level} — {levelInfo.title}
                     </p>
 
                     {/* Progress bar */}
@@ -187,7 +191,7 @@ export default function ProfilimPage() {
                         <div style={{ height: '100%', width: `${Math.round(progress * 100)}%`, background: '#FF5533', borderRadius: '4px' }} />
                       </div>
                       <p style={{ fontSize: '0.68rem', color: '#9CA3AF', fontWeight: 600, letterSpacing: '0.05em', margin: 0 }}>
-                        SONRAKİ SEVİYE: {toNext > 0 ? `${toNext} XP` : 'MAX'}
+                        {tp.nextLevel}: {toNext > 0 ? `${toNext} XP` : 'MAX'}
                       </p>
                     </div>
                   </>
@@ -197,15 +201,15 @@ export default function ProfilimPage() {
                 <div style={{
                   display: 'flex', borderTop: '1px solid #F3F3F3', marginTop: '24px', paddingTop: '20px',
                 }}>
-                  <StatItem label="Etkinlik" value={String(points.length)} />
+                  <StatItem label={tp.statEvents} value={String(points.length)} />
                   {REWARDS_ENABLED && (
                     <>
                       <div style={{ width: '1px', background: '#F3F3F3' }} />
-                      <StatItem label="Toplam XP" value={totalPoints.toLocaleString('tr-TR')} />
+                      <StatItem label={tp.statXP} value={totalPoints.toLocaleString('tr-TR')} />
                     </>
                   )}
                   <div style={{ width: '1px', background: '#F3F3F3' }} />
-                  <StatItem label="Favori" value={favCount !== null ? String(favCount) : '—'} />
+                  <StatItem label={tp.statFav} value={favCount !== null ? String(favCount) : '—'} />
                 </div>
               </div>
 
@@ -215,9 +219,9 @@ export default function ProfilimPage() {
                 padding: '24px 28px', marginBottom: '16px',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                  <h2 style={sectionTitleStyle}>Profil Bilgileri</h2>
+                  <h2 style={sectionTitleStyle}>{tp.profileInfo}</h2>
                   {!editing && (
-                    <button onClick={startEdit} style={editBtnStyle}>Düzenle</button>
+                    <button onClick={startEdit} style={editBtnStyle}>{tp.edit}</button>
                   )}
                 </div>
 
@@ -235,22 +239,22 @@ export default function ProfilimPage() {
                   <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                     <div style={{ display: 'flex', gap: '12px' }}>
                       <div style={{ flex: 1 }}>
-                        <label style={labelStyle}>Ad</label>
+                        <label style={labelStyle}>{tp.name}</label>
                         <input required value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
                       </div>
                       <div style={{ flex: 1 }}>
-                        <label style={labelStyle}>Soyad</label>
+                        <label style={labelStyle}>{tp.surname}</label>
                         <input required value={surname} onChange={(e) => setSurname(e.target.value)} style={inputStyle} />
                       </div>
                     </div>
                     <div>
-                      <label style={labelStyle}>Telefon</label>
+                      <label style={labelStyle}>{tp.phone}</label>
                       <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05XX XXX XX XX" style={inputStyle} />
                     </div>
                     <div>
-                      <label style={labelStyle}>E-posta</label>
+                      <label style={labelStyle}>{tp.email}</label>
                       <input value={display.email} disabled style={{ ...inputStyle, background: '#F9FAFB', color: '#9CA3AF' }} />
-                      <p style={{ fontSize: '0.72rem', color: '#B0B0B0', margin: '5px 0 0' }}>E-posta adresi değiştirilemez.</p>
+                      <p style={{ fontSize: '0.72rem', color: '#B0B0B0', margin: '5px 0 0' }}>{tp.emailNote}</p>
                     </div>
                     <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
                       <button
@@ -262,7 +266,7 @@ export default function ProfilimPage() {
                           cursor: 'pointer', fontFamily: 'inherit',
                         }}
                       >
-                        İptal
+                        {tp.cancel}
                       </button>
                       <button
                         type="submit"
@@ -273,15 +277,15 @@ export default function ProfilimPage() {
                           cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1, fontFamily: 'inherit',
                         }}
                       >
-                        {saving ? 'Kaydediliyor...' : 'Kaydet'}
+                        {saving ? tp.saving : tp.save}
                       </button>
                     </div>
                   </form>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <InfoLine label="Ad Soyad" value={`${display.name} ${display.surname}`} />
-                    <InfoLine label="E-posta" value={display.email} />
-                    <InfoLine label="Telefon" value={display.phone || '—'} />
+                    <InfoLine label={tp.fullName} value={`${display.name} ${display.surname}`} />
+                    <InfoLine label={tp.email} value={display.email} />
+                    <InfoLine label={tp.phone} value={display.phone || '—'} />
                   </div>
                 )}
               </div>
@@ -291,14 +295,14 @@ export default function ProfilimPage() {
                 background: 'white', border: '1px solid #EAEAEA', borderRadius: '20px',
                 padding: '24px 28px', marginBottom: '16px',
               }}>
-                <h2 style={{ ...sectionTitleStyle, marginBottom: '16px' }}>Rezervasyonlarım</h2>
+                <h2 style={{ ...sectionTitleStyle, marginBottom: '16px' }}>{tp.myBookings}</h2>
                 {dataLoading ? (
-                  <p style={emptyTextStyle}>Yükleniyor...</p>
+                  <p style={emptyTextStyle}>{tp.loading}</p>
                 ) : bookings.length === 0 ? (
                   <p style={emptyTextStyle}>
-                    Henüz rezervasyonunuz yok.{' '}
+                    {tp.noBookings}{' '}
                     <Link href="/etkinlikler" style={{ color: '#FF5533', fontWeight: 600, textDecoration: 'none' }}>
-                      Turlara göz at →
+                      {tp.browseTours}
                     </Link>
                   </p>
                 ) : (
@@ -323,7 +327,7 @@ export default function ProfilimPage() {
                               {b.tour?.name ?? 'Tur'}
                             </p>
                             <p style={{ margin: '3px 0 0', fontSize: '0.75rem', color: '#9A9A9A' }}>
-                              {b.tour?.start_date ? fmtDate(b.tour.start_date) : fmtDate(b.created_at)} · {b.participant_count} kişi
+                              {b.tour?.start_date ? fmtDate(b.tour.start_date, tp.locale) : fmtDate(b.created_at, tp.locale)} · {b.participant_count} {lang === 'en' ? 'people' : 'kişi'}
                             </p>
                           </div>
                           <span style={{
@@ -345,11 +349,11 @@ export default function ProfilimPage() {
                 background: 'white', border: '1px solid #EAEAEA', borderRadius: '20px',
                 padding: '24px 28px', marginBottom: '16px',
               }}>
-                <h2 style={{ ...sectionTitleStyle, marginBottom: '16px' }}>Katıldığım Turlar</h2>
+                <h2 style={{ ...sectionTitleStyle, marginBottom: '16px' }}>{tp.joinedTours}</h2>
                 {dataLoading ? (
-                  <p style={emptyTextStyle}>Yükleniyor...</p>
+                  <p style={emptyTextStyle}>{tp.loading}</p>
                 ) : points.length === 0 ? (
-                  <p style={emptyTextStyle}>Henüz tamamlanan turunuz yok. Katıldığınız turlar burada listelenir.</p>
+                  <p style={emptyTextStyle}>{tp.noJoined}</p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {points.map((p) => (
@@ -368,7 +372,7 @@ export default function ProfilimPage() {
                             {p.tour?.name ?? 'Tur'}
                           </p>
                           <p style={{ margin: '3px 0 0', fontSize: '0.75rem', color: '#9A9A9A' }}>
-                            {fmtDate(p.awarded_at)}
+                            {fmtDate(p.awarded_at, tp.locale)}
                           </p>
                         </div>
                         <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#FF5533', flexShrink: 0 }}>
@@ -390,7 +394,7 @@ export default function ProfilimPage() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF5533" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
-                  <span style={{ flex: 1, fontWeight: 600, color: '#1A1A1A' }}>Favorilerim</span>
+                  <span style={{ flex: 1, fontWeight: 600, color: '#1A1A1A' }}>{tp.favorites}</span>
                   {favCount !== null && (
                     <span style={{ fontSize: '0.78rem', color: '#9A9A9A', fontWeight: 600 }}>{favCount} tur</span>
                   )}
@@ -403,7 +407,7 @@ export default function ProfilimPage() {
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF5533" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
                       </svg>
-                      <span style={{ flex: 1, fontWeight: 600, color: '#1A1A1A' }}>Liderlik Tablosu</span>
+                      <span style={{ flex: 1, fontWeight: 600, color: '#1A1A1A' }}>{tp.leaderboard}</span>
                       <ChevronRight />
                     </Link>
                   </>
@@ -413,7 +417,7 @@ export default function ProfilimPage() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF5533" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
                   </svg>
-                  <span style={{ flex: 1, fontWeight: 600, color: '#1A1A1A' }}>Turları Keşfet</span>
+                  <span style={{ flex: 1, fontWeight: 600, color: '#1A1A1A' }}>{tp.exploreTours}</span>
                   <ChevronRight />
                 </Link>
               </div>
@@ -427,7 +431,7 @@ export default function ProfilimPage() {
                   color: '#DC2626', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '10px',
                 }}
               >
-                Çıkış Yap
+                {tp.logout}
               </button>
               <button
                 onClick={handleDelete}
@@ -439,7 +443,7 @@ export default function ProfilimPage() {
                   textDecoration: 'underline',
                 }}
               >
-                {deleting ? 'Hesap siliniyor...' : 'Hesabımı kalıcı olarak sil'}
+                {deleting ? tp.deleting : tp.deleteAccount}
               </button>
             </>
           )}

@@ -1,8 +1,14 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import type { CategoryItem } from '@/lib/api';
+import { getLangClient, type Lang } from '@/lib/i18n';
+import { displayCategory } from '@/lib/category-i18n';
+
+// lang, sunucu bileşeninden prop olarak gelir (deterministik); gelmezse
+// istemci tarafında çerezden okunur (geriye dönük uyumluluk).
 
 // Fallback photos for well-known categories (when no image_url in DB)
 export const FALLBACK_PHOTOS: Record<string, string> = {
@@ -37,11 +43,15 @@ interface Props {
   activeCategory: string;
   dynamicCategories?: CategoryItem[];
   basePath?: string;
+  lang?: Lang;
 }
 
-export default function TurlarCategories({ activeCategory, dynamicCategories, basePath = '/anasayfa' }: Props) {
+export default function TurlarCategories({ activeCategory, dynamicCategories, basePath = '/anasayfa', lang: langProp }: Props) {
   const router = useRouter();
   const params = useSearchParams();
+  const [lang, setLang] = useState<Lang>(langProp ?? 'tr');
+
+  useEffect(() => { if (!langProp) setLang(getLangClient()); }, [langProp]);
 
   function navigate(categoryKey: string) {
     const q = new URLSearchParams();
@@ -64,7 +74,7 @@ export default function TurlarCategories({ activeCategory, dynamicCategories, ba
   // no more hard-coded static list, everything comes from dynamicCategories.
   const allCategories: { key: string; label: string; photo: string }[] = (dynamicCategories ?? [])
     .filter((c) => !BLOCKED.has(c.name.toLowerCase()))
-    .map((c) => ({ key: c.name, label: c.name, photo: getPhoto(c.name, c.image_url) }));
+    .map((c) => ({ key: c.name, label: displayCategory(c.name, lang), photo: getPhoto(c.name, c.image_url) }));
 
   // Inverted pyramid: top row gets ceil(n/2), bottom row gets floor(n/2) centered under top
   const topCount  = Math.ceil(allCategories.length / 2);

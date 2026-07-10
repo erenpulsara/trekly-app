@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { REWARDS_ENABLED } from '@/lib/features';
+import { T, type Lang, getLangClient } from '@/lib/i18n';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
@@ -14,10 +15,10 @@ function fmtPrice(price: number, cur: Currency) {
   return `${sym}${price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
-function fmtDate(s: string) {
+function fmtDate(s: string, locale = 'tr-TR') {
   const d = new Date(s.includes('T') ? s : s + 'T00:00:00');
-  const date = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
-  const weekday = d.toLocaleDateString('tr-TR', { weekday: 'long' });
+  const date = d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+  const weekday = d.toLocaleDateString(locale, { weekday: 'long' });
   return `${date} ${weekday}`;
 }
 
@@ -77,6 +78,9 @@ const iconClock = <svg width="22" height="22" fill="none" stroke="currentColor" 
 
 export default function TourRightCard({ tour, isFull, remaining }: Props) {
   const [showForm, setShowForm] = useState(false);
+  const [lang, setLang] = useState<Lang>('tr');
+  useEffect(() => { setLang(getLangClient()); }, []);
+  const tt = T[lang].td;
   const cur: Currency = (tour.price_currency as Currency) ?? 'TRY';
 
   /* ── form state ── */
@@ -110,11 +114,11 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.message ?? 'Rezervasyon oluşturulamadı');
+        throw new Error(data.message ?? tt.bookingFailed);
       }
       setStep('success');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Bir hata oluştu');
+      setError(err instanceof Error ? err.message : tt.errorOccurred);
     } finally {
       setLoading(false);
     }
@@ -154,11 +158,11 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
               <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
               </svg>
-              Tur Detayları
+              {tt.tourDetails}
             </>
           ) : (
             <>
-              Maceraya Katıl
+              {tt.joinAdventure}
               <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
               </svg>
@@ -171,8 +175,8 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
       {isFull && (
         <div style={{ padding: '20px', background: '#FFF0F0', textAlign: 'center', borderBottom: '1px solid #FED7D7' }}>
           <div style={{ fontSize: '1.4rem', marginBottom: '6px' }}>😔</div>
-          <p style={{ fontWeight: 700, color: '#C53030', margin: '0 0 4px' }}>Kontenjan Doldu</p>
-          <p style={{ fontSize: '0.78rem', color: '#9B2C2C', margin: 0 }}>Bu tur için yer kalmadı.</p>
+          <p style={{ fontWeight: 700, color: '#C53030', margin: '0 0 4px' }}>{tt.quotaFull}</p>
+          <p style={{ fontSize: '0.78rem', color: '#9B2C2C', margin: 0 }}>{tt.noSpots}</p>
         </div>
       )}
 
@@ -180,9 +184,9 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
       {step === 'success' && (
         <div style={{ padding: '32px 20px', background: '#F0FFF4', textAlign: 'center', borderBottom: '1px solid #9AE6B4' }}>
           <div style={{ fontSize: '2rem', marginBottom: '10px' }}>✅</div>
-          <p style={{ fontWeight: 800, color: '#276749', fontSize: '1.05rem', margin: '0 0 8px' }}>Rezervasyonunuz Alındı!</p>
+          <p style={{ fontWeight: 800, color: '#276749', fontSize: '1.05rem', margin: '0 0 8px' }}>{tt.bookingReceived}</p>
           <p style={{ fontSize: '0.82rem', color: '#276749', margin: 0, lineHeight: 1.6 }}>
-            En kısa sürede <strong>{email}</strong> adresinize onay e-postası göndereceğiz.
+            {tt.successA} <strong>{email}</strong> {tt.successB}
           </p>
         </div>
       )}
@@ -194,14 +198,14 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
           {hasPrice && (
             <div style={{ background: '#FFF8F7', borderRadius: '10px', padding: '14px 16px', border: '1px solid rgba(255,85,51,0.15)', marginBottom: '20px' }}>
               <div style={{ marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#AAAAAA', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Tur Ücreti</span>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#AAAAAA', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{tt.tourPrice}</span>
               </div>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#FF5533', lineHeight: 1 }}>
                 {fmtPrice(tour.price as number, cur)}
               </div>
               {count > 1 && totalPrice != null && (
                 <div style={{ fontSize: '0.78rem', color: '#888', marginTop: '4px' }}>
-                  Toplam: {fmtPrice(totalPrice, cur)} ({count} kişi)
+                  {tt.total}: {fmtPrice(totalPrice, cur)} ({count} {tt.people.toLowerCase()})
                 </div>
               )}
             </div>
@@ -209,31 +213,31 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
-              <label style={labelStyle}>Ad Soyad *</label>
-              <input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Adınız ve soyadınız" style={inputStyle} />
+              <label style={labelStyle}>{tt.fullName} *</label>
+              <input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder={tt.fullNamePh} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>E-posta *</label>
+              <label style={labelStyle}>{tt.email} *</label>
               <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@email.com" style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Telefon *</label>
+              <label style={labelStyle}>{tt.phone} *</label>
               <input required type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05XX XXX XX XX" style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Katılımcı Sayısı</label>
+              <label style={labelStyle}>{tt.participantCount}</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <button type="button" onClick={() => setCount((v) => Math.max(1, v - 1))}
                   style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1.5px solid #E8E8E8', background: 'white', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
                 <span style={{ fontWeight: 700, fontSize: '1rem', minWidth: '20px', textAlign: 'center' }}>{count}</span>
                 <button type="button" onClick={() => setCount((v) => Math.min(tour.max_participants, v + 1))}
                   style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1.5px solid #E8E8E8', background: 'white', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
-                <span style={{ fontSize: '0.72rem', color: '#AAAAAA' }}>maks. {tour.max_participants}</span>
+                <span style={{ fontSize: '0.72rem', color: '#AAAAAA' }}>{tt.maxShort} {tour.max_participants}</span>
               </div>
             </div>
             <div>
-              <label style={labelStyle}>Notlar <span style={{ textTransform: 'none', fontWeight: 400, color: '#AAAAAA' }}>(isteğe bağlı)</span></label>
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Özel isteğiniz varsa yazabilirsiniz..." rows={2} style={{ ...inputStyle, resize: 'none' }} />
+              <label style={labelStyle}>{tt.notes} <span style={{ textTransform: 'none', fontWeight: 400, color: '#AAAAAA' }}>{tt.optional}</span></label>
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={tt.notesPh} rows={2} style={{ ...inputStyle, resize: 'none' }} />
             </div>
             {error && (
               <p style={{ fontSize: '0.8rem', color: '#C53030', background: '#FFF0F0', borderRadius: '8px', padding: '8px 12px', margin: 0 }}>⚠️ {error}</p>
@@ -244,7 +248,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
               color: 'white', fontWeight: 700, fontSize: '0.9rem',
               border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
             }}>
-              {loading ? 'Gönderiliyor...' : 'Rezervasyon Gönder'}
+              {loading ? tt.sending : tt.sendBooking}
             </button>
             <p style={{ fontSize: '0.7rem', color: '#AAAAAA', textAlign: 'center', margin: 0 }}>
               Rezervasyonunuz alındıktan sonra acenta sizi onay için arayacaktır.
@@ -270,24 +274,24 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
                 </svg>
               </div>
               <div>
-                <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#15803D', letterSpacing: '0.1em', textTransform: 'uppercase' }}>TURSAB Onaylı Acenta</div>
+                <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#15803D', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{tt.tursabApproved}</div>
                 <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#166534' }}>#{tour.tursab_no}</div>
               </div>
             </div>
           )}
 
-          {organizer && <InfoRow icon={iconOrganizer} label="Düzenleyen" value={organizer} />}
-          {tour.guide_name && <InfoRow icon={iconGuide} label="Rehber" value={tour.guide_name} href={tour.guide_instagram ?? undefined} />}
-          {tour.difficulty_label && <InfoRow icon={iconDifficulty} label="Zorluk Derecesi" value={tour.difficulty_label} />}
+          {organizer && <InfoRow icon={iconOrganizer} label={tt.organizer} value={organizer} />}
+          {tour.guide_name && <InfoRow icon={iconGuide} label={tt.guide} value={tour.guide_name} href={tour.guide_instagram ?? undefined} />}
+          {tour.difficulty_label && <InfoRow icon={iconDifficulty} label={tt.difficulty} value={tour.difficulty_label} />}
           {REWARDS_ENABLED && tour.points != null && tour.points > 0 && (
-            <InfoRow icon={iconXp} label="Kazanacağınız Puan" value={`${tour.points} XP`} />
+            <InfoRow icon={iconXp} label={tt.pointsEarn} value={`${tour.points} XP`} />
           )}
-          <InfoRow icon={iconCap} label="Kapasite" value={`${tour.max_participants} Kişi`} />
-          {tour.start_date && <InfoRow icon={iconCal} label="Başlangıç Tarihi" value={fmtDate(tour.start_date)} />}
-          {tour.end_date   && <InfoRow icon={iconCal} label="Bitiş Tarihi"     value={fmtDate(tour.end_date)} />}
-          {tour.meeting_points  && <InfoRow icon={iconPin}   label="Buluşma Noktası" value={tour.meeting_points} />}
-          {tour.target_location && <InfoRow icon={iconPin}   label="Hedef Lokasyon"  value={tour.target_location} />}
-          {tour.contact_phone   && <InfoRow icon={iconPhone} label="İrtibat No" value={tour.contact_phone} href={`tel:${tour.contact_phone}`} />}
+          <InfoRow icon={iconCap} label={tt.capacity} value={`${tour.max_participants} ${tt.people}`} />
+          {tour.start_date && <InfoRow icon={iconCal} label={tt.startDate} value={fmtDate(tour.start_date, lang === 'en' ? 'en-US' : 'tr-TR')} />}
+          {tour.end_date   && <InfoRow icon={iconCal} label={tt.endDate}     value={fmtDate(tour.end_date, lang === 'en' ? 'en-US' : 'tr-TR')} />}
+          {tour.meeting_points  && <InfoRow icon={iconPin}   label={tt.meetingPoint} value={tour.meeting_points} />}
+          {tour.target_location && <InfoRow icon={iconPin}   label={tt.targetLocation}  value={tour.target_location} />}
+          {tour.contact_phone   && <InfoRow icon={iconPhone} label={tt.contactNo} value={tour.contact_phone} href={`tel:${tour.contact_phone}`} />}
 
           {/* Price */}
           {hasPrice && (
@@ -310,7 +314,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '11px 0 16px' }}>
             <div style={{ width: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>{iconClock}</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '0.6rem', color: '#BBBBBB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>Kontenjan</div>
+              <div style={{ fontSize: '0.6rem', color: '#BBBBBB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>{tt.quota}</div>
               <div style={{ height: '5px', background: '#E8E8E8', borderRadius: '3px', overflow: 'hidden', marginBottom: '5px' }}>
                 <div style={{
                   height: '100%', borderRadius: '3px',
@@ -319,7 +323,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
                 }} />
               </div>
               <span style={{ color: isFull ? '#EF4444' : '#FF5533', fontWeight: 700, fontSize: '0.88rem' }}>
-                {isFull ? 'Doldu' : `${remaining} yer kaldı`}
+                {isFull ? tt.full : tt.spotsLeft(remaining)}
               </span>
               <span style={{ fontSize: '0.7rem', color: '#AAAAAA', marginLeft: '6px' }}>
                 ({tour.max_participants - remaining}/{tour.max_participants})

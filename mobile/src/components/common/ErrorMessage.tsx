@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface ErrorMessageProps {
   message?: string;
@@ -9,17 +10,18 @@ interface ErrorMessageProps {
 }
 
 export function ErrorMessage({
-  message = 'Bir hata oluştu.',
+  message,
   onRetry,
   style,
 }: ErrorMessageProps) {
+  const { t } = useLanguage();
   return (
     <View style={[styles.container, style]}>
       <Ionicons name="alert-circle-outline" size={48} color="#EF4444" />
-      <Text style={styles.message}>{message}</Text>
+      <Text style={styles.message}>{message ?? t.common.genericError}</Text>
       {onRetry && (
         <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
-          <Text style={styles.retryText}>Tekrar Dene</Text>
+          <Text style={styles.retryText}>{t.common.retry}</Text>
         </TouchableOpacity>
       )}
     </View>

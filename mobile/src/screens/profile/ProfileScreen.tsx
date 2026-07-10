@@ -20,6 +20,7 @@ import { usersService } from '../../services/api';
 import { User, PointsLog } from '../../types';
 import { getUserLevel, getLevelProgress, getPointsToNextLevel } from '../../utils/levels';
 import { REWARDS_ENABLED } from '../../config/features';
+import { useLanguage } from '../../context/LanguageContext';
 import { MainStackParamList } from '../../navigation/AppNavigator';
 import { BottomTabParamList } from '../../navigation/BottomTabNavigator';
 
@@ -33,6 +34,7 @@ type Props = {
 
 export function ProfileScreen({ navigation }: Props) {
   const { user: authUser, logout, isGuest, exitGuest } = useAuth();
+  const { t, lang, setLang } = useLanguage();
   const [profile, setProfile] = useState<User | null>(null);
   const [pointsLog, setPointsLog] = useState<PointsLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,12 +66,12 @@ export function ProfileScreen({ navigation }: Props) {
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      'Hesabı Sil',
-      'Bu işlem geri alınamaz. Tüm rezervasyonlarınız ve verileriniz kalıcı olarak silinecek.',
+      t.profile.deleteAccount,
+      t.profile.deleteConfirm,
       [
-        { text: 'İptal', style: 'cancel' },
+        { text: t.common.cancel, style: 'cancel' },
         {
-          text: 'Hesabı Sil',
+          text: t.profile.deleteAccount,
           style: 'destructive',
           onPress: async () => {
             try {
@@ -77,7 +79,7 @@ export function ProfileScreen({ navigation }: Props) {
               await usersService.deleteAccount();
               await logout();
             } catch {
-              Alert.alert('Hata', 'Hesap silinemedi. Lütfen tekrar deneyin.');
+              Alert.alert(t.common.error, t.profile.deleteFailed);
             } finally {
               setDeletingAccount(false);
             }
@@ -98,16 +100,16 @@ export function ProfileScreen({ navigation }: Props) {
       <SafeAreaView style={[styles.safe, { justifyContent: 'center', alignItems: 'center', gap: 16 }]}>
         <StatusBar barStyle="dark-content" />
         <Ionicons name="person-circle-outline" size={72} color="#D1D5DB" />
-        <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1A1A' }}>Profili görüntülemek için giriş yap</Text>
+        <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1A1A' }}>{t.profile.guestPrompt}</Text>
         <Text style={{ fontSize: 14, color: '#6B7280', textAlign: 'center', paddingHorizontal: 32 }}>
-          Profilinizi yönetmek, rezervasyonlarınızı takip etmek ve puanlarınızı görmek için giriş yapın.
+          {t.profile.guestSub}
         </Text>
         <TouchableOpacity
           style={{ backgroundColor: '#FF5A1F', paddingHorizontal: 32, paddingVertical: 14, borderRadius: 12, marginTop: 8 }}
           onPress={exitGuest}
           activeOpacity={0.85}
         >
-          <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}>Giriş Yap</Text>
+          <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}>{t.profile.login}</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -183,17 +185,17 @@ export function ProfileScreen({ navigation }: Props) {
         {REWARDS_ENABLED && (
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Etkinlik</Text>
+              <Text style={styles.statLabel}>{t.profile.statActivity}</Text>
               <Text style={styles.statValue}>{pointsLog.length}</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Toplam XP</Text>
+              <Text style={styles.statLabel}>{t.profile.statXP}</Text>
               <Text style={styles.statValue}>{totalPoints.toLocaleString('tr-TR')}</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Seviye</Text>
+              <Text style={styles.statLabel}>{t.profile.statLevel}</Text>
               <Text style={styles.statValue}>{levelInfo.level}</Text>
             </View>
           </View>
@@ -203,11 +205,11 @@ export function ProfileScreen({ navigation }: Props) {
         {REWARDS_ENABLED && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Rozetler</Text>
+              <Text style={styles.sectionTitle}>{t.profile.badges}</Text>
             </View>
             <View style={styles.emptyCollection}>
               <Ionicons name="ribbon-outline" size={40} color="#D1D5DB" />
-              <Text style={styles.emptyText}>Henüz rozet kazanılmadı</Text>
+              <Text style={styles.emptyText}>{t.profile.noBadges}</Text>
             </View>
           </View>
         )}
@@ -216,12 +218,12 @@ export function ProfileScreen({ navigation }: Props) {
         {REWARDS_ENABLED && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Koleksiyon</Text>
+              <Text style={styles.sectionTitle}>{t.profile.collection}</Text>
             </View>
             {pointsLog.length === 0 ? (
               <View style={styles.emptyCollection}>
                 <Ionicons name="images-outline" size={40} color="#D1D5DB" />
-                <Text style={styles.emptyText}>Henüz tamamlanan tur yok</Text>
+                <Text style={styles.emptyText}>{t.profile.noCollection}</Text>
               </View>
             ) : (
               <View style={styles.collectionGrid}>
@@ -248,7 +250,7 @@ export function ProfileScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('EditProfile')}
           >
             <Ionicons name="create-outline" size={20} color="#374151" />
-            <Text style={styles.menuItemText}>Profili Düzenle</Text>
+            <Text style={styles.menuItemText}>{t.profile.editProfile}</Text>
             <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
           </TouchableOpacity>
           <TouchableOpacity
@@ -256,7 +258,7 @@ export function ProfileScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('Favorites')}
           >
             <Ionicons name="heart-outline" size={20} color="#374151" />
-            <Text style={styles.menuItemText}>Favorilerim</Text>
+            <Text style={styles.menuItemText}>{t.profile.favorites}</Text>
             <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
           </TouchableOpacity>
           <TouchableOpacity
@@ -264,7 +266,7 @@ export function ProfileScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('MyBookings')}
           >
             <Ionicons name="calendar-outline" size={20} color="#374151" />
-            <Text style={styles.menuItemText}>Rezervasyonlarım</Text>
+            <Text style={styles.menuItemText}>{t.profile.myBookings}</Text>
             <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
           </TouchableOpacity>
           {REWARDS_ENABLED && (
@@ -273,7 +275,7 @@ export function ProfileScreen({ navigation }: Props) {
               onPress={() => navigation.navigate('Leaderboard')}
             >
               <Ionicons name="trophy-outline" size={20} color="#374151" />
-              <Text style={styles.menuItemText}>Liderlik Tablosu</Text>
+              <Text style={styles.menuItemText}>{t.profile.leaderboard}</Text>
               <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
             </TouchableOpacity>
           )}
@@ -282,16 +284,38 @@ export function ProfileScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('About')}
           >
             <Ionicons name="information-circle-outline" size={20} color="#374151" />
-            <Text style={styles.menuItemText}>Hakkımızda</Text>
+            <Text style={styles.menuItemText}>{t.profile.about}</Text>
             <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
           </TouchableOpacity>
+
+          {/* Dil / Language seçici */}
+          <View style={styles.menuItem}>
+            <Ionicons name="language-outline" size={20} color="#374151" />
+            <Text style={styles.menuItemText}>{t.profile.language}</Text>
+            <View style={{ flexDirection: 'row', backgroundColor: '#F3F4F6', borderRadius: 8, padding: 3, gap: 2 }}>
+              {(['tr', 'en'] as const).map((l) => (
+                <TouchableOpacity
+                  key={l}
+                  onPress={() => setLang(l)}
+                  style={{
+                    paddingHorizontal: 12, paddingVertical: 5, borderRadius: 6,
+                    backgroundColor: lang === l ? '#FFFFFF' : 'transparent',
+                  }}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: lang === l ? '#FF5A1F' : '#9CA3AF' }}>
+                    {l.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
         </View>
 
         {/* Logout */}
         <View style={styles.logoutSection}>
           <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
             <Ionicons name="log-out-outline" size={20} color="#EF4444" />
-            <Text style={styles.logoutText}>Çıkış Yap</Text>
+            <Text style={styles.logoutText}>{t.profile.logout}</Text>
           </TouchableOpacity>
         </View>
 
@@ -303,7 +327,7 @@ export function ProfileScreen({ navigation }: Props) {
             disabled={deletingAccount}
           >
             <Text style={styles.deleteBtnText}>
-              {deletingAccount ? 'Siliniyor...' : 'Hesabı Sil'}
+              {deletingAccount ? t.profile.deleting : t.profile.deleteAccount}
             </Text>
           </TouchableOpacity>
         </View>

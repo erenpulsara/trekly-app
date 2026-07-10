@@ -9,6 +9,7 @@ import TourCardImage from '../turlar/TourCardImage';
 import type { Tour } from '@/lib/types';
 import { T, type Lang } from '@/lib/i18n';
 import { splitCategories } from '@/lib/category-utils';
+import { displayCategory } from '@/lib/category-i18n';
 import { REWARDS_ENABLED } from '@/lib/features';
 import TurlarCategories from '../turlar/TurlarCategories';
 import TurlarSearchBar from '../turlar/TurlarSearchBar';
@@ -175,7 +176,7 @@ export default async function AnasayfaPage() {
           width: '100%',
           textShadow: '0 2px 12px rgba(0,0,0,0.35)',
         }}>
-          Sıradaki Maceranı Keşfet
+          {tt.heroTitle}
         </p>
         <Suspense>
           <TurlarSearchBar
@@ -186,8 +187,10 @@ export default async function AnasayfaPage() {
               searchCategory: tt.searchCategory,
               searchBtn:      tt.searchBtn,
               allCategories:  tt.allCategories,
+              allMonths:      tt.allMonths,
             }}
             categories={categories}
+            lang={lang}
           />
         </Suspense>
       </TurlarHero>
@@ -196,7 +199,7 @@ export default async function AnasayfaPage() {
       <div id="cat-section" className="tr-cat-pad" style={{ background: 'white', borderBottom: '1px solid #EAEAEA', padding: '0 48px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <Suspense>
-            <TurlarCategories activeCategory="" dynamicCategories={categories} basePath="/etkinlikler" />
+            <TurlarCategories activeCategory="" dynamicCategories={categories} basePath="/etkinlikler" lang={lang} />
           </Suspense>
         </div>
       </div>
@@ -250,7 +253,7 @@ export default async function AnasayfaPage() {
                                 padding: '3px 9px', borderRadius: '6px',
                                 letterSpacing: '0.04em', textTransform: 'uppercase',
                               }}>
-                                {cat}
+                                {displayCategory(cat, lang)}
                               </span>
                             ))}
                           </div>

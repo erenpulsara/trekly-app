@@ -1,5 +1,9 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { T, type Lang, getLangClient } from '@/lib/i18n';
 
 const AGENCY_URL = process.env.NEXT_PUBLIC_AGENCY_URL ?? 'https://acenta.treklyapp.com';
 
@@ -11,6 +15,9 @@ const linkStyle: React.CSSProperties = {
 };
 
 export default function SiteFooter() {
+  const [lang, setLang] = useState<Lang>('tr');
+  useEffect(() => { setLang(getLangClient()); }, []);
+  const tf = T[lang].footer;
   return (
     <footer style={{ background: '#1A1A1A', padding: '14px 48px 10px' }}>
       <style>{`
@@ -18,8 +25,14 @@ export default function SiteFooter() {
           .sf-inner { flex-direction: column !important; align-items: center !important; gap: 16px !important; text-align: center; }
           .sf-left  { flex-direction: column !important; align-items: center !important; gap: 12px !important; }
           .sf-divider { display: none !important; }
-          .sf-links { justify-content: center !important; }
-          .sf-right { justify-content: center !important; }
+          /* Linkler tek sırada yan yana kalsın */
+          .sf-links { justify-content: center !important; flex-wrap: nowrap !important; gap: 14px !important; }
+          .sf-links a { font-size: 0.78rem !important; white-space: nowrap; }
+          /* İkonlar tek sırada sıralansın — mağaza rozetleri kompakt */
+          .sf-right { justify-content: center !important; flex-wrap: nowrap !important; gap: 7px !important; }
+          .sf-store { padding: 5px 8px !important; }
+          .sf-store .sf-store-sub { display: none !important; }
+          .sf-store .sf-store-name { font-size: 0.7rem !important; }
         }
       `}</style>
       <div className="sf-inner" style={{
@@ -35,10 +48,10 @@ export default function SiteFooter() {
           </div>
           <div className="sf-divider" style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.12)' }} />
           <div className="sf-links" style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
-            <Link href="/hakkimizda" style={linkStyle}>Hakkımızda</Link>
-            <Link href="/privacy"    style={linkStyle}>Gizlilik</Link>
-            <Link href="/terms"      style={linkStyle}>Koşullar</Link>
-            <a href={AGENCY_URL} target="_blank" rel="noopener noreferrer" style={linkStyle}>Acenta Paneli</a>
+            <Link href="/hakkimizda" style={linkStyle}>{tf.about}</Link>
+            <Link href="/privacy"    style={linkStyle}>{tf.privacy}</Link>
+            <Link href="/terms"      style={linkStyle}>{tf.terms}</Link>
+            <a href={AGENCY_URL} target="_blank" rel="noopener noreferrer" style={linkStyle}>{tf.agency}</a>
           </div>
         </div>
 
@@ -73,7 +86,7 @@ export default function SiteFooter() {
           </a>
 
           {/* App Store */}
-          <a href="#" aria-label="App Store" style={{
+          <a href="https://apps.apple.com/tr/app/trekly/id6782879422?l=tr" target="_blank" rel="noopener noreferrer" aria-label="App Store" className="sf-store" style={{
             order: 1,
             display: 'inline-flex', alignItems: 'center', gap: '7px',
             background: '#000', border: '1px solid rgba(255,255,255,0.18)',
@@ -83,13 +96,13 @@ export default function SiteFooter() {
               <path d="M16.462 12.707c-.028-3.175 2.597-4.72 2.715-4.793-1.482-2.165-3.784-2.46-4.6-2.493-1.953-.198-3.815 1.153-4.804 1.153-.99 0-2.514-1.126-4.133-1.095-2.121.032-4.08 1.237-5.17 3.126C-1.684 12.558.73 18.965 2.83 22.398c1.05 1.503 2.29 3.188 3.91 3.128 1.576-.063 2.168-1.006 4.07-1.006 1.9 0 2.45 1.006 4.12.974 1.694-.028 2.762-1.523 3.803-3.034a13.46 13.46 0 001.73-3.514c-.04-.016-3.977-1.523-4.001-6.24zM13.28 3.612C14.15 2.556 14.743 1.1 14.58 0c-1.273.05-2.823.85-3.734 1.88-.818.924-1.534 2.404-1.34 3.82 1.42.11 2.874-.718 3.773-2.09z"/>
             </svg>
             <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-              <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>Download on the</span>
-              <span style={{ fontSize: '0.78rem', color: 'white', fontWeight: 600 }}>App Store</span>
+              <span className="sf-store-sub" style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>Download on the</span>
+              <span className="sf-store-name" style={{ fontSize: '0.78rem', color: 'white', fontWeight: 600 }}>App Store</span>
             </div>
           </a>
 
           {/* Google Play */}
-          <a href="#" aria-label="Google Play" style={{
+          <a href="#" aria-label="Google Play" className="sf-store" style={{
             order: 2,
             display: 'inline-flex', alignItems: 'center', gap: '7px',
             background: '#000', border: '1px solid rgba(255,255,255,0.18)',
@@ -108,8 +121,8 @@ export default function SiteFooter() {
               </defs>
             </svg>
             <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-              <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>Get it on</span>
-              <span style={{ fontSize: '0.78rem', color: 'white', fontWeight: 600 }}>Google Play</span>
+              <span className="sf-store-sub" style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>Get it on</span>
+              <span className="sf-store-name" style={{ fontSize: '0.78rem', color: 'white', fontWeight: 600 }}>Google Play</span>
             </div>
           </a>
         </div>

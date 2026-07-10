@@ -12,6 +12,7 @@ import { Tour } from '../../types';
 import { DifficultyBadge } from '../common/DifficultyBadge';
 import { formatShortDate } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
+import { useLanguage } from '../../context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
@@ -22,6 +23,7 @@ interface FeaturedTourCardProps {
 }
 
 export function FeaturedTourCard({ tour, onPress, onBook }: FeaturedTourCardProps) {
+  const { lang } = useLanguage();
   const startStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
   const endStr = tour.end_date ?? tour.dates?.[1]?.date ?? null;
 
@@ -58,9 +60,9 @@ export function FeaturedTourCard({ tour, onPress, onBook }: FeaturedTourCardProp
           <View style={styles.infoRow}>
             <Ionicons name="calendar-outline" size={14} color="#6B7280" />
             <Text style={styles.infoText}>
-              {startStr ? formatShortDate(startStr) : ''}
+              {startStr ? formatShortDate(startStr, lang) : ''}
               {startStr && endStr ? ' – ' : ''}
-              {endStr ? formatShortDate(endStr) : ''}
+              {endStr ? formatShortDate(endStr, lang) : ''}
             </Text>
           </View>
         )}

@@ -1,42 +1,46 @@
+import type { Lang } from '../i18n/translations';
+
 function parseLocalDate(dateString: string): Date {
   // Date-only strings parse as UTC; pin to local midnight to avoid day shifts
   return new Date(dateString.includes('T') ? dateString : dateString + 'T00:00:00');
 }
 
-export function formatDate(dateString: string): string {
+const dateLocale = (lang: Lang) => (lang === 'en' ? 'en-US' : 'tr-TR');
+
+export function formatDate(dateString: string, lang: Lang = 'tr'): string {
   const date = parseLocalDate(dateString);
-  return date.toLocaleDateString('tr-TR', {
+  return date.toLocaleDateString(dateLocale(lang), {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
 }
 
-export function formatDateWithDay(dateString: string): string {
+export function formatDateWithDay(dateString: string, lang: Lang = 'tr'): string {
   const date = parseLocalDate(dateString);
-  const main = date.toLocaleDateString('tr-TR', {
+  const main = date.toLocaleDateString(dateLocale(lang), {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
-  const weekday = date.toLocaleDateString('tr-TR', { weekday: 'long' });
+  const weekday = date.toLocaleDateString(dateLocale(lang), { weekday: 'long' });
   return `${main} ${weekday}`;
 }
 
-export function formatDateRange(start: string, end?: string | null): string {
+export function formatDateRange(start: string, end?: string | null, lang: Lang = 'tr'): string {
   const s = parseLocalDate(start);
   if (!end) {
-    return s.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+    return s.toLocaleDateString(dateLocale(lang), { day: 'numeric', month: 'short', year: 'numeric' });
   }
   const e = parseLocalDate(end);
-  const sTxt = s.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
-  const eTxt = e.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+  const sTxt = s.toLocaleDateString(dateLocale(lang), { day: 'numeric', month: 'short' });
+  const eTxt = e.toLocaleDateString(dateLocale(lang), { day: 'numeric', month: 'short', year: 'numeric' });
   return `${sTxt} – ${eTxt}`;
 }
 
-export function formatShortDate(dateString: string): string {
+export function formatShortDate(dateString: string, lang: Lang = 'tr'): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString('tr-TR', {
+  return date.toLocaleDateString(dateLocale(lang), {
     day: 'numeric',
     month: 'short',
   });

@@ -17,6 +17,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { MainStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../context/AuthContext';
 import { usersService } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 
 type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'EditProfile'>;
@@ -24,6 +25,7 @@ type Props = {
 
 export function EditProfileScreen({ navigation }: Props) {
   const { user, updateUser } = useAuth();
+  const { t } = useLanguage();
 
   const [name, setName] = useState(user?.name ?? '');
   const [surname, setSurname] = useState(user?.surname ?? '');
@@ -32,7 +34,7 @@ export function EditProfileScreen({ navigation }: Props) {
 
   async function handleSave() {
     if (!name.trim() || !surname.trim()) {
-      Alert.alert('Hata', 'Ad ve soyad boş bırakılamaz.');
+      Alert.alert(t.common.error, t.editProfile.emptyError);
       return;
     }
     setSaving(true);
@@ -43,11 +45,11 @@ export function EditProfileScreen({ navigation }: Props) {
         phone: phone.trim(),
       });
       updateUser({ name: updated.name, surname: updated.surname, phone: updated.phone ?? undefined });
-      Alert.alert('Başarılı', 'Profiliniz güncellendi.', [
-        { text: 'Tamam', onPress: () => navigation.goBack() },
+      Alert.alert(t.common.success, t.editProfile.updated, [
+        { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (err) {
-      Alert.alert('Hata', err instanceof Error ? err.message : 'Profil güncellenemedi.');
+      Alert.alert(t.common.error, err instanceof Error ? err.message : t.editProfile.updateFailed);
     } finally {
       setSaving(false);
     }
@@ -64,7 +66,7 @@ export function EditProfileScreen({ navigation }: Props) {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={22} color="#1A1A1A" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profili Düzenle</Text>
+          <Text style={styles.headerTitle}>{t.editProfile.title}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -74,47 +76,47 @@ export function EditProfileScreen({ navigation }: Props) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.field}>
-            <Text style={styles.label}>Ad</Text>
+            <Text style={styles.label}>{t.editProfile.name}</Text>
             <TextInput
               style={styles.input}
               value={name}
               onChangeText={setName}
-              placeholder="Adınız"
+              placeholder={t.editProfile.namePh}
               placeholderTextColor="#9CA3AF"
             />
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Soyad</Text>
+            <Text style={styles.label}>{t.editProfile.surname}</Text>
             <TextInput
               style={styles.input}
               value={surname}
               onChangeText={setSurname}
-              placeholder="Soyadınız"
+              placeholder={t.editProfile.surnamePh}
               placeholderTextColor="#9CA3AF"
             />
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Telefon</Text>
+            <Text style={styles.label}>{t.editProfile.phone}</Text>
             <TextInput
               style={styles.input}
               value={phone}
               onChangeText={setPhone}
-              placeholder="05XX XXX XX XX"
+              placeholder={t.editProfile.phonePh}
               placeholderTextColor="#9CA3AF"
               keyboardType="phone-pad"
             />
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>E-posta</Text>
+            <Text style={styles.label}>{t.editProfile.email}</Text>
             <TextInput
               style={[styles.input, styles.inputDisabled]}
               value={user?.email ?? ''}
               editable={false}
             />
-            <Text style={styles.hint}>E-posta adresi değiştirilemez.</Text>
+            <Text style={styles.hint}>{t.editProfile.emailNote}</Text>
           </View>
         </ScrollView>
 
@@ -127,7 +129,7 @@ export function EditProfileScreen({ navigation }: Props) {
             {saving ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.saveBtnText}>Kaydet</Text>
+              <Text style={styles.saveBtnText}>{t.editProfile.save}</Text>
             )}
           </TouchableOpacity>
         </View>

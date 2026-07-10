@@ -26,7 +26,9 @@ import { Tour, Difficulty } from '../../types';
 import { formatDate, formatDateRange, formatDateWithDay, formatDistance, formatPrice } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
 import { splitCategories } from '../../utils/category';
+import { displayCategory, localeUpper } from '../../i18n/categories';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 function scoreRelated(current: Tour, candidate: Tour): number {
   let score = 0;
@@ -38,15 +40,6 @@ function scoreRelated(current: Tour, candidate: Tour): number {
   return score;
 }
 
-const DIFF_LABEL: Record<Difficulty, string> = {
-  easy: 'Kolay',
-  easy_medium: 'Kolay-Orta',
-  medium: 'Orta',
-  medium_hard: 'Orta-Zor',
-  hard: 'Zor',
-  very_hard: 'Çok Zor',
-  extreme: 'Ekstrem',
-};
 
 const { width, height } = Dimensions.get('window');
 const HERO_HEIGHT = height * 0.42;
@@ -60,6 +53,7 @@ type DetailTab = 'info' | 'program' | 'notes' | 'gallery';
 
 
 export function TourDetailScreen({ navigation, route }: Props) {
+  const { t, lang } = useLanguage();
   const { tourId } = route.params;
   const { user, isGuest, exitGuest } = useAuth();
   const insets = useSafeAreaInsets();
@@ -95,7 +89,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
         })
         .catch(() => {});
     } catch {
-      setError('Tur bilgileri yüklenemedi.');
+      setError(t.tourDetail.loadError);
     } finally {
       setIsLoading(false);
     }
@@ -115,11 +109,11 @@ export function TourDetailScreen({ navigation, route }: Props) {
   async function toggleFavorite() {
     if (isGuest || !user) {
       Alert.alert(
-        'Giriş Gerekli',
-        'Favorilere eklemek için giriş yapmanız gerekiyor.',
+        t.tourDetail.loginRequired,
+        t.tourDetail.loginForFav,
         [
-          { text: 'İptal', style: 'cancel' },
-          { text: 'Giriş Yap', onPress: exitGuest },
+          { text: t.common.cancel, style: 'cancel' },
+          { text: t.tourDetail.login, onPress: exitGuest },
         ]
       );
       return;
@@ -135,7 +129,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
   }
 
   if (isLoading) return <LoadingSpinner />;
-  if (!tour) return <ErrorMessage message={error ?? 'Tur bulunamadı.'} onRetry={loadTour} />;
+  if (!tour) return <ErrorMessage message={error ?? t.tourDetail.notFound} onRetry={loadTour} />;
 
   const selectedDate = tour.dates.find((d) => d.id === selectedDateId);
 
@@ -145,10 +139,10 @@ export function TourDetailScreen({ navigation, route }: Props) {
   const hasGallery = (tour.photo_urls?.length ?? 0) > 0;
 
   const tabs: Array<{ key: DetailTab; label: string }> = [
-    { key: 'info', label: 'Etkinlik Bilgileri' },
-    ...(hasProgram ? [{ key: 'program' as DetailTab, label: 'Program' }] : []),
-    ...(hasNotes ? [{ key: 'notes' as DetailTab, label: 'Notlar' }] : []),
-    ...(hasGallery ? [{ key: 'gallery' as DetailTab, label: 'Galeri' }] : []),
+    { key: 'info', label: t.tourDetail.tabInfo },
+    ...(hasProgram ? [{ key: 'program' as DetailTab, label: t.tourDetail.tabProgram }] : []),
+    ...(hasNotes ? [{ key: 'notes' as DetailTab, label: t.tourDetail.tabNotes }] : []),
+    ...(hasGallery ? [{ key: 'gallery' as DetailTab, label: t.tourDetail.tabGallery }] : []),
   ];
   const effectiveTab = tabs.some((t) => t.key === activeTab) ? activeTab : 'info';
 
@@ -163,7 +157,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
             <View style={styles.locationSection}>
               <View style={styles.sectionHeader}>
                 <Ionicons name="location-outline" size={18} color="#FF5A1F" />
-                <Text style={styles.sectionTitle}>Konum</Text>
+                <Text style={styles.sectionTitle}>{t.tourDetail.locationTitle}</Text>
               </View>
               <Text style={styles.locationText}>{tour.location_name}</Text>
             </View>
@@ -182,7 +176,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
                 <View style={styles.divider} />
                 <View style={styles.sectionHeader}>
                   <Ionicons name="bed-outline" size={18} color="#FF5A1F" />
-                  <Text style={styles.sectionTitle}>Konaklama</Text>
+                  <Text style={styles.sectionTitle}>{t.tourDetail.accommodation}</Text>
                 </View>
                 <Text style={styles.description}>{tour.accommodation}</Text>
                 {tour.accommodation_url ? (
@@ -202,7 +196,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
                 <View style={styles.divider} />
                 <View style={styles.sectionHeader}>
                   <Ionicons name="bus-outline" size={18} color="#FF5A1F" />
-                  <Text style={styles.sectionTitle}>Ulaşım</Text>
+                  <Text style={styles.sectionTitle}>{t.tourDetail.transport}</Text>
                 </View>
                 <Text style={styles.description}>{tour.transportation}</Text>
               </>
@@ -222,7 +216,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
                 <View style={styles.divider} />
                 <View style={styles.sectionHeader}>
                   <Ionicons name="flag-outline" size={18} color="#FF5A1F" />
-                  <Text style={styles.sectionTitle}>Buluşma Noktaları</Text>
+                  <Text style={styles.sectionTitle}>{t.tourDetail.meetingPoints}</Text>
                 </View>
                 <Text style={styles.description}>{tour.meeting_points}</Text>
               </>
@@ -310,13 +304,13 @@ export function TourDetailScreen({ navigation, route }: Props) {
             <View style={styles.badgesRow}>
               {splitCategories(tour.category).map((cat) => (
                 <View key={cat} style={styles.categoryBadge}>
-                  <Text style={styles.categoryBadgeText}>{cat}</Text>
+                  <Text style={styles.categoryBadgeText}>{localeUpper(displayCategory(cat, lang), lang)}</Text>
                 </View>
               ))}
               {tour.location_name ? (
                 <View style={styles.locationBadge}>
                   <Ionicons name="location-outline" size={12} color="#0369A1" />
-                  <Text style={styles.locationBadgeText}>{tour.location_name}</Text>
+                  <Text style={styles.locationBadgeText}>{localeUpper(tour.location_name ?? '', 'tr')}</Text>
                 </View>
               ) : null}
             </View>
@@ -326,31 +320,31 @@ export function TourDetailScreen({ navigation, route }: Props) {
           <View style={styles.infoGrid}>
             <View style={styles.infoCell}>
               <Ionicons name="calendar-outline" size={20} color="#FF5A1F" />
-              <Text style={styles.infoCellLabel}>Tarih</Text>
+              <Text style={styles.infoCellLabel}>{localeUpper(t.tourDetail.date, lang)}</Text>
               <Text style={styles.infoCellValue}>
                 {tour.start_date
-                  ? formatDateRange(tour.start_date, tour.end_date)
+                  ? formatDateRange(tour.start_date, tour.end_date, lang)
                   : tour.dates?.[0]
-                    ? formatDate(tour.dates[0].date)
-                    : 'Belirsiz'}
+                    ? formatDate(tour.dates[0].date, lang)
+                    : t.tourDetail.undefined}
               </Text>
             </View>
             <View style={styles.infoCell}>
               <Ionicons name="bar-chart-outline" size={20} color="#FF5A1F" />
-              <Text style={styles.infoCellLabel}>Zorluk</Text>
+              <Text style={styles.infoCellLabel}>{localeUpper(t.tourDetail.difficulty, lang)}</Text>
               <Text style={styles.infoCellValue}>
-                {DIFF_LABEL[tour.difficulty] ?? 'Kolay'}
+                {t.tourDetail.diff[tour.difficulty] ?? t.tourDetail.diff.easy}
               </Text>
             </View>
             <View style={styles.infoCell}>
               <Ionicons name="people-outline" size={20} color="#FF5A1F" />
-              <Text style={styles.infoCellLabel}>Kapasite</Text>
-              <Text style={styles.infoCellValue}>{tour.max_participants} Kişi</Text>
+              <Text style={styles.infoCellLabel}>{localeUpper(t.tourDetail.capacity, lang)}</Text>
+              <Text style={styles.infoCellValue}>{tour.max_participants} {t.tourDetail.people}</Text>
             </View>
             {tour.price != null && Number(tour.price) > 0 ? (
               <View style={styles.infoCell}>
                 <Ionicons name="card-outline" size={20} color="#FF5A1F" />
-                <Text style={styles.infoCellLabel}>Ücret</Text>
+                <Text style={styles.infoCellLabel}>{localeUpper(t.tourDetail.price, lang)}</Text>
                 <Text style={styles.infoCellValue}>
                   {formatPrice(Number(tour.price), tour.price_currency)}
                 </Text>
@@ -358,13 +352,13 @@ export function TourDetailScreen({ navigation, route }: Props) {
             ) : tour.distance_km != null ? (
               <View style={styles.infoCell}>
                 <Ionicons name="time-outline" size={20} color="#FF5A1F" />
-                <Text style={styles.infoCellLabel}>Mesafe</Text>
+                <Text style={styles.infoCellLabel}>{localeUpper(t.tourDetail.distance, lang)}</Text>
                 <Text style={styles.infoCellValue}>{formatDistance(tour.distance_km)}</Text>
               </View>
             ) : REWARDS_ENABLED ? (
               <View style={styles.infoCell}>
                 <Ionicons name="star-outline" size={20} color="#FF5A1F" />
-                <Text style={styles.infoCellLabel}>Puan</Text>
+                <Text style={styles.infoCellLabel}>{localeUpper(t.tourDetail.points, lang)}</Text>
                 <Text style={styles.infoCellValue}>{tour.points} XP</Text>
               </View>
             ) : null}
@@ -389,7 +383,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
               <View style={styles.organizerRow}>
                 <Ionicons name="business-outline" size={18} color="#6B7280" />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.organizerLabel}>Düzenleyen</Text>
+                  <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.organizer, lang)}</Text>
                   <Text style={styles.organizerValue}>{tour.organizer || tour.agency_name}</Text>
                 </View>
               </View>
@@ -403,7 +397,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
               >
                 <Ionicons name="person-outline" size={18} color="#6B7280" />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.organizerLabel}>Rehber</Text>
+                  <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.guide, lang)}</Text>
                   <Text style={[styles.organizerValue, tour.guide_instagram ? { color: '#FF5A1F' } : null]}>
                     {tour.guide_name}
                     {tour.guide_instagram ? '  ' : ''}
@@ -418,8 +412,8 @@ export function TourDetailScreen({ navigation, route }: Props) {
               <View style={styles.organizerRow}>
                 <Ionicons name="calendar-outline" size={18} color="#6B7280" />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.organizerLabel}>Başlangıç Tarihi</Text>
-                  <Text style={styles.organizerValue}>{formatDateWithDay(tour.start_date)}</Text>
+                  <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.startDate, lang)}</Text>
+                  <Text style={styles.organizerValue}>{formatDateWithDay(tour.start_date, lang)}</Text>
                 </View>
               </View>
             ) : null}
@@ -427,8 +421,8 @@ export function TourDetailScreen({ navigation, route }: Props) {
               <View style={styles.organizerRow}>
                 <Ionicons name="calendar-outline" size={18} color="#6B7280" />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.organizerLabel}>Bitiş Tarihi</Text>
-                  <Text style={styles.organizerValue}>{formatDateWithDay(tour.end_date)}</Text>
+                  <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.endDate, lang)}</Text>
+                  <Text style={styles.organizerValue}>{formatDateWithDay(tour.end_date, lang)}</Text>
                 </View>
               </View>
             ) : null}
@@ -436,7 +430,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
               <View style={styles.organizerRow}>
                 <Ionicons name="location-outline" size={18} color="#6B7280" />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.organizerLabel}>Buluşma Noktası</Text>
+                  <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.meetingPoint, lang)}</Text>
                   <Text style={styles.organizerValue}>{tour.meeting_points}</Text>
                 </View>
               </View>
@@ -445,7 +439,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
               <View style={styles.organizerRow}>
                 <Ionicons name="flag-outline" size={18} color="#6B7280" />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.organizerLabel}>Hedef Lokasyon</Text>
+                  <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.targetLocation, lang)}</Text>
                   <Text style={styles.organizerValue}>{tour.target_location}</Text>
                 </View>
               </View>
@@ -458,7 +452,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
               >
                 <Ionicons name="call-outline" size={18} color="#6B7280" />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.organizerLabel}>İrtibat No</Text>
+                  <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.contactNo, lang)}</Text>
                   <Text style={[styles.organizerValue, { color: '#FF5A1F' }]}>{tour.contact_phone}</Text>
                 </View>
               </TouchableOpacity>
@@ -468,7 +462,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
             <View style={styles.organizerRow}>
               <Ionicons name="time-outline" size={18} color="#6B7280" />
               <View style={{ flex: 1 }}>
-                <Text style={styles.organizerLabel}>Kontenjan</Text>
+                <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.quota, lang)}</Text>
                 {(() => {
                   const booked = tour.booking_count ?? 0;
                   const remaining = Math.max(0, tour.max_participants - booked);
@@ -480,7 +474,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
                         <View style={[styles.quotaBarFill, { width: `${pct}%` }, isFull && { backgroundColor: '#EF4444' }]} />
                       </View>
                       <Text style={[styles.quotaText, isFull && { color: '#EF4444' }]}>
-                        {isFull ? 'Doldu' : `${remaining} yer kaldı`}
+                        {isFull ? t.tourDetail.full : `${remaining} ${t.tourDetail.spotsLeft}`}
                         <Text style={styles.quotaSubText}>  ({booked}/{tour.max_participants})</Text>
                       </Text>
                     </>
@@ -493,7 +487,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
           {/* Date selector — always show when dates exist */}
           {tour.dates.length > 0 && (
             <View style={styles.dateSelector}>
-              <Text style={styles.dateSelectorLabel}>Tarih Seçin</Text>
+              <Text style={styles.dateSelectorLabel}>{t.tourDetail.selectDate}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dateSelectorList}>
                 {tour.dates.map((d) => (
                   <TouchableOpacity
@@ -505,7 +499,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
                     onPress={() => setSelectedDateId(d.id)}
                   >
                     <Text style={[styles.dateChipText, selectedDateId === d.id && styles.dateChipTextActive]}>
-                      {formatDate(d.date)}
+                      {formatDate(d.date, lang)}
                     </Text>
                     <Text style={[styles.dateChipSlots, selectedDateId === d.id && styles.dateChipTextActive]}>
                       {d.available_slots} yer
@@ -540,8 +534,8 @@ export function TourDetailScreen({ navigation, route }: Props) {
           {/* İlginizi Çekebilir */}
           {relatedTours.length > 0 && (
             <View style={styles.relatedSection}>
-              <Text style={styles.relatedTitle}>İlginizi Çekebilir</Text>
-              <Text style={styles.relatedSubtitle}>Benzer turlar ve öneriler</Text>
+              <Text style={styles.relatedTitle}>{t.tourDetail.relatedTitle}</Text>
+              <Text style={styles.relatedSubtitle}>{t.tourDetail.relatedSubtitle}</Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -582,17 +576,17 @@ export function TourDetailScreen({ navigation, route }: Props) {
 
             if (isGuest) {
               Alert.alert(
-                'Giriş Gerekli',
-                'Rezervasyon yapmak için giriş yapmanız gerekiyor.',
+                t.tourDetail.loginRequired,
+                t.tourDetail.loginForBooking,
                 [
-                  { text: 'İptal', style: 'cancel' },
-                  { text: 'Giriş Yap', onPress: exitGuest },
+                  { text: t.common.cancel, style: 'cancel' },
+                  { text: t.tourDetail.login, onPress: exitGuest },
                 ]
               );
               return;
             }
             if (!selectedDateId) {
-              Alert.alert('Tarih Seçin', 'Rezervasyon için bir tur tarihi seçmelisiniz.');
+              Alert.alert(t.tourDetail.selectDate, t.tourDetail.selectDateMsg);
               return;
             }
             navigation.navigate('BookingForm', { tourId: tour.id, tourDateId: selectedDateId });
@@ -600,7 +594,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
           activeOpacity={0.85}
         >
           <Text style={styles.bookButtonText}>
-            {isGuest && tour.dates?.length > 0 ? 'Rezervasyon için giriş yap' : 'Maceraya Katıl'}
+            {isGuest && tour.dates?.length > 0 ? t.tourDetail.loginToBook : t.tourDetail.joinAdventure}
           </Text>
           <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
         </TouchableOpacity>
