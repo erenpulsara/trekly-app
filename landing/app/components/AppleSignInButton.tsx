@@ -52,21 +52,37 @@ function isMobileBrowser(): boolean {
   return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 }
 
-let configuredMode: 'popup' | 'redirect' | null = null;
-async function ensureConfigured(mobile: boolean) {
+let configured = false;
+async function ensureConfigured() {
   await loadAppleScript();
   if (!window.AppleID) throw new Error('AppleID SDK not available');
-  const mode = mobile ? 'redirect' : 'popup';
-  if (configuredMode !== mode) {
+  if (!configured) {
     window.AppleID.auth.init({
       clientId: APPLE_CLIENT_ID,
       scope: 'name email',
-      redirectURI: mobile ? REDIRECT_FLOW_URI : POPUP_REDIRECT_URI,
-      usePopup: !mobile,
-      state: mobile ? window.location.pathname : undefined,
+      redirectURI: POPUP_REDIRECT_URI,
+      usePopup: true,
     });
-    configuredMode = mode;
+    configured = true;
   }
+}
+
+// Mobilde Apple'ın kendi JS SDK'sının usePopup:false modunu KULLANMIYORUZ —
+// bu, gerçek cihazlarda (Safari/iOS) "0.0.0.0" gibi anlamsız bir adrese
+// yönlendirmeyle sonuçlanan, kaynağı belirsiz bir davranışa yol açıyordu.
+// Bunun yerine standart OAuth 2.0 / OpenID Connect authorize URL'ini
+// kendimiz oluşturup Safari'yi doğrudan oraya yönlendiriyoruz — Apple'ın
+// SDK'sının iç mantığına hiç bağımlı değil, tamamen kontrolümüzde.
+function buildAppleAuthorizeUrl(): string {
+  const params = new URLSearchParams({
+    response_type: 'code id_token',
+    response_mode: 'form_post',
+    client_id: APPLE_CLIENT_ID,
+    redirect_uri: REDIRECT_FLOW_URI,
+    scope: 'name email',
+    state: window.location.pathname,
+  });
+  return `https://appleid.apple.com/auth/authorize?${params.toString()}`;
 }
 
 interface Props {
@@ -111,14 +127,15 @@ export default function AppleSignInButton({ onSuccess, onError, locale = 'tr' }:
   }, []);
 
   async function handlePress() {
+    if (mobile) {
+      // Apple'ın kendi SDK'sını hiç devreye sokmadan, doğrudan standart OAuth
+      // authorize URL'ine yönlendiriyoruz — bkz. buildAppleAuthorizeUrl yorumu.
+      window.location.href = buildAppleAuthorizeUrl();
+      return;
+    }
     setLoading(true);
     try {
-      await ensureConfigured(mobile);
-      if (mobile) {
-        // signIn() burada tam sayfa yönlendirmesi başlatır, JS akışı devam etmez.
-        await window.AppleID!.auth.signIn();
-        return;
-      }
+      await ensureConfigured();
       const result = await window.AppleID!.auth.signIn();
       if (result?.authorization?.id_token) {
         onSuccess(result.authorization.id_token);
