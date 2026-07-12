@@ -28,6 +28,8 @@ interface AuthContextValue {
     password: string,
     phone?: string
   ) => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<void>;
+  loginWithApple: (identityToken: string, fullName?: string) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (updates: Partial<AuthUser>) => void;
   continueAsGuest: () => void;
@@ -101,6 +103,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [persistSession]
   );
 
+  const loginWithGoogle = useCallback(
+    async (idToken: string) => {
+      const resp = await authService.googleLogin(idToken);
+      await persistSession(resp);
+    },
+    [persistSession]
+  );
+
+  const loginWithApple = useCallback(
+    async (identityToken: string, fullName?: string) => {
+      const resp = await authService.appleLogin(identityToken, fullName);
+      await persistSession(resp);
+    },
+    [persistSession]
+  );
+
   const logout = useCallback(async () => {
     await SecureStore.deleteItemAsync('auth_token');
     await AsyncStorage.removeItem('auth_user');
@@ -117,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, isGuest, login, register, logout, updateUser, continueAsGuest, exitGuest }}>
+    <AuthContext.Provider value={{ user, token, isLoading, isGuest, login, register, loginWithGoogle, loginWithApple, logout, updateUser, continueAsGuest, exitGuest }}>
       {children}
     </AuthContext.Provider>
   );

@@ -18,13 +18,15 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { GoogleSignInButton } from '../../components/common/GoogleSignInButton';
+import { AppleSignInButton } from '../../components/common/AppleSignInButton';
 
 type Props = {
   navigation: StackNavigationProp<AuthStackParamList, 'Login'>;
 };
 
 export function LoginScreen({ navigation }: Props) {
-  const { login } = useAuth();
+  const { login, loginWithGoogle, loginWithApple } = useAuth();
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,6 +49,34 @@ export function LoginScreen({ navigation }: Props) {
     setIsLoading(true);
     try {
       await login(email.trim().toLowerCase(), password);
+    } catch (err) {
+      Alert.alert(
+        t.auth.loginFailed,
+        err instanceof Error ? err.message : t.auth.loginFailedMsg
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleGoogleSuccess(idToken: string) {
+    setIsLoading(true);
+    try {
+      await loginWithGoogle(idToken);
+    } catch (err) {
+      Alert.alert(
+        t.auth.loginFailed,
+        err instanceof Error ? err.message : t.auth.loginFailedMsg
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleAppleSuccess(identityToken: string, fullName?: string) {
+    setIsLoading(true);
+    try {
+      await loginWithApple(identityToken, fullName);
     } catch (err) {
       Alert.alert(
         t.auth.loginFailed,
@@ -159,6 +189,24 @@ export function LoginScreen({ navigation }: Props) {
                 <Text style={styles.submitButtonText}>{t.auth.loginBtn}</Text>
               )}
             </TouchableOpacity>
+
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>{t.auth.orDivider}</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <GoogleSignInButton
+              onSuccess={handleGoogleSuccess}
+              onError={(msg) => Alert.alert(t.auth.loginFailed, msg)}
+            />
+
+            <View style={{ marginTop: 10 }}>
+              <AppleSignInButton
+                onSuccess={handleAppleSuccess}
+                onError={(msg) => Alert.alert(t.auth.loginFailed, msg)}
+              />
+            </View>
           </View>
 
           {/* Footer */}
@@ -319,5 +367,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#FF5A1F',
     fontWeight: '600',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 4,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E5E5E5',
+  },
+  dividerText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#9CA3AF',
   },
 });

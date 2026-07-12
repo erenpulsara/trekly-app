@@ -93,6 +93,28 @@ export async function userLogin(email: string, password: string): Promise<WebUse
   return storeSession(data);
 }
 
+export async function userGoogleLogin(idToken: string): Promise<WebUser> {
+  const res = await fetch(`${API_URL}/auth/user/google`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idToken }),
+  });
+  if (!res.ok) throw new UserApiError(res.status, await parseErrorMessage(res));
+  const data = (await res.json()) as LoginResponse;
+  return storeSession(data);
+}
+
+export async function userAppleLogin(identityToken: string): Promise<WebUser> {
+  const res = await fetch(`${API_URL}/auth/user/apple`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identityToken }),
+  });
+  if (!res.ok) throw new UserApiError(res.status, await parseErrorMessage(res));
+  const data = (await res.json()) as LoginResponse;
+  return storeSession(data);
+}
+
 export async function userRegister(
   name: string,
   surname: string,

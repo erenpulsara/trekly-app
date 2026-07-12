@@ -66,6 +66,20 @@ export const authService = {
     });
   },
 
+  async googleLogin(idToken: string): Promise<LoginResponse> {
+    return request<LoginResponse>('/auth/user/google', {
+      method: 'POST',
+      body: JSON.stringify({ idToken }),
+    });
+  },
+
+  async appleLogin(identityToken: string, fullName?: string): Promise<LoginResponse> {
+    return request<LoginResponse>('/auth/user/apple', {
+      method: 'POST',
+      body: JSON.stringify({ identityToken, fullName }),
+    });
+  },
+
   async forgotPassword(email: string): Promise<{ message: string }> {
     return request<{ message: string }>('/auth/user/forgot-password', {
       method: 'POST',

@@ -10,6 +10,8 @@ import { Repository, MoreThan } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { OAuth2Client } from 'google-auth-library';
+import appleSignin from 'apple-signin-auth';
 import { Agency } from '../entities/agency.entity';
 import { User } from '../entities/user.entity';
 import { VerificationToken } from '../entities/verification-token.entity';
@@ -215,13 +217,118 @@ export class AuthService {
 
   async loginUser(dto: UserLoginDto) {
     const user = await this.userRepo.findOne({ where: { email: dto.email } });
-    if (!user) {
+    if (!user || !user.password_hash) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const valid = await bcrypt.compare(dto.password, user.password_hash);
     if (!valid) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const token = this.signUserToken(user.id, user.email);
+    const { password_hash: _ph, ...userData } = user;
+    return { access_token: token, ...userData };
+  }
+
+  // Google ID token'ı doğrulayıp e-postaya göre kullanıcıyı bulur/oluşturur/eşler.
+  // Şifre gerekmez; imza doğrulaması Google'ın public sertifikalarıyla yapılır.
+  async loginWithGoogle(idToken: string) {
+    const webClientId = this.configService.get<string>('GOOGLE_WEB_CLIENT_ID');
+    const androidClientId = this.configService.get<string>('GOOGLE_ANDROID_CLIENT_ID');
+    const androidClientIdEas = this.configService.get<string>('GOOGLE_ANDROID_CLIENT_ID_EAS');
+    const iosClientId = this.configService.get<string>('GOOGLE_IOS_CLIENT_ID');
+    const audience = [webClientId, androidClientId, androidClientIdEas, iosClientId].filter((id): id is string => !!id);
+    if (audience.length === 0) {
+      throw new UnauthorizedException('Google login is not configured');
+    }
+
+    const client = new OAuth2Client();
+    let payload;
+    try {
+      const ticket = await client.verifyIdToken({ idToken, audience });
+      payload = ticket.getPayload();
+    } catch {
+      throw new UnauthorizedException('Invalid Google token');
+    }
+    if (!payload?.email) {
+      throw new UnauthorizedException('Invalid Google token');
+    }
+
+    const googleId = payload.sub;
+    let user = await this.userRepo.findOne({ where: { google_id: googleId } });
+
+    if (!user) {
+      user = await this.userRepo.findOne({ where: { email: payload.email } });
+      if (user) {
+        // Mevcut e-posta/şifre hesabına Google girişini bağla
+        user.google_id = googleId;
+        user = await this.userRepo.save(user);
+      }
+    }
+
+    if (!user) {
+      const created = this.userRepo.create({
+        name: payload.given_name ?? payload.name ?? 'Trekly',
+        surname: payload.family_name ?? '',
+        email: payload.email,
+        password_hash: null,
+        google_id: googleId,
+      });
+      user = await this.userRepo.save(created);
+    }
+
+    const token = this.signUserToken(user.id, user.email);
+    const { password_hash: _ph, ...userData } = user;
+    return { access_token: token, ...userData };
+  }
+
+  // Apple identity token'ı doğrulayıp e-postaya göre kullanıcıyı bulur/oluşturur/eşler.
+  // Apple, ad-soyad ve e-postayı yalnızca İLK girişte gönderir; sonraki girişlerde
+  // sadece "sub" (apple_id) gelir, o yüzden ilk eşleme apple_id üzerinden yapılır.
+  async loginWithApple(identityToken: string, fullName?: string) {
+    const bundleId = this.configService.get<string>('APPLE_BUNDLE_ID') ?? 'com.treklyapp.treklyy';
+    const servicesId = this.configService.get<string>('APPLE_SERVICES_ID') ?? 'com.treklyapp.treklyy.web';
+    // Yalnızca yerel/dev testte kullanılır — Expo Go'nun kendi bundle ID'si.
+    // Production .env/deploy.yml'de bu değişken YOK, o yüzden canlıda hiç eklenmez.
+    const expoGoDebugId = this.configService.get<string>('APPLE_EXPO_GO_DEBUG_ID');
+    const audience = [bundleId, servicesId, expoGoDebugId].filter((id): id is string => !!id);
+
+    let payload;
+    try {
+      // Native app (bundle ID), web (Services ID) ve varsa Expo Go debug ID'si — hepsi kabul edilir.
+      payload = await appleSignin.verifyIdToken(identityToken, { audience });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[Apple verifyIdToken] failed:', err);
+      throw new UnauthorizedException('Invalid Apple token');
+    }
+
+    const appleId = payload.sub;
+    let user = await this.userRepo.findOne({ where: { apple_id: appleId } });
+
+    if (!user && payload.email) {
+      user = await this.userRepo.findOne({ where: { email: payload.email } });
+      if (user) {
+        // Mevcut e-posta/şifre hesabına Apple girişini bağla
+        user.apple_id = appleId;
+        user = await this.userRepo.save(user);
+      }
+    }
+
+    if (!user) {
+      if (!payload.email) {
+        throw new UnauthorizedException('Apple sign-in requires email on first use');
+      }
+      const [first, ...rest] = (fullName ?? 'Trekly').trim().split(/\s+/);
+      const created = this.userRepo.create({
+        name: first || 'Trekly',
+        surname: rest.join(' '),
+        email: payload.email,
+        password_hash: null,
+        apple_id: appleId,
+      });
+      user = await this.userRepo.save(created);
     }
 
     const token = this.signUserToken(user.id, user.email);

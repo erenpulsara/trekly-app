@@ -5,6 +5,8 @@ import { AgencyRegisterDto } from './dto/agency-register.dto';
 import { AgencyLoginDto } from './dto/agency-login.dto';
 import { UserRegisterDto } from './dto/user-register.dto';
 import { UserLoginDto } from './dto/user-login.dto';
+import { GoogleAuthDto } from './dto/google-auth.dto';
+import { AppleAuthDto } from './dto/apple-auth.dto';
 
 // Brute-force koruması: kimlik doğrulama uçları IP başına dakikada sınırlı
 // sayıda denemeye izin verir. Aşılırsa 429 Too Many Requests döner.
@@ -47,6 +49,18 @@ export class AuthController {
   @Post('user/login')
   loginUser(@Body() dto: UserLoginDto) {
     return this.authService.loginUser(dto);
+  }
+
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post('user/google')
+  loginWithGoogle(@Body() dto: GoogleAuthDto) {
+    return this.authService.loginWithGoogle(dto.idToken);
+  }
+
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post('user/apple')
+  loginWithApple(@Body() dto: AppleAuthDto) {
+    return this.authService.loginWithApple(dto.identityToken, dto.fullName);
   }
 
   @Throttle({ default: { limit: 5, ttl: 60000 } })

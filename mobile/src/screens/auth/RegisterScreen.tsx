@@ -16,6 +16,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { GoogleSignInButton } from '../../components/common/GoogleSignInButton';
+import { AppleSignInButton } from '../../components/common/AppleSignInButton';
 
 type Props = {
   navigation: StackNavigationProp<AuthStackParamList, 'Register'>;
@@ -39,7 +41,7 @@ interface FormErrors {
 }
 
 export function RegisterScreen({ navigation }: Props) {
-  const { register } = useAuth();
+  const { register, loginWithGoogle, loginWithApple } = useAuth();
   const { t } = useLanguage();
   const [form, setForm] = useState<FormState>({
     name: '',
@@ -84,6 +86,34 @@ export function RegisterScreen({ navigation }: Props) {
         form.password,
         form.phone.trim() || undefined
       );
+    } catch (err) {
+      Alert.alert(
+        t.auth.registerFailed,
+        err instanceof Error ? err.message : t.auth.registerFailedMsg
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleGoogleSuccess(idToken: string) {
+    setIsLoading(true);
+    try {
+      await loginWithGoogle(idToken);
+    } catch (err) {
+      Alert.alert(
+        t.auth.registerFailed,
+        err instanceof Error ? err.message : t.auth.registerFailedMsg
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleAppleSuccess(identityToken: string, fullName?: string) {
+    setIsLoading(true);
+    try {
+      await loginWithApple(identityToken, fullName);
     } catch (err) {
       Alert.alert(
         t.auth.registerFailed,
@@ -257,6 +287,24 @@ export function RegisterScreen({ navigation }: Props) {
                 {isLoading ? t.auth.registering : t.auth.registerBtn}
               </Text>
             </TouchableOpacity>
+
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>{t.auth.orDivider}</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <GoogleSignInButton
+              onSuccess={handleGoogleSuccess}
+              onError={(msg) => Alert.alert(t.auth.registerFailed, msg)}
+            />
+
+            <View style={{ marginTop: 10 }}>
+              <AppleSignInButton
+                onSuccess={handleAppleSuccess}
+                onError={(msg) => Alert.alert(t.auth.registerFailed, msg)}
+              />
+            </View>
           </View>
 
           {/* Footer */}
@@ -412,5 +460,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#FF5A1F',
     fontWeight: '700',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 4,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E5E5E5',
+  },
+  dividerText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#9CA3AF',
   },
 });

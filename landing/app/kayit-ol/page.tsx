@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import SiteFooter from '@/app/components/SiteFooter';
 import LandingNav from '../landing-nav';
+import GoogleSignInButton from '@/app/components/GoogleSignInButton';
+import AppleSignInButton from '@/app/components/AppleSignInButton';
 import { useUserAuth } from '../UserAuthContext';
 import { UserApiError } from '@/lib/user-api';
 import { T, type Lang, getLangClient } from '@/lib/i18n';
@@ -12,7 +14,7 @@ import { T, type Lang, getLangClient } from '@/lib/i18n';
 function KayitForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const { register } = useUserAuth();
+  const { register, loginWithGoogle, loginWithApple } = useUserAuth();
 
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
@@ -41,6 +43,28 @@ function KayitForm() {
       );
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGoogleSuccess(idToken: string) {
+    setError(null);
+    try {
+      await loginWithGoogle(idToken);
+      const returnTo = params.get('returnTo');
+      router.push(returnTo || '/anasayfa');
+    } catch {
+      setError(ta.googleLoginFailed);
+    }
+  }
+
+  async function handleAppleSuccess(identityToken: string) {
+    setError(null);
+    try {
+      await loginWithApple(identityToken);
+      const returnTo = params.get('returnTo');
+      router.push(returnTo || '/anasayfa');
+    } catch {
+      setError(ta.appleLoginFailed);
     }
   }
 
@@ -84,6 +108,17 @@ function KayitForm() {
       >
         {loading ? ta.creatingAccount : ta.registerBtn}
       </button>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '4px 0' }}>
+        <div style={{ flex: 1, height: '1px', background: '#E5E7EB' }} />
+        <span style={{ fontSize: '0.75rem', color: '#9CA3AF', fontWeight: 600 }}>{ta.orDivider}</span>
+        <div style={{ flex: 1, height: '1px', background: '#E5E7EB' }} />
+      </div>
+
+      <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={setError} locale={lang} />
+
+      <AppleSignInButton onSuccess={handleAppleSuccess} onError={setError} locale={lang} />
+
       <p style={{ fontSize: '0.85rem', color: '#6B7280', textAlign: 'center', margin: 0 }}>
         {ta.haveAccount}{' '}
         <Link href="/giris" style={{ color: '#FF5533', fontWeight: 700, textDecoration: 'none' }}>

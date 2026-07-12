@@ -20,6 +20,7 @@
       "bundleIdentifier": "com.treklyapp.treklyy",
       "buildNumber": "2",
       "deploymentTarget": "16.0",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
@@ -74,13 +75,20 @@
     "extra": {
       "apiUrl": "https://trekly-api-835377577547.europe-west1.run.app",
       "eas": {
-        "projectId": "acd750ce-643e-4631-8554-6ef3643f4efb"
+        "projectId": "9ac20586-14e6-4f53-87bf-660fd56b9a03"
       }
     },
     "plugins": [
       "expo-font",
       "expo-secure-store",
-      "expo-video"
-    ]
+      "expo-video",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.835377577547-m89lanr04d2p7jacq115qlok3gf1rg2i"
+        }
+      ]
+    ],
+    "owner": "doganay34"
   }
 }

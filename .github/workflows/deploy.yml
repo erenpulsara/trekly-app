@@ -56,6 +56,12 @@ jobs:
           GMAIL_APP_PASSWORD: "${{ secrets.GMAIL_APP_PASSWORD }}"
           ADMIN_EMAIL: "${{ secrets.ADMIN_EMAIL }}"
           ADMIN_PASSWORD: "${{ secrets.ADMIN_PASSWORD }}"
+          GOOGLE_WEB_CLIENT_ID: "${{ secrets.GOOGLE_WEB_CLIENT_ID }}"
+          GOOGLE_ANDROID_CLIENT_ID: "${{ secrets.GOOGLE_ANDROID_CLIENT_ID }}"
+          GOOGLE_ANDROID_CLIENT_ID_EAS: "${{ secrets.GOOGLE_ANDROID_CLIENT_ID_EAS }}"
+          GOOGLE_IOS_CLIENT_ID: "${{ secrets.GOOGLE_IOS_CLIENT_ID }}"
+          APPLE_BUNDLE_ID: com.treklyapp.treklyy
+          APPLE_SERVICES_ID: com.treklyapp.treklyy.web
           ENVEOF
           gcloud run deploy trekly-api \
             --image ${{ env.REGISTRY }}/trekly-api:${{ github.sha }} \
@@ -131,6 +137,7 @@ jobs:
           docker build --platform linux/amd64 \
             --build-arg NEXT_PUBLIC_API_URL=https://trekly-api-835377577547.europe-west1.run.app \
             --build-arg NEXT_PUBLIC_AGENCY_URL=https://acenta.treklyapp.com \
+            --build-arg NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID="${{ secrets.GOOGLE_WEB_CLIENT_ID }}" \
             -t ${{ env.REGISTRY }}/trekly-landing:${{ github.sha }} \
             -t ${{ env.REGISTRY }}/trekly-landing:latest \
             .

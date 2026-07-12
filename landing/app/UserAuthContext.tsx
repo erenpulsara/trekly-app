@@ -7,6 +7,8 @@ import {
   clearUserSession,
   userLogin as apiLogin,
   userRegister as apiRegister,
+  userGoogleLogin as apiGoogleLogin,
+  userAppleLogin as apiAppleLogin,
 } from '@/lib/user-api';
 
 interface UserAuthContextValue {
@@ -14,6 +16,8 @@ interface UserAuthContextValue {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, surname: string, email: string, password: string, phone?: string) => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<void>;
+  loginWithApple: (identityToken: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => void;
 }
@@ -42,6 +46,16 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  const loginWithGoogle = useCallback(async (idToken: string) => {
+    const u = await apiGoogleLogin(idToken);
+    setUser(u);
+  }, []);
+
+  const loginWithApple = useCallback(async (identityToken: string) => {
+    const u = await apiAppleLogin(identityToken);
+    setUser(u);
+  }, []);
+
   const logout = useCallback(() => {
     clearUserSession();
     setUser(null);
@@ -53,7 +67,7 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <UserAuthContext.Provider value={{ user, isLoading, login, register, logout, refreshUser }}>
+    <UserAuthContext.Provider value={{ user, isLoading, login, register, loginWithGoogle, loginWithApple, logout, refreshUser }}>
       {children}
     </UserAuthContext.Provider>
   );

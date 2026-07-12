@@ -22,8 +22,14 @@ export class User {
   @Column({ type: 'varchar', unique: true, nullable: false })
   email!: string;
 
-  @Column({ type: 'varchar', nullable: false })
-  password_hash!: string;
+  @Column({ type: 'varchar', nullable: true })
+  password_hash!: string | null;
+
+  @Column({ type: 'varchar', unique: true, nullable: true })
+  google_id!: string | null;
+
+  @Column({ type: 'varchar', unique: true, nullable: true })
+  apple_id!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   phone!: string | null;

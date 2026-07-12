@@ -22,3 +22,7 @@ build/
 
 # Logs
 *.log
+
+# Signing keys (Android keystores downloaded via `eas credentials`)
+*.jks
+*.keystore
