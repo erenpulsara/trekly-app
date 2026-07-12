@@ -31,7 +31,7 @@ interface AuthContextValue {
   loginWithGoogle: (idToken: string) => Promise<void>;
   loginWithApple: (identityToken: string, fullName?: string) => Promise<void>;
   logout: () => Promise<void>;
-  updateUser: (updates: Partial<AuthUser>) => void;
+  updateUser: (updates: Partial<AuthUser>) => Promise<void>;
   continueAsGuest: () => void;
   exitGuest: () => void;
 }
@@ -44,6 +44,8 @@ function mapResponseToUser(resp: LoginResponse): AuthUser {
     name: resp.name,
     surname: resp.surname,
     email: resp.email,
+    phone: resp.phone,
+    avatar_url: resp.avatar_url,
     total_points: resp.total_points,
     access_token: resp.access_token,
   };
@@ -130,8 +132,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const continueAsGuest = useCallback(() => setIsGuest(true), []);
   const exitGuest = useCallback(() => setIsGuest(false), []);
 
-  const updateUser = useCallback((updates: Partial<AuthUser>) => {
-    setUser((prev) => (prev ? { ...prev, ...updates } : prev));
+  const updateUser = useCallback(async (updates: Partial<AuthUser>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...updates };
+      AsyncStorage.setItem('auth_user', JSON.stringify(next)).catch(() => {});
+      return next;
+    });
   }, []);
 
   return (

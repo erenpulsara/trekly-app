@@ -42,6 +42,8 @@ export interface LoginResponse {
   name: string;
   surname: string;
   email: string;
+  phone?: string;
+  avatar_url?: string | null;
   total_points: number;
 }
 
@@ -189,6 +191,35 @@ export const bookingsService = {
   },
 };
 
+export const mediaService = {
+  async uploadAvatar(localUri: string): Promise<string> {
+    const token = await getToken();
+    const filename = localUri.split('/').pop() ?? `avatar-${Date.now()}.jpg`;
+    const match = /\.(\w+)$/.exec(filename);
+    const ext = match ? match[1].toLowerCase() : 'jpg';
+    const mimeType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+
+    const formData = new FormData();
+    // React Native's fetch accepts this { uri, name, type } shape as a file part.
+    formData.append('file', { uri: localUri, name: filename, type: mimeType } as unknown as Blob);
+
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`${BASE_URL}/media/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(errorBody || `HTTP ${response.status}`);
+    }
+    const data = (await response.json()) as { url: string };
+    return data.url;
+  },
+};
+
 export const usersService = {
   async getMe(): Promise<User> {
     return request<User>('/users/me');
@@ -198,7 +229,7 @@ export const usersService = {
     return request<PointsLog[]>('/users/me/points');
   },
 
-  async updateProfile(data: { name?: string; surname?: string; phone?: string }): Promise<User> {
+  async updateProfile(data: { name?: string; surname?: string; phone?: string; avatar_url?: string }): Promise<User> {
     return request<User>('/users/me', {
       method: 'PATCH',
       body: JSON.stringify(data),

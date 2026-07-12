@@ -2,11 +2,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
+  Image,
   ScrollView,
   TouchableOpacity,
   StyleSheet,  RefreshControl,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,7 +18,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { TreklyLogo } from '../../components/common/TreklyLogo';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { useAuth } from '../../context/AuthContext';
-import { usersService } from '../../services/api';
+import { usersService, mediaService } from '../../services/api';
+import * as ImagePicker from 'expo-image-picker';
 import { User, PointsLog } from '../../types';
 import { getUserLevel, getLevelProgress, getPointsToNextLevel } from '../../utils/levels';
 import { REWARDS_ENABLED } from '../../config/features';
@@ -33,13 +36,14 @@ type Props = {
 
 
 export function ProfileScreen({ navigation }: Props) {
-  const { user: authUser, logout, isGuest, exitGuest } = useAuth();
+  const { user: authUser, logout, isGuest, exitGuest, updateUser } = useAuth();
   const { t, lang, setLang } = useLanguage();
   const [profile, setProfile] = useState<User | null>(null);
   const [pointsLog, setPointsLog] = useState<PointsLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -63,6 +67,33 @@ export function ProfileScreen({ navigation }: Props) {
     await fetchProfile();
     setIsRefreshing(false);
   }, [fetchProfile]);
+
+  const handlePickAvatar = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(t.common.error, t.profile.photoPermissionDenied);
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled || !result.assets?.[0]) return;
+
+    setAvatarUploading(true);
+    try {
+      const url = await mediaService.uploadAvatar(result.assets[0].uri);
+      const updated = await usersService.updateProfile({ avatar_url: url });
+      setProfile(updated);
+      await updateUser({ avatar_url: updated.avatar_url });
+    } catch {
+      Alert.alert(t.common.error, t.profile.photoUploadFailed);
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
 
   const handleDeleteAccount = () => {
     Alert.alert(
@@ -124,9 +155,13 @@ export function ProfileScreen({ navigation }: Props) {
       <View style={styles.header}>
         <TreklyLogo />
         <View style={styles.avatarSmall}>
-          <Text style={styles.avatarSmallText}>
-            {displayUser?.name?.charAt(0).toUpperCase() ?? 'U'}
-          </Text>
+          {displayUser?.avatar_url ? (
+            <Image source={{ uri: displayUser.avatar_url }} style={styles.avatarSmallImage} />
+          ) : (
+            <Text style={styles.avatarSmallText}>
+              {displayUser?.name?.charAt(0).toUpperCase() ?? 'U'}
+            </Text>
+          )}
         </View>
       </View>
 
@@ -142,11 +177,27 @@ export function ProfileScreen({ navigation }: Props) {
           <View style={styles.avatarContainer}>
             <View style={styles.avatarRing}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>
-                  {displayUser?.name?.charAt(0).toUpperCase() ?? 'U'}
-                </Text>
+                {displayUser?.avatar_url ? (
+                  <Image source={{ uri: displayUser.avatar_url }} style={styles.avatarImage} />
+                ) : (
+                  <Text style={styles.avatarText}>
+                    {displayUser?.name?.charAt(0).toUpperCase() ?? 'U'}
+                  </Text>
+                )}
+                {avatarUploading && (
+                  <View style={styles.avatarUploadingOverlay}>
+                    <ActivityIndicator color="#FFFFFF" />
+                  </View>
+                )}
               </View>
             </View>
+            <TouchableOpacity
+              style={styles.avatarEditBtn}
+              onPress={handlePickAvatar}
+              disabled={avatarUploading}
+            >
+              <Ionicons name="camera" size={14} color="#FFFFFF" />
+            </TouchableOpacity>
             <View style={styles.levelBadge}>
               <Text style={styles.levelBadgeText}>LVL {levelInfo.level}</Text>
             </View>
@@ -355,6 +406,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarSmallText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
+  avatarSmallImage: { width: 36, height: 36, borderRadius: 18 },
   heroSection: { alignItems: 'center', paddingHorizontal: 24, paddingBottom: 8 },
   avatarContainer: { alignItems: 'center', marginBottom: 16 },
   avatarRing: {
@@ -373,6 +425,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: { fontSize: 36, fontWeight: '800', color: '#FFFFFF' },
+  avatarImage: { width: '100%', height: '100%', borderRadius: 50 },
+  avatarUploadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 50,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarEditBtn: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#1A1A1A',
+    borderWidth: 3,
+    borderColor: '#FAF9F7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   levelBadge: {
     position: 'absolute',
     bottom: -6,

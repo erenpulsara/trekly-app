@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import SiteFooter from '@/app/components/SiteFooter';
@@ -9,6 +9,7 @@ import { useUserAuth } from '../UserAuthContext';
 import {
   fetchMe,
   updateProfile,
+  uploadAvatar,
   fetchMyPoints,
   fetchMyWebBookings,
   deleteMyAccount,
@@ -61,6 +62,9 @@ export default function ProfilimPage() {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isLoading) return;
@@ -112,6 +116,24 @@ export default function ProfilimPage() {
     }
   }
 
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarError(null);
+    setAvatarUploading(true);
+    try {
+      const url = await uploadAvatar(file);
+      const updated = await updateProfile({ avatar_url: url });
+      setProfile(updated);
+      refreshUser();
+    } catch {
+      setAvatarError(tp.updateFailed);
+    } finally {
+      setAvatarUploading(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
+    }
+  }
+
   async function handleDelete() {
     const first = window.confirm(tp.deleteConfirm1);
     if (!first) return;
@@ -160,10 +182,39 @@ export default function ProfilimPage() {
                     width: '92px', height: '92px', borderRadius: '50%', background: '#FF5533',
                     color: 'white', fontSize: '2.2rem', fontWeight: 800,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    border: '4px solid #FFF3EE',
+                    border: '4px solid #FFF3EE', overflow: 'hidden', opacity: avatarUploading ? 0.5 : 1,
                   }}>
-                    {display.name.charAt(0).toUpperCase()}
+                    {display.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={display.avatar_url} alt={display.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      display.name.charAt(0).toUpperCase()
+                    )}
                   </div>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    style={{ display: 'none' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={avatarUploading}
+                    aria-label={tp.edit}
+                    style={{
+                      position: 'absolute', bottom: '0', right: '0', width: '30px', height: '30px',
+                      borderRadius: '50%', background: '#1A1A1A', border: '3px solid white',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: avatarUploading ? 'default' : 'pointer', padding: 0,
+                    }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                      <circle cx="12" cy="13" r="4" />
+                    </svg>
+                  </button>
                   {REWARDS_ENABLED && (
                     <span style={{
                       position: 'absolute', bottom: '-6px', left: '50%', transform: 'translateX(-50%)',
@@ -179,6 +230,9 @@ export default function ProfilimPage() {
                   {display.name} {display.surname}
                 </h1>
                 <p style={{ fontSize: '0.85rem', color: '#9A9A9A', margin: REWARDS_ENABLED ? '0 0 6px' : '0 0 12px' }}>{display.email}</p>
+                {avatarError && (
+                  <p style={{ fontSize: '0.78rem', color: '#DC2626', margin: '0 0 10px' }}>{avatarError}</p>
+                )}
                 {REWARDS_ENABLED && (
                   <>
                     <p style={{ fontSize: '0.85rem', color: '#FF5533', fontWeight: 700, margin: '0 0 20px' }}>

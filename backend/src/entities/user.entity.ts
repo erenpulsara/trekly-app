@@ -34,6 +34,9 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   phone!: string | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  avatar_url!: string | null;
+
   @Column({ type: 'integer', default: 0 })
   total_points!: number;
 

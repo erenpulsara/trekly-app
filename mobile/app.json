@@ -87,6 +87,12 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.835377577547-m89lanr04d2p7jacq115qlok3gf1rg2i"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Trekly, profil fotoğrafınızı değiştirmek için fotoğraflarınıza erişim istiyor."
+        }
       ]
     ],
     "owner": "doganay34"

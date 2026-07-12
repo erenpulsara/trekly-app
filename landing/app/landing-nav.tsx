@@ -145,8 +145,14 @@ export default function LandingNav({
                       width: '26px', height: '26px', borderRadius: '50%', background: '#FF5533',
                       color: 'white', fontSize: '0.72rem', fontWeight: 800,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      overflow: 'hidden', flexShrink: 0,
                     }}>
-                      {user.name.charAt(0).toUpperCase()}
+                      {user.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={user.avatar_url} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        user.name.charAt(0).toUpperCase()
+                      )}
                     </span>
                     <span className="ln-user-name" style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1A1A1A' }}>
                       {user.name}

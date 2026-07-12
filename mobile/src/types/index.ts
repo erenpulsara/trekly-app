@@ -77,6 +77,7 @@ export interface User {
   surname: string;
   email: string;
   phone?: string;
+  avatar_url?: string | null;
   total_points: number;
 }
 

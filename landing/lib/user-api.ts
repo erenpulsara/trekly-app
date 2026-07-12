@@ -10,6 +10,7 @@ export interface WebUser {
   surname: string;
   email: string;
   phone?: string | null;
+  avatar_url?: string | null;
   total_points: number;
 }
 
@@ -62,6 +63,8 @@ function storeSession(data: LoginResponse) {
     name: data.name,
     surname: data.surname,
     email: data.email,
+    phone: data.phone,
+    avatar_url: data.avatar_url,
     total_points: data.total_points,
   };
   localStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -174,7 +177,7 @@ function authHeaders(): Record<string, string> {
     : { 'Content-Type': 'application/json' };
 }
 
-export async function updateProfile(data: { name?: string; surname?: string; phone?: string }): Promise<WebUser> {
+export async function updateProfile(data: { name?: string; surname?: string; phone?: string; avatar_url?: string }): Promise<WebUser> {
   const res = await fetch(`${API_URL}/users/me`, {
     method: 'PATCH',
     headers: authHeaders(),
@@ -184,6 +187,20 @@ export async function updateProfile(data: { name?: string; surname?: string; pho
   const updated = (await res.json()) as WebUser;
   localStorage.setItem(USER_KEY, JSON.stringify(updated));
   return updated;
+}
+
+export async function uploadAvatar(file: File): Promise<string> {
+  const token = getUserToken();
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${API_URL}/media/upload`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: formData,
+  });
+  if (!res.ok) throw new UserApiError(res.status, await parseErrorMessage(res));
+  const data = (await res.json()) as { url: string };
+  return data.url;
 }
 
 export async function fetchMyPoints(): Promise<PointsLogEntry[]> {

@@ -17,4 +17,9 @@ export class UpdateProfileDto {
   @IsString()
   @MaxLength(30)
   phone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  avatar_url?: string;
 }

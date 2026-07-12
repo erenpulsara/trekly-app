@@ -286,9 +286,13 @@ export function HomeScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('Profile' as never)}
           >
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {user?.name?.[0]?.toUpperCase() ?? 'U'}
-              </Text>
+              {user?.avatar_url ? (
+                <Image source={{ uri: user.avatar_url }} style={styles.avatarImage} />
+              ) : (
+                <Text style={styles.avatarText}>
+                  {user?.name?.[0]?.toUpperCase() ?? 'U'}
+                </Text>
+              )}
             </View>
           </TouchableOpacity>
         </View>
@@ -449,6 +453,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#FFF3EE',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
   avatarText: {
     color: '#FFFFFF',

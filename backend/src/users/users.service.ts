@@ -33,6 +33,7 @@ export class UsersService {
     if (dto.name !== undefined) user.name = dto.name.trim();
     if (dto.surname !== undefined) user.surname = dto.surname.trim();
     if (dto.phone !== undefined) user.phone = dto.phone.trim() || null;
+    if (dto.avatar_url !== undefined) user.avatar_url = dto.avatar_url.trim() || null;
 
     await this.userRepo.save(user);
 
