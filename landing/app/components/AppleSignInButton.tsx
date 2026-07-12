@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const APPLE_CLIENT_ID = 'com.treklyapp.treklyy.web';
-const APPLE_REDIRECT_URI = 'https://www.treklyapp.com/giris';
+// Masaüstünde popup akışı redirectURI'ye hiç gitmiyor (postMessage ile döner),
+// ama Apple yine de geçerli/kayıtlı bir Return URL bekliyor — mevcut /giris
+// yeterli. Mobilde ise gerçek bir sunucu callback'ine ihtiyacımız var.
+const POPUP_REDIRECT_URI = 'https://www.treklyapp.com/giris';
+const REDIRECT_FLOW_URI = 'https://www.treklyapp.com/api/auth/apple-callback';
 
 declare global {
   interface Window {
@@ -14,6 +18,7 @@ declare global {
           scope: string;
           redirectURI: string;
           usePopup: boolean;
+          state?: string;
         }) => void;
         signIn: () => Promise<{
           authorization: { code: string; id_token: string; state?: string };
@@ -42,18 +47,25 @@ function loadAppleScript(): Promise<void> {
   return scriptLoadPromise;
 }
 
-let configured = false;
-async function ensureConfigured() {
+function isMobileBrowser(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
+let configuredMode: 'popup' | 'redirect' | null = null;
+async function ensureConfigured(mobile: boolean) {
   await loadAppleScript();
   if (!window.AppleID) throw new Error('AppleID SDK not available');
-  if (!configured) {
+  const mode = mobile ? 'redirect' : 'popup';
+  if (configuredMode !== mode) {
     window.AppleID.auth.init({
       clientId: APPLE_CLIENT_ID,
       scope: 'name email',
-      redirectURI: APPLE_REDIRECT_URI,
-      usePopup: true,
+      redirectURI: mobile ? REDIRECT_FLOW_URI : POPUP_REDIRECT_URI,
+      usePopup: !mobile,
+      state: mobile ? window.location.pathname : undefined,
     });
-    configured = true;
+    configuredMode = mode;
   }
 }
 
@@ -65,19 +77,48 @@ interface Props {
 
 // Not: Apple'ın web SDK'sı yalnızca Apple Developer'da kayıtlı gerçek domain'de
 // çalışır (treklyapp.com / www.treklyapp.com) — localhost'ta test edilemez.
-// Apple'ın otomatik data-attribute tabanlı buton render'ı sabit bir DOM ID
-// aradığından güvenilmezdi — bunun yerine kendi butonumuzu çizip tıklanınca
-// AppleID.auth.signIn()'i doğrudan çağırıyoruz (mobildeki desenle aynı).
+//
+// Masaüstünde popup akışı (usePopup:true) sorunsuz — sonuç postMessage ile
+// doğrudan bu sayfaya döner. Mobil tarayıcılarda ise popup/opener iletişimi
+// güvenilir değil (kullanıcı Apple'da "Giriş Yap"a basıyor ama sonuç hiç
+// dönmüyor) — o yüzden mobilde tam sayfa YÖNLENDİRME akışına geçiyoruz:
+// Apple, /api/auth/apple-callback'e POST eder, o da id_token'ı query param
+// olarak bu sayfaya geri yönlendirir (bkz. handleAppleRedirectResult hook'u).
 export default function AppleSignInButton({ onSuccess, onError, locale = 'tr' }: Props) {
   const [unsupportedHost] = useState(
     () => typeof window !== 'undefined' && /localhost|127\.0\.0\.1/.test(window.location.hostname),
   );
   const [loading, setLoading] = useState(false);
+  const mobile = isMobileBrowser();
+
+  // Mobil yönlendirme akışından dönüşte URL'deki token'ı işle.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const idToken = params.get('apple_id_token');
+    const hasError = params.get('apple_error');
+    if (idToken) {
+      onSuccess(idToken);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('apple_id_token');
+      window.history.replaceState({}, '', url.toString());
+    } else if (hasError) {
+      onError?.('Apple girişi başarısız oldu.');
+      const url = new URL(window.location.href);
+      url.searchParams.delete('apple_error');
+      window.history.replaceState({}, '', url.toString());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handlePress() {
     setLoading(true);
     try {
-      await ensureConfigured();
+      await ensureConfigured(mobile);
+      if (mobile) {
+        // signIn() burada tam sayfa yönlendirmesi başlatır, JS akışı devam etmez.
+        await window.AppleID!.auth.signIn();
+        return;
+      }
       const result = await window.AppleID!.auth.signIn();
       if (result?.authorization?.id_token) {
         onSuccess(result.authorization.id_token);
