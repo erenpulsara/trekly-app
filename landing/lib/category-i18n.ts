@@ -47,6 +47,7 @@ const CATEGORY_EN: Record<string, string> = {
   'balık avı': 'Fishing',
   'kar yürüyüşü': 'Snowshoeing',
   'snowboard': 'Snowboard',
+  'patika koşusu': 'Trail Running',
 };
 
 const capitalize = (s: string) => s.charAt(0).toLocaleUpperCase('tr') + s.slice(1);
