@@ -17,7 +17,7 @@ interface UserAuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, surname: string, email: string, password: string, phone?: string) => Promise<void>;
   loginWithGoogle: (idToken: string) => Promise<void>;
-  loginWithApple: (identityToken: string) => Promise<void>;
+  loginWithApple: (identityToken: string, fullName?: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => void;
 }
@@ -51,8 +51,8 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
     setUser(u);
   }, []);
 
-  const loginWithApple = useCallback(async (identityToken: string) => {
-    const u = await apiAppleLogin(identityToken);
+  const loginWithApple = useCallback(async (identityToken: string, fullName?: string) => {
+    const u = await apiAppleLogin(identityToken, fullName);
     setUser(u);
   }, []);
 

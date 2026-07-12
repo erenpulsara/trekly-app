@@ -16,12 +16,25 @@ export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const idToken = formData.get('id_token');
   const state = formData.get('state');
+  const userRaw = formData.get('user');
 
   const returnPath = typeof state === 'string' && state.startsWith('/') ? state : '/giris';
   const url = new URL(returnPath, PUBLIC_BASE_URL);
 
   if (typeof idToken === 'string' && idToken) {
     url.searchParams.set('apple_id_token', idToken);
+
+    // Apple yalnızca İLK yetkilendirmede "user" alanında ad-soyad JSON'ı
+    // gönderir; sonraki girişlerde bu alan hiç gelmez.
+    if (typeof userRaw === 'string' && userRaw) {
+      try {
+        const parsed = JSON.parse(userRaw) as { name?: { firstName?: string; lastName?: string } };
+        const fullName = [parsed.name?.firstName, parsed.name?.lastName].filter(Boolean).join(' ').trim();
+        if (fullName) url.searchParams.set('apple_full_name', fullName);
+      } catch {
+        // yok say, isim olmadan devam
+      }
+    }
   } else {
     url.searchParams.set('apple_error', '1');
   }

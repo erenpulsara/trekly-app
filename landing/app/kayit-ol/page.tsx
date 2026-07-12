@@ -57,10 +57,10 @@ function KayitForm() {
     }
   }
 
-  async function handleAppleSuccess(identityToken: string) {
+  async function handleAppleSuccess(identityToken: string, fullName?: string) {
     setError(null);
     try {
-      await loginWithApple(identityToken);
+      await loginWithApple(identityToken, fullName);
       const returnTo = params.get('returnTo');
       router.push(returnTo || '/anasayfa');
     } catch {

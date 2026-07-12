@@ -329,6 +329,13 @@ export class AuthService {
         apple_id: appleId,
       });
       user = await this.userRepo.save(created);
+    } else if (fullName && user.name === 'Trekly' && !user.surname) {
+      // Önceki girişte ad-soyad gelmediği için 'Trekly' varsayılanıyla
+      // oluşturulmuş hesabı, şimdi Apple'ın gönderdiği gerçek adla düzelt.
+      const [first, ...rest] = fullName.trim().split(/\s+/);
+      user.name = first || user.name;
+      user.surname = rest.join(' ');
+      user = await this.userRepo.save(user);
     }
 
     const token = this.signUserToken(user.id, user.email);

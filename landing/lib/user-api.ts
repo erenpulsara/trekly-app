@@ -104,11 +104,11 @@ export async function userGoogleLogin(idToken: string): Promise<WebUser> {
   return storeSession(data);
 }
 
-export async function userAppleLogin(identityToken: string): Promise<WebUser> {
+export async function userAppleLogin(identityToken: string, fullName?: string): Promise<WebUser> {
   const res = await fetch(`${API_URL}/auth/user/apple`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ identityToken }),
+    body: JSON.stringify({ identityToken, fullName }),
   });
   if (!res.ok) throw new UserApiError(res.status, await parseErrorMessage(res));
   const data = (await res.json()) as LoginResponse;

@@ -86,7 +86,7 @@ function buildAppleAuthorizeUrl(): string {
 }
 
 interface Props {
-  onSuccess: (identityToken: string) => void;
+  onSuccess: (identityToken: string, fullName?: string) => void;
   onError?: (message: string) => void;
   locale?: 'tr' | 'en';
 }
@@ -111,11 +111,13 @@ export default function AppleSignInButton({ onSuccess, onError, locale = 'tr' }:
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const idToken = params.get('apple_id_token');
+    const fullName = params.get('apple_full_name');
     const hasError = params.get('apple_error');
     if (idToken) {
-      onSuccess(idToken);
+      onSuccess(idToken, fullName ?? undefined);
       const url = new URL(window.location.href);
       url.searchParams.delete('apple_id_token');
+      url.searchParams.delete('apple_full_name');
       window.history.replaceState({}, '', url.toString());
     } else if (hasError) {
       onError?.('Apple girişi başarısız oldu.');
@@ -138,7 +140,11 @@ export default function AppleSignInButton({ onSuccess, onError, locale = 'tr' }:
       await ensureConfigured();
       const result = await window.AppleID!.auth.signIn();
       if (result?.authorization?.id_token) {
-        onSuccess(result.authorization.id_token);
+        // Apple yalnızca İLK girişte "user" alanında ad-soyad döner.
+        const fullName = result.user?.name
+          ? [result.user.name.firstName, result.user.name.lastName].filter(Boolean).join(' ').trim()
+          : undefined;
+        onSuccess(result.authorization.id_token, fullName || undefined);
       } else {
         onError?.('Apple girişi başarısız oldu.');
       }
