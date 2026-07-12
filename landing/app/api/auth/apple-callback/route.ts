@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Cloud Run konteynerinin içinde `request.url` genelde public domain yerine
+// dahili bir adresi (ör. 0.0.0.0:PORT) yansıtabiliyor — bunu redirect'in
+// tabanı olarak kullanırsak tarayıcı ulaşılamaz bir adrese yönlenir
+// ("0.0.0.0" hatası). Bu yüzden herkese açık domain'i sabit veriyoruz.
+const PUBLIC_BASE_URL = 'https://www.treklyapp.com';
+
 // Apple'ın "redirect" (usePopup:false) akışında, kullanıcı giriş yaptıktan
 // sonra Apple bu adrese bir FORM POST gönderir (id_token, code, state ve
 // ilk girişte "user" JSON'ı). Mobil tarayıcılarda popup akışı güvenilir
@@ -12,7 +18,7 @@ export async function POST(request: NextRequest) {
   const state = formData.get('state');
 
   const returnPath = typeof state === 'string' && state.startsWith('/') ? state : '/giris';
-  const url = new URL(returnPath, request.url);
+  const url = new URL(returnPath, PUBLIC_BASE_URL);
 
   if (typeof idToken === 'string' && idToken) {
     url.searchParams.set('apple_id_token', idToken);
