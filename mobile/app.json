@@ -18,7 +18,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.treklyapp.treklyy",
-      "buildNumber": "4",
+      "buildNumber": "6",
       "deploymentTarget": "16.0",
       "usesAppleSignIn": true,
       "infoPlist": {
@@ -67,7 +67,10 @@
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.trekly.app",
-      "versionCode": 6
+      "versionCode": 6,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -75,13 +78,21 @@
     "extra": {
       "apiUrl": "https://trekly-api-835377577547.europe-west1.run.app",
       "eas": {
-        "projectId": "9ac20586-14e6-4f53-87bf-660fd56b9a03"
+        "projectId": "acd750ce-643e-4631-8554-6ef3643f4efb"
       }
     },
     "plugins": [
       "expo-font",
       "expo-secure-store",
       "expo-video",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
       [
         "@react-native-google-signin/google-signin",
         {
@@ -95,6 +106,6 @@
         }
       ]
     ],
-    "owner": "doganay34"
+    "owner": "fuzuly"
   }
 }
