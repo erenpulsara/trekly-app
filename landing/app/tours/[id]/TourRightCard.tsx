@@ -3,17 +3,9 @@
 import { useState, useEffect } from 'react';
 import { REWARDS_ENABLED } from '@/lib/features';
 import { T, type Lang, getLangClient } from '@/lib/i18n';
+import { formatPrice as fmtPrice, type Currency } from '@/lib/price';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
-
-type Currency = 'TRY' | 'USD' | 'EUR';
-const SYM: Record<Currency, string> = { TRY: '₺', USD: '$', EUR: '€' };
-
-function fmtPrice(price: number, cur: Currency) {
-  const sym = SYM[cur];
-  if (cur === 'TRY') return `${sym}${price.toLocaleString('tr-TR')}`;
-  return `${sym}${price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-}
 
 function fmtDate(s: string, locale = 'tr-TR') {
   const d = new Date(s.includes('T') ? s : s + 'T00:00:00');

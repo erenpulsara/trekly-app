@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Tour, TourDifficulty } from '@/lib/types';
+import { formatPrice } from '@/lib/price';
 
 // ── Category config ───────────────────────────────
 type Cat = TourDifficulty | 'all';
@@ -141,7 +142,7 @@ function TourCard({ tour, index }: { tour: Tour; index: number }) {
         {/* Price */}
         {tour.price != null && Number(tour.price) > 0 && (
           <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FF5533', margin: '4px 0 0' }}>
-            ₺{Number(tour.price).toLocaleString('tr-TR')}
+            {formatPrice(Number(tour.price), tour.price_currency)}
             <span style={{ fontSize: '0.72rem', fontWeight: 400, color: '#AAAAAA', marginLeft: '3px' }}>/ kişi</span>
           </p>
         )}

@@ -10,6 +10,7 @@ import { splitCategories } from '@/lib/category-utils';
 import { displayCategory } from '@/lib/category-i18n';
 import { T } from '@/lib/i18n';
 import type { Tour, TourDifficulty } from '@/lib/types';
+import { formatPrice } from '@/lib/price';
 import PhotoGallery from './PhotoGallery';
 import StickyCard from './StickyCard';
 import TourTabs from './TourTabs';
@@ -111,7 +112,7 @@ function RelatedTourCard({ tour, lang }: { tour: Tour; lang: 'tr' | 'en' }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {tour.price != null && tour.price > 0 ? (
             <span style={{ color: '#FF5533', fontWeight: 800, fontSize: '0.95rem' }}>
-              ₺{Number(tour.price).toLocaleString('tr-TR')}
+              {formatPrice(Number(tour.price), tour.price_currency)}
             </span>
           ) : <span />}
           {tour.start_date && (
