@@ -378,14 +378,18 @@ export default function TourForm({ mode, tour }: TourFormProps) {
                 id="loc-input"
                 type="text"
                 value={locationInput}
-                placeholder={locationList.length === 0 ? 'İl veya ülke yazın, Enter ile ekle...' : ''}
+                placeholder={locationList.length === 0 ? 'Şehir veya ülke yazın (yurt dışı dahil), Enter ile ekle...' : ''}
                 onChange={(e) => {
                   setLocationInput(e.target.value);
-                  const q = e.target.value.trim().toLocaleLowerCase('tr');
+                  const raw = e.target.value.trim();
+                  const q = raw.toLocaleLowerCase('tr');
                   if (q.length >= 1) {
-                    setLocationSuggestions(
-                      TURKISH_PROVINCES.filter(p => p.toLocaleLowerCase('tr').includes(q)).slice(0, 8)
-                    );
+                    const matches = TURKISH_PROVINCES.filter(p => p.toLocaleLowerCase('tr').includes(q)).slice(0, 8);
+                    // Yazılan metin il listesiyle birebir eşleşmiyorsa (ör. yurt dışı bir
+                    // lokasyon), yine de "ekle" seçeneği göster — il listesi sadece bir
+                    // öneri/kolaylık, girişi kısıtlamıyor.
+                    const exactMatch = TURKISH_PROVINCES.some(p => p.toLocaleLowerCase('tr') === q);
+                    setLocationSuggestions(exactMatch || !raw ? matches : [...matches, raw]);
                     setShowLocDrop(true);
                   } else {
                     setLocationSuggestions([]);
@@ -405,20 +409,25 @@ export default function TourForm({ mode, tour }: TourFormProps) {
                   border: '1px solid #E5E7EB', borderRadius: '10px', zIndex: 50,
                   maxHeight: '180px', overflowY: 'auto', boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
                 }}>
-                  {locationSuggestions.map(p => (
-                    <button key={p} type="button"
-                      onMouseDown={(e) => { e.preventDefault(); addLocation(p); }}
-                      style={{
-                        display: 'block', width: '100%', textAlign: 'left',
-                        padding: '8px 12px', fontSize: '0.82rem', color: '#374151',
-                        background: 'none', border: 'none', cursor: 'pointer',
-                      }}
-                      onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                    >
-                      {p}
-                    </button>
-                  ))}
+                  {locationSuggestions.map(p => {
+                    const isKnownProvince = TURKISH_PROVINCES.includes(p as (typeof TURKISH_PROVINCES)[number]);
+                    return (
+                      <button key={p} type="button"
+                        onMouseDown={(e) => { e.preventDefault(); addLocation(p); }}
+                        style={{
+                          display: 'block', width: '100%', textAlign: 'left',
+                          padding: '8px 12px', fontSize: '0.82rem',
+                          color: isKnownProvince ? '#374151' : '#FF5533',
+                          fontWeight: isKnownProvince ? 400 : 600,
+                          background: 'none', border: 'none', cursor: 'pointer',
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                      >
+                        {isKnownProvince ? p : `+ Ekle: "${p}"`}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
