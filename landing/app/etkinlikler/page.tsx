@@ -12,6 +12,8 @@ import { displayCategory } from '@/lib/category-i18n';
 import { REWARDS_ENABLED } from '@/lib/features';
 import TurlarSidebar from '../turlar/TurlarSidebar';
 import MobileFilterBar from '../turlar/MobileFilterBar';
+import { formatPrice } from '@/lib/price';
+import { isUpcomingTour } from '@/lib/tour-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,9 +44,9 @@ function fmtDate(s: string, locale: string) {
   return new Date(s).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-function fmtPrice(price: number | null | undefined, free: string) {
+function fmtPrice(price: number | null | undefined, free: string, currency?: Tour['price_currency']) {
   if (!price || price === 0) return free;
-  return `₺${price.toLocaleString('tr-TR')}`;
+  return formatPrice(price, currency);
 }
 
 export default async function EtkinliklerPage({
@@ -87,12 +89,14 @@ export default async function EtkinliklerPage({
     getCategories(),
   ]);
 
+  const upcomingTours = allTours.filter(isUpcomingTour);
+
   const monthFiltered = activeMonth && MONTH_MAP[activeMonth] !== undefined
-    ? allTours.filter(t => {
+    ? upcomingTours.filter(t => {
         if (!t.start_date) return false;
         return new Date(t.start_date).getMonth() === MONTH_MAP[activeMonth];
       })
-    : allTours;
+    : upcomingTours;
 
   const displayed = showAll ? monthFiltered : monthFiltered.slice(0, 9);
   const allLocations = [...new Set(
@@ -318,7 +322,7 @@ export default async function EtkinliklerPage({
                                 />
                               )}
                               {tour.price !== undefined && tour.price !== null && (
-                                <InfoRow icon="💰" label={tt.price} value={fmtPrice(tour.price, tt.free)} orange />
+                                <InfoRow icon="💰" label={tt.price} value={fmtPrice(tour.price, tt.free, tour.price_currency)} orange />
                               )}
                               {REWARDS_ENABLED && tour.points > 0 && (
                                 <InfoRow icon="⭐" label="Kazanılacak XP" value={`${tour.points} XP`} orange />

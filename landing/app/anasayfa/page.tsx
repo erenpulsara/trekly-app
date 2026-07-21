@@ -8,6 +8,7 @@ import Link from 'next/link';
 import TourCardImage from '../turlar/TourCardImage';
 import type { Tour } from '@/lib/types';
 import { formatPrice } from '@/lib/price';
+import { isUpcomingTour } from '@/lib/tour-utils';
 import { T, type Lang } from '@/lib/i18n';
 import { splitCategories } from '@/lib/category-utils';
 import { displayCategory } from '@/lib/category-i18n';
@@ -52,18 +53,6 @@ function fmtPrice(price: number | null | undefined, free: string, currency?: Tou
   return formatPrice(price, currency);
 }
 
-function isUpcoming(tour: Tour): boolean {
-  const lastDate = tour.end_date
-    ?? tour.start_date
-    ?? tour.dates?.map((d) => d.date).sort().slice(-1)[0]
-    ?? null;
-  if (!lastDate) return true; // no date info — don't filter it out
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const d = new Date(lastDate.includes('T') ? lastDate : lastDate + 'T00:00:00');
-  return d >= today;
-}
-
 export default async function AnasayfaPage() {
   const lang: Lang = cookies().get('lang')?.value === 'en' ? 'en' : 'tr';
   const tx = T[lang];
@@ -75,7 +64,7 @@ export default async function AnasayfaPage() {
     getCategories(),
   ]);
 
-  const allTours = toursRaw.filter(isUpcoming);
+  const allTours = toursRaw.filter(isUpcomingTour);
   const displayed = allTours.slice(0, 12);
 
   return (
