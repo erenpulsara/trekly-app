@@ -1,7 +1,8 @@
 import type { Tour } from './types';
 
-/** Turun "yaklaşan" sayılıp sayılmayacağını kontrol eder — bir tur başladığı andan
- *  itibaren (bitiş tarihi ileride olsa bile) artık "yaklaşan etkinlik" değildir.
+/** Turun "yaklaşan" sayılıp sayılmayacağını kontrol eder — bir tur başladığı gün
+ *  (00:00'dan itibaren, bitiş tarihi ileride olsa bile) artık "yaklaşan etkinlik"
+ *  değildir; bugüne denk gelen tur da listeden düşer, sadece bugünden sonrakiler kalır.
  *  Öncelik: start_date, yoksa dates[] içindeki en erken tarih, o da yoksa end_date.
  *  Hiç tarih yoksa filtrelenmez. */
 export function isUpcomingTour(tour: Tour): boolean {
@@ -13,5 +14,5 @@ export function isUpcomingTour(tour: Tour): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const d = new Date(referenceDate.includes('T') ? referenceDate : referenceDate + 'T00:00:00');
-  return d >= today;
+  return d > today;
 }
