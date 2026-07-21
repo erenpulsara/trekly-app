@@ -1,15 +1,17 @@
 import type { Tour } from './types';
 
-/** Turun geçmişte kalıp kalmadığını kontrol eder — end_date, yoksa start_date,
- *  o da yoksa dates[] içindeki en son tarihe bakar. Hiç tarih yoksa filtrelenmez. */
+/** Turun "yaklaşan" sayılıp sayılmayacağını kontrol eder — bir tur başladığı andan
+ *  itibaren (bitiş tarihi ileride olsa bile) artık "yaklaşan etkinlik" değildir.
+ *  Öncelik: start_date, yoksa dates[] içindeki en erken tarih, o da yoksa end_date.
+ *  Hiç tarih yoksa filtrelenmez. */
 export function isUpcomingTour(tour: Tour): boolean {
-  const lastDate = tour.end_date
-    ?? tour.start_date
-    ?? tour.dates?.map((d) => d.date).sort().slice(-1)[0]
+  const referenceDate = tour.start_date
+    ?? tour.dates?.map((d) => d.date).sort()[0]
+    ?? tour.end_date
     ?? null;
-  if (!lastDate) return true;
+  if (!referenceDate) return true;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const d = new Date(lastDate.includes('T') ? lastDate : lastDate + 'T00:00:00');
+  const d = new Date(referenceDate.includes('T') ? referenceDate : referenceDate + 'T00:00:00');
   return d >= today;
 }
