@@ -99,9 +99,14 @@ export default async function EtkinliklerPage({
     : upcomingTours;
 
   const displayed = showAll ? monthFiltered : monthFiltered.slice(0, 9);
+  // location_name birden fazla yeri virgülle ayrılmış tutabilir (ör. "Rize, Artvin");
+  // filtre listesinde her biri ayrı, tek başına bir seçenek olarak görünmeli.
   const allLocations = [...new Set(
-    allToursForLocations.map(t => t.location_name).filter(Boolean)
-  )].sort() as string[];
+    allToursForLocations
+      .flatMap(t => (t.location_name ?? '').split(','))
+      .map(l => l.trim())
+      .filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'tr'));
 
   return (
     <>
