@@ -25,6 +25,7 @@ import { Tour } from '../../types';
 import { formatShortDate, formatPrice } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
 import { splitCategories, sortByStartDate } from '../../utils/category';
+import { isUpcomingTour } from '../../utils/tour-utils';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { displayCategory, localeUpper } from '../../i18n/categories';
@@ -248,7 +249,7 @@ export function HomeScreen({ navigation }: Props) {
         toursService.getAll(),
         toursService.getCategories().catch(() => [] as CategoryItem[]),
       ]);
-      setTours(sortByStartDate(toursData ?? []));
+      setTours(sortByStartDate((toursData ?? []).filter(isUpcomingTour)));
       setCategories(categoriesData.filter((c) => c?.name));
     } catch {
       setError(t.home.loadError);

@@ -23,6 +23,7 @@ import { toursService, CategoryItem } from '../../services/api';
 import { Tour } from '../../types';
 import { formatDate, formatShortDate, formatPrice } from '../../utils/formatting';
 import { splitCategories, sortByStartDate } from '../../utils/category';
+import { isUpcomingTour } from '../../utils/tour-utils';
 import { REWARDS_ENABLED } from '../../config/features';
 import { useLanguage } from '../../context/LanguageContext';
 import { displayCategory, localeUpper } from '../../i18n/categories';
@@ -183,6 +184,7 @@ export function ExploreScreen({ navigation, route }: Props) {
 
   // Soonest start date first — same ordering as the web's Etkinlikler page
   const filteredTours = sortByStartDate(tours.filter((t) => {
+    if (!isUpcomingTour(t)) return false;
     if (selectedCategory !== 'all' && !t.category?.includes(selectedCategory)) return false;
     if (selectedLocation && !t.location_name?.includes(selectedLocation)) return false;
     if (selectedMonth !== null && tourMonth(t) !== selectedMonth) return false;
