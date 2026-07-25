@@ -10,6 +10,7 @@ import { getFavorites } from '@/lib/favorites-api';
 import { splitCategories } from '@/lib/category-utils';
 import { displayCategory } from '@/lib/category-i18n';
 import { getLangClient, type Lang } from '@/lib/i18n';
+import { isUpcomingTour } from '@/lib/tour-utils';
 import type { Tour } from '@/lib/types';
 
 const PH_GRADIENT = 'linear-gradient(135deg,#1a4d2e,#2d7a4f)';
@@ -29,7 +30,7 @@ export default function FavorilerimPage() {
       return;
     }
     getFavorites()
-      .then(setTours)
+      .then((data) => setTours(data.filter(isUpcomingTour)))
       .finally(() => setLoading(false));
   }, [user, authLoading]);
 

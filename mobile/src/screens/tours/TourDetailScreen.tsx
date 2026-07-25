@@ -24,6 +24,7 @@ import { TourCard } from '../../components/common/TourCard';
 import { toursService, favoritesService } from '../../services/api';
 import { Tour, Difficulty } from '../../types';
 import { formatDate, formatDateRange, formatDateWithDay, formatDistance, formatPrice } from '../../utils/formatting';
+import { isUpcomingTour } from '../../utils/tour-utils';
 import { REWARDS_ENABLED } from '../../config/features';
 import { splitCategories } from '../../utils/category';
 import { displayCategory, localeUpper } from '../../i18n/categories';
@@ -80,7 +81,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
       toursService.getAll()
         .then((all) => {
           const related = all
-            .filter((t) => t.id !== data.id)
+            .filter((t) => t.id !== data.id && isUpcomingTour(t))
             .map((t) => ({ tour: t, score: scoreRelated(data, t) }))
             .sort((a, b) => b.score - a.score)
             .slice(0, 4)

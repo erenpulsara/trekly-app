@@ -6,6 +6,7 @@ import SiteFooter from '@/app/components/SiteFooter';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getTour, getPublishedTours } from '@/lib/api';
+import { isUpcomingTour } from '@/lib/tour-utils';
 import { splitCategories } from '@/lib/category-utils';
 import { displayCategory } from '@/lib/category-i18n';
 import { T } from '@/lib/i18n';
@@ -137,7 +138,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
   if (!tour) notFound();
 
   const relatedTours = allTours
-    .filter((t) => t.id !== tour.id)
+    .filter((t) => t.id !== tour.id && isUpcomingTour(t))
     .map((t) => ({ tour: t, score: scoreRelated(tour, t) }))
     .sort((a, b) => b.score - a.score)
     .slice(0, 4)

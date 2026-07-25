@@ -16,6 +16,7 @@ import { toursService } from '../../services/api';
 import { Tour } from '../../types';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
+import { isUpcomingTour } from '../../utils/tour-utils';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 16 * 3) / 2;
@@ -44,7 +45,7 @@ export function PopularToursScreen({ navigation }: Props) {
     try {
       setError(null);
       const data = await toursService.getAll();
-      setTours(data);
+      setTours(data.filter(isUpcomingTour));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Turlar yüklenemedi.');
     }

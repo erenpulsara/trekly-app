@@ -22,6 +22,7 @@ import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { formatShortDate } from '../../utils/formatting';
 import { splitCategories } from '../../utils/category';
 import { displayCategory, localeUpper } from '../../i18n/categories';
+import { isUpcomingTour } from '../../utils/tour-utils';
 
 type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'Favorites'>;
@@ -41,7 +42,7 @@ export function FavoritesScreen({ navigation }: Props) {
       if (showSpinner) setIsLoading(true);
       setError(null);
       const data = await favoritesService.getAll();
-      setTours(data);
+      setTours(data.filter(isUpcomingTour));
     } catch (err) {
       setError(err instanceof Error ? err.message : t.favorites.loadError);
     } finally {
