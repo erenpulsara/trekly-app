@@ -11,6 +11,7 @@ import { splitCategories } from '@/lib/category-utils';
 import { displayCategory } from '@/lib/category-i18n';
 import { getLangClient, type Lang } from '@/lib/i18n';
 import { isUpcomingTour } from '@/lib/tour-utils';
+import { sizedImageUrl } from '@/lib/img';
 import type { Tour } from '@/lib/types';
 
 const PH_GRADIENT = 'linear-gradient(135deg,#1a4d2e,#2d7a4f)';
@@ -96,7 +97,7 @@ export default function FavorilerimPage() {
                 >
                   <div style={{ position: 'relative', height: '180px', background: PH_GRADIENT }}>
                     {tour.photo_urls[0] && (
-                      <Image src={tour.photo_urls[0]} alt={tour.name} fill style={{ objectFit: 'cover' }} sizes="320px" />
+                      <Image src={sizedImageUrl(tour.photo_urls[0], 640)} alt={tour.name} fill style={{ objectFit: 'cover' }} sizes="320px" />
                     )}
                   </div>
                   <div style={{ padding: '16px' }}>

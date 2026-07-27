@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getTour, getPublishedTours } from '@/lib/api';
 import { isUpcomingTour } from '@/lib/tour-utils';
+import { sizedImageUrl } from '@/lib/img';
 import { splitCategories } from '@/lib/category-utils';
 import { displayCategory } from '@/lib/category-i18n';
 import { T } from '@/lib/i18n';
@@ -79,7 +80,7 @@ function RelatedTourCard({ tour, lang }: { tour: Tour; lang: 'tr' | 'en' }) {
     <Link href={`/tours/${tour.slug ?? tour.id}`} prefetch={false} className="related-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', borderRadius: '16px', border: '1px solid #EFEFEF', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
       <div style={{ position: 'relative', height: '200px', background: PH_GRADIENT[tour.difficulty] ?? PH_GRADIENT.easy, overflow: 'hidden' }}>
         {photos[0] && (
-          <Image src={photos[0]} alt={tour.name} fill style={{ objectFit: 'cover' }} sizes="320px" />
+          <Image src={sizedImageUrl(photos[0], 640)} alt={tour.name} fill style={{ objectFit: 'cover' }} sizes="320px" />
         )}
         <span style={{ position: 'absolute', top: '10px', left: '10px', background: dc.bg, color: dc.text, borderRadius: '6px', padding: '3px 10px', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {DIFF_LABEL[tour.difficulty]}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { sizedImageUrl } from '@/lib/img';
 
 interface Props {
   photos: string[];
@@ -79,7 +80,7 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 420 
           }}
         >
           <Image
-            src={photos[0]}
+            src={sizedImageUrl(photos[0], 900)}
             alt={tourName}
             fill
             priority
@@ -118,7 +119,7 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 420 
                     outline: 'none',
                   }}
                 >
-                  <Image src={url} alt="" fill style={{ objectFit: 'cover' }} />
+                  <Image src={sizedImageUrl(url, 500)} alt="" fill style={{ objectFit: 'cover' }} />
                   {showCountOverlay ? (
                     <div
                       style={{
@@ -163,7 +164,7 @@ export default function PhotoGallery({ photos, tourName, gradient, height = 420 
             }}
           >
             <Image
-              src={photos[lightbox]}
+              src={sizedImageUrl(photos[lightbox], 1400)}
               alt={`${tourName} - ${lightbox + 1}`}
               fill
               priority
