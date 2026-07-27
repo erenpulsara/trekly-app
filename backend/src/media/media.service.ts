@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Storage } from '@google-cloud/storage';
 import { v4 as uuidv4 } from 'uuid';
+import sharp from 'sharp';
 
 @Injectable()
 export class MediaService {
@@ -39,11 +40,28 @@ export class MediaService {
     }
   }
 
-  async getFileStream(filename: string): Promise<import('stream').Readable> {
+  async getFileStream(
+    filename: string,
+    width?: number,
+  ): Promise<import('stream').Readable> {
     const file = this.storage.bucket(this.bucketName).file(filename);
     const [exists] = await file.exists();
     if (!exists) throw new Error('not_found');
-    return file.createReadStream() as import('stream').Readable;
+    const stream = file.createReadStream() as import('stream').Readable;
+
+    if (!width) return stream;
+
+    // Animasyonlu GIF'leri sharp tek kareye indirger — bozulmasın diye
+    // resize istense bile GIF'i olduğu gibi geçiriyoruz.
+    const ext = filename.split('.').pop()?.toLowerCase();
+    if (ext === 'gif') return stream;
+
+    // sharp() bir Duplex stream'dir: GCS'den akan orijinal byte'lar buraya
+    // yazılır, aynı boyutta (width) yeniden boyutlandırılmış hâli buradan
+    // okunur — orijinal dosya GCS'de hiç değişmeden kalır, sadece bu tek
+    // istek için anlık dönüştürme yapılır.
+    const resizer = sharp().resize({ width, withoutEnlargement: true });
+    return stream.pipe(resizer);
   }
 
   getBucketName(): string {

@@ -39,6 +39,7 @@
     "reflect-metadata": "^0.1.13",
     "resend": "^6.14.0",
     "rxjs": "^7.8.1",
+    "sharp": "^0.33.5",
     "typeorm": "^0.3.17",
     "uuid": "^9.0.0"
   },

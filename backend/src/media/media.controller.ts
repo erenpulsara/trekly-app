@@ -5,6 +5,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Res,
   StreamableFile,
   UploadedFile,
@@ -31,6 +32,20 @@ const MIME_TYPES: Record<string, string> = {
   avif: 'image/avif',
 };
 
+const MIN_RESIZE_WIDTH = 50;
+const MAX_RESIZE_WIDTH = 2000;
+
+// ?w= verilmezse undefined döner — o durumda orijinal dosya hiç dokunulmadan
+// aynen servis edilir (mevcut tüm client'ların/URL'lerin davranışı değişmez).
+// Verilirse makul bir aralığa (50-2000px) sıkıştırılır, kötüye kullanım/aşırı
+// yüke karşı.
+function parseWidth(raw: string | undefined): number | undefined {
+  if (!raw) return undefined;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  return Math.round(Math.min(MAX_RESIZE_WIDTH, Math.max(MIN_RESIZE_WIDTH, n)));
+}
+
 @Controller('media')
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
@@ -38,14 +53,17 @@ export class MediaController {
   @Get(':filename')
   async serveFile(
     @Param('filename') filename: string,
+    @Query('w') w: string | undefined,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
     try {
-      const stream = await this.mediaService.getFileStream(filename);
+      const width = parseWidth(w);
+      const stream = await this.mediaService.getFileStream(filename, width);
       // Yüklenen dosyalar UUID adıyla bir kez yazılır, asla üzerine yazılmaz —
-      // yani bir filename'in içeriği hiç değişmez, tarayıcı/CDN sonsuza kadar
-      // (immutable) cache'leyebilir. Bu, aynı fotoğrafın kart/liste/detay gibi
-      // birden çok yerde tekrar tekrar backend'den indirilmesini engelliyor.
+      // yani bir filename (+ aynı ?w değeri) her zaman aynı içeriği üretir,
+      // tarayıcı/CDN sonsuza kadar (immutable) cache'leyebilir. Bu, aynı tur
+      // fotoğrafının kart/liste/detay gibi birden çok yerde tekrar tekrar
+      // backend'den indirilmesini engelliyor.
       res.set('Cache-Control', 'public, max-age=31536000, immutable');
       const ext = filename.split('.').pop()?.toLowerCase() ?? '';
       const type = MIME_TYPES[ext];
