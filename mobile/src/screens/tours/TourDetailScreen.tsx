@@ -467,52 +467,57 @@ export function TourDetailScreen({ navigation, route }: Props) {
               </TouchableOpacity>
             ) : null}
 
-            {/* Kontenjan bar — birden fazla tarih seçeneği varsa seçili
-                (veya ilk) tarihin kendi kontenjanına göre, etikette hangi
-                tarihe ait olduğu belirtilerek gösterilir. Tek tarihli
-                turlarda eskisi gibi turun genel kontenjanı gösterilir. */}
-            <View style={styles.organizerRow}>
-              <Ionicons name="time-outline" size={18} color="#6B7280" />
-              <View style={{ flex: 1 }}>
-                {(() => {
-                  const quotaDate = tour.dates.length > 1 ? (selectedDate ?? tour.dates[0]) : null;
-                  if (quotaDate) {
-                    const remaining = quotaDate.available_slots;
-                    const isFull = remaining <= 0;
-                    const pct = Math.min(100, (remaining / Math.max(1, tour.max_participants)) * 100);
-                    return (
-                      <>
-                        <Text style={styles.organizerLabel}>
-                          {localeUpper(t.tourDetail.quota, lang)} · {formatDateRange(quotaDate.date, quotaDate.end_date, lang)}
-                        </Text>
-                        <View style={styles.quotaBarBg}>
-                          <View style={[styles.quotaBarFill, { width: `${pct}%` }, isFull && { backgroundColor: '#EF4444' }]} />
-                        </View>
-                        <Text style={[styles.quotaText, isFull && { color: '#EF4444' }]}>
-                          {isFull ? t.tourDetail.full : `${remaining} ${t.tourDetail.spotsLeft}`}
-                        </Text>
-                      </>
-                    );
-                  }
-                  const booked = tour.booking_count ?? 0;
-                  const remaining = Math.max(0, tour.max_participants - booked);
-                  const isFull = remaining === 0;
-                  const pct = Math.min(100, (booked / Math.max(1, tour.max_participants)) * 100);
-                  return (
-                    <>
-                      <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.quota, lang)}</Text>
+            {/* Kontenjan bar — birden fazla tarih seçeneği varsa HER tarih
+                için ayrı bir Kontenjan satırı (kendi çubuğu ve kalan yer
+                sayısıyla) alt alta gösterilir. Tek tarihli turlarda eskisi
+                gibi tek bir genel kontenjan satırı gösterilir. */}
+            {tour.dates.length > 1 ? (
+              tour.dates.map((d) => {
+                const remaining = d.available_slots;
+                const isFull = remaining <= 0;
+                const pct = Math.min(100, (remaining / Math.max(1, tour.max_participants)) * 100);
+                return (
+                  <View key={d.id} style={styles.organizerRow}>
+                    <Ionicons name="time-outline" size={18} color="#6B7280" />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.organizerLabel}>
+                        {localeUpper(t.tourDetail.quota, lang)} · {formatDateRange(d.date, d.end_date, lang)}
+                      </Text>
                       <View style={styles.quotaBarBg}>
                         <View style={[styles.quotaBarFill, { width: `${pct}%` }, isFull && { backgroundColor: '#EF4444' }]} />
                       </View>
                       <Text style={[styles.quotaText, isFull && { color: '#EF4444' }]}>
                         {isFull ? t.tourDetail.full : `${remaining} ${t.tourDetail.spotsLeft}`}
-                        <Text style={styles.quotaSubText}>  ({booked}/{tour.max_participants})</Text>
                       </Text>
-                    </>
-                  );
-                })()}
+                    </View>
+                  </View>
+                );
+              })
+            ) : (
+              <View style={styles.organizerRow}>
+                <Ionicons name="time-outline" size={18} color="#6B7280" />
+                <View style={{ flex: 1 }}>
+                  {(() => {
+                    const booked = tour.booking_count ?? 0;
+                    const remaining = Math.max(0, tour.max_participants - booked);
+                    const isFull = remaining === 0;
+                    const pct = Math.min(100, (booked / Math.max(1, tour.max_participants)) * 100);
+                    return (
+                      <>
+                        <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.quota, lang)}</Text>
+                        <View style={styles.quotaBarBg}>
+                          <View style={[styles.quotaBarFill, { width: `${pct}%` }, isFull && { backgroundColor: '#EF4444' }]} />
+                        </View>
+                        <Text style={[styles.quotaText, isFull && { color: '#EF4444' }]}>
+                          {isFull ? t.tourDetail.full : `${remaining} ${t.tourDetail.spotsLeft}`}
+                          <Text style={styles.quotaSubText}>  ({booked}/{tour.max_participants})</Text>
+                        </Text>
+                      </>
+                    );
+                  })()}
+                </View>
               </View>
-            </View>
+            )}
           </View>
 
           {/* Date selector — birden fazla tarih seçeneği olan turlarda, her

@@ -360,20 +360,12 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
               <div style={{ width: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>{iconCal}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: '0.6rem', color: '#BBBBBB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>{tt.dateOptionsLabel}</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {allOptions.map((d) => {
-                    const dFull = d.available_slots <= 0;
-                    return (
-                      <div key={d.id} style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ color: '#FF5533', fontWeight: 700, fontSize: '0.92rem' }}>
-                          {fmtDateRange(d, lang === 'en' ? 'en-US' : 'tr-TR')}
-                        </span>
-                        <span style={{ fontSize: '0.72rem', color: dFull ? '#EF4444' : '#9A9A9A', fontWeight: 600 }}>
-                          · {dFull ? tt.full : `${d.available_slots} ${tt.people.toLowerCase()}`}
-                        </span>
-                      </div>
-                    );
-                  })}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {allOptions.map((d) => (
+                    <span key={d.id} style={{ color: '#FF5533', fontWeight: 700, fontSize: '0.92rem' }}>
+                      {fmtDateRange(d, lang === 'en' ? 'en-US' : 'tr-TR')}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
@@ -404,42 +396,56 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
             </div>
           )}
 
-          {/* Kontenjan bar — birden fazla tarih seçeneği varsa, seçili
-              (veya ilk) tarihin kendi kontenjanını gösterecek şekilde
-              dinamikleşiyor; etiketin yanında hangi tarihe ait olduğu da
-              yazıyor. Tek tarihli turlarda eskisi gibi turun genel
-              kontenjanını gösterir. */}
-          {(() => {
-            const quotaDate = hasDateOptions ? (selectedDate ?? allOptions[0]) : null;
-            const quotaRemaining = quotaDate ? quotaDate.available_slots : remaining;
-            const quotaIsFull = quotaDate ? quotaDate.available_slots <= 0 : isFull;
-            const quotaLabel = quotaDate
-              ? `${tt.quota} · ${fmtDateRange(quotaDate, lang === 'en' ? 'en-US' : 'tr-TR')}`
-              : tt.quota;
-            return (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '11px 0 16px' }}>
-                <div style={{ width: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>{iconClock}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.6rem', color: '#BBBBBB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>{quotaLabel}</div>
-                  <div style={{ height: '5px', background: '#E8E8E8', borderRadius: '3px', overflow: 'hidden', marginBottom: '5px' }}>
-                    <div style={{
-                      height: '100%', borderRadius: '3px',
-                      background: quotaIsFull ? '#EF4444' : '#FF5533',
-                      width: `${Math.min(100, (quotaRemaining / Math.max(1, tour.max_participants)) * 100)}%`,
-                    }} />
-                  </div>
-                  <span style={{ color: quotaIsFull ? '#EF4444' : '#FF5533', fontWeight: 700, fontSize: '0.88rem' }}>
-                    {quotaIsFull ? tt.full : tt.spotsLeft(quotaRemaining)}
-                  </span>
-                  {!hasDateOptions && (
-                    <span style={{ fontSize: '0.7rem', color: '#AAAAAA', marginLeft: '6px' }}>
-                      ({tour.max_participants - remaining}/{tour.max_participants})
+          {/* Kontenjan bar — birden fazla tarih seçeneği varsa, HER tarih
+              için ayrı bir Kontenjan satırı (kendi çubuğu ve kalan yer
+              sayısıyla) alt alta gösterilir. Tek tarihli turlarda eskisi
+              gibi tek bir genel kontenjan satırı gösterilir. */}
+          {hasDateOptions ? (
+            allOptions.map((d) => {
+              const dRemaining = d.available_slots;
+              const dIsFull = dRemaining <= 0;
+              return (
+                <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '11px 0' }}>
+                  <div style={{ width: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>{iconClock}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '0.6rem', color: '#BBBBBB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>
+                      {tt.quota} · {fmtDateRange(d, lang === 'en' ? 'en-US' : 'tr-TR')}
+                    </div>
+                    <div style={{ height: '5px', background: '#E8E8E8', borderRadius: '3px', overflow: 'hidden', marginBottom: '5px' }}>
+                      <div style={{
+                        height: '100%', borderRadius: '3px',
+                        background: dIsFull ? '#EF4444' : '#FF5533',
+                        width: `${Math.min(100, (dRemaining / Math.max(1, tour.max_participants)) * 100)}%`,
+                      }} />
+                    </div>
+                    <span style={{ color: dIsFull ? '#EF4444' : '#FF5533', fontWeight: 700, fontSize: '0.88rem' }}>
+                      {dIsFull ? tt.full : tt.spotsLeft(dRemaining)}
                     </span>
-                  )}
+                  </div>
                 </div>
+              );
+            })
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '11px 0 16px' }}>
+              <div style={{ width: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>{iconClock}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.6rem', color: '#BBBBBB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>{tt.quota}</div>
+                <div style={{ height: '5px', background: '#E8E8E8', borderRadius: '3px', overflow: 'hidden', marginBottom: '5px' }}>
+                  <div style={{
+                    height: '100%', borderRadius: '3px',
+                    background: isFull ? '#EF4444' : '#FF5533',
+                    width: `${Math.min(100, ((tour.max_participants - remaining) / tour.max_participants) * 100)}%`,
+                  }} />
+                </div>
+                <span style={{ color: isFull ? '#EF4444' : '#FF5533', fontWeight: 700, fontSize: '0.88rem' }}>
+                  {isFull ? tt.full : tt.spotsLeft(remaining)}
+                </span>
+                <span style={{ fontSize: '0.7rem', color: '#AAAAAA', marginLeft: '6px' }}>
+                  ({tour.max_participants - remaining}/{tour.max_participants})
+                </span>
               </div>
-            );
-          })()}
+            </div>
+          )}
 
         </div>
       )}
