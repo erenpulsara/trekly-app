@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Controller,
   Get,
+  Logger,
   NotFoundException,
   Param,
   Post,
@@ -48,6 +49,8 @@ function parseWidth(raw: string | undefined): number | undefined {
 
 @Controller('media')
 export class MediaController {
+  private readonly logger = new Logger(MediaController.name);
+
   constructor(private readonly mediaService: MediaService) {}
 
   @Get(':filename')
@@ -68,7 +71,10 @@ export class MediaController {
       const ext = filename.split('.').pop()?.toLowerCase() ?? '';
       const type = MIME_TYPES[ext];
       return new StreamableFile(stream, type ? { type } : undefined);
-    } catch {
+    } catch (err) {
+      // Sadece sunucu log'una yazılır, response'a hiç dahil edilmez —
+      // 404 mesajı client için değişmiyor.
+      this.logger.error(`serveFile failed for "${filename}"${w ? ` (w=${w})` : ''}: ${(err as Error)?.stack ?? err}`);
       throw new NotFoundException('File not found');
     }
   }
