@@ -273,6 +273,7 @@ export default async function TourDetailPage({ params }: { params: { id: string 
               booking_count: tour.booking_count,
               start_date: tour.start_date,
               end_date: tour.end_date,
+              dates: tour.dates,
               meeting_points: tour.meeting_points,
               target_location: tour.target_location,
               contact_phone: tour.contact_phone,

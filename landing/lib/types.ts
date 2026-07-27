@@ -10,6 +10,7 @@ export type TourDifficulty =
 export interface TourDate {
   id: string;
   date: string;
+  end_date?: string | null;
   available_slots: number;
 }
 

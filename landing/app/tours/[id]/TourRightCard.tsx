@@ -14,6 +14,13 @@ function fmtDate(s: string, locale = 'tr-TR') {
   return `${date} ${weekday}`;
 }
 
+interface TourDateOption {
+  id: string;
+  date: string;
+  end_date?: string | null;
+  available_slots: number;
+}
+
 interface TourData {
   id: string;
   organizer?: string | null;
@@ -28,11 +35,22 @@ interface TourData {
   booking_count?: number | null;
   start_date?: string | null;
   end_date?: string | null;
+  dates?: TourDateOption[];
   meeting_points?: string | null;
   target_location?: string | null;
   contact_phone?: string | null;
   price?: number | null;
   price_currency?: 'TRY' | 'USD' | 'EUR' | null;
+}
+
+function fmtDateShort(s: string, locale = 'tr-TR') {
+  const d = new Date(s.includes('T') ? s : s + 'T00:00:00');
+  return d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function fmtDateRange(d: TourDateOption, locale = 'tr-TR') {
+  const start = fmtDateShort(d.date, locale);
+  return d.end_date ? `${start} – ${fmtDateShort(d.end_date, locale)}` : start;
 }
 
 interface Props {
@@ -84,12 +102,20 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
   const [phone, setPhone]           = useState('');
   const [count, setCount]           = useState(1);
   const [notes, setNotes]           = useState('');
+  const hasDateOptions = !!tour.dates && tour.dates.length > 0;
+  const [selectedDateId, setSelectedDateId] = useState<string>(() => (hasDateOptions ? tour.dates![0].id : ''));
+  const selectedDate = tour.dates?.find((d) => d.id === selectedDateId) ?? null;
+  const maxCount = selectedDate ? selectedDate.available_slots : tour.max_participants;
 
   const hasPrice = tour.price != null && tour.price > 0;
   const totalPrice = hasPrice ? (tour.price as number) * count : null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (hasDateOptions && !selectedDateId) {
+      setError(tt.selectDatePrompt);
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
@@ -102,6 +128,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
           phone: phone.trim(),
           participant_count: count,
           notes: notes.trim() || undefined,
+          tour_date_id: hasDateOptions ? selectedDateId : undefined,
         }),
       });
       if (!res.ok) {
@@ -186,6 +213,42 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
       {/* ════ FORM VIEW ════ */}
       {showForm && step === 'form' && (
         <div style={{ padding: '20px' }}>
+          {/* Date options */}
+          {hasDateOptions && (
+            <div style={{ marginBottom: '20px' }}>
+              <label style={labelStyle}>{tt.selectDateLabel} *</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {tour.dates!.map((d) => {
+                  const isSelected = d.id === selectedDateId;
+                  const dFull = d.available_slots <= 0;
+                  return (
+                    <button
+                      key={d.id}
+                      type="button"
+                      disabled={dFull}
+                      onClick={() => { setSelectedDateId(d.id); setCount(1); }}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '10px 14px', borderRadius: '10px',
+                        border: isSelected ? '1.5px solid #FF5533' : '1.5px solid #E8E8E8',
+                        background: isSelected ? '#FFF8F7' : dFull ? '#FAFAFA' : 'white',
+                        cursor: dFull ? 'not-allowed' : 'pointer',
+                        textAlign: 'left', opacity: dFull ? 0.5 : 1,
+                      }}
+                    >
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1A1A1A' }}>
+                        {fmtDateRange(d, lang === 'en' ? 'en-US' : 'tr-TR')}
+                      </span>
+                      <span style={{ fontSize: '0.72rem', color: dFull ? '#EF4444' : '#9A9A9A', fontWeight: 600, flexShrink: 0, marginLeft: '10px' }}>
+                        {dFull ? tt.full : tt.spotsLeft(d.available_slots)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Price summary in form */}
           {hasPrice && (
             <div style={{ background: '#FFF8F7', borderRadius: '10px', padding: '14px 16px', border: '1px solid rgba(255,85,51,0.15)', marginBottom: '20px' }}>
@@ -222,9 +285,9 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
                 <button type="button" onClick={() => setCount((v) => Math.max(1, v - 1))}
                   style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1.5px solid #E8E8E8', background: 'white', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
                 <span style={{ fontWeight: 700, fontSize: '1rem', minWidth: '20px', textAlign: 'center' }}>{count}</span>
-                <button type="button" onClick={() => setCount((v) => Math.min(tour.max_participants, v + 1))}
+                <button type="button" onClick={() => setCount((v) => Math.min(maxCount, v + 1))}
                   style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1.5px solid #E8E8E8', background: 'white', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
-                <span style={{ fontSize: '0.72rem', color: '#AAAAAA' }}>{tt.maxShort} {tour.max_participants}</span>
+                <span style={{ fontSize: '0.72rem', color: '#AAAAAA' }}>{tt.maxShort} {maxCount}</span>
               </div>
             </div>
             <div>
@@ -234,7 +297,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
             {error && (
               <p style={{ fontSize: '0.8rem', color: '#C53030', background: '#FFF0F0', borderRadius: '8px', padding: '8px 12px', margin: 0 }}>⚠️ {error}</p>
             )}
-            <button type="submit" disabled={loading} style={{
+            <button type="submit" disabled={loading || (hasDateOptions && !selectedDate)} style={{
               width: '100%', padding: '13px', borderRadius: '10px',
               background: loading ? '#FFBFB5' : '#FF5533',
               color: 'white', fontWeight: 700, fontSize: '0.9rem',
@@ -279,8 +342,18 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
             <InfoRow icon={iconXp} label={tt.pointsEarn} value={`${tour.points} XP`} />
           )}
           <InfoRow icon={iconCap} label={tt.capacity} value={`${tour.max_participants} ${tt.people}`} />
-          {tour.start_date && <InfoRow icon={iconCal} label={tt.startDate} value={fmtDate(tour.start_date, lang === 'en' ? 'en-US' : 'tr-TR')} />}
-          {tour.end_date   && <InfoRow icon={iconCal} label={tt.endDate}     value={fmtDate(tour.end_date, lang === 'en' ? 'en-US' : 'tr-TR')} />}
+          {hasDateOptions ? (
+            <InfoRow
+              icon={iconCal}
+              label={tt.dateOptionsLabel}
+              value={tour.dates!.map((d) => fmtDateRange(d, lang === 'en' ? 'en-US' : 'tr-TR')).join(' · ')}
+            />
+          ) : (
+            <>
+              {tour.start_date && <InfoRow icon={iconCal} label={tt.startDate} value={fmtDate(tour.start_date, lang === 'en' ? 'en-US' : 'tr-TR')} />}
+              {tour.end_date   && <InfoRow icon={iconCal} label={tt.endDate}     value={fmtDate(tour.end_date, lang === 'en' ? 'en-US' : 'tr-TR')} />}
+            </>
+          )}
           {tour.meeting_points  && <InfoRow icon={iconPin}   label={tt.meetingPoint} value={tour.meeting_points} />}
           {tour.target_location && <InfoRow icon={iconPin}   label={tt.targetLocation}  value={tour.target_location} />}
           {tour.contact_phone   && <InfoRow icon={iconPhone} label={tt.contactNo} value={tour.contact_phone} href={`tel:${tour.contact_phone}`} />}
