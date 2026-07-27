@@ -22,13 +22,18 @@ export interface TourDateRange {
   end_date?: string | null;
 }
 
-/** Turun zorunlu start_date/end_date'i ile "Tur Tarihleri"nde eklenen ek
- *  tarihleri (dates[]) tek bir listede birleştirir — kartlarda/detay
- *  sayfasında tüm tarih seçeneklerinin gösterilmesi için kullanılır. */
+/** Turun tüm tarih seçeneklerini döner. Backend, bir tura ilk ek tarih
+ *  eklendiği anda zorunlu start_date/end_date'i de gerçek bir dates[]
+ *  kaydına dönüştürüyor (bkz. backend ensurePrimaryTourDate) — yani
+ *  dates[] doluyken zaten TÜM seçenekleri içerir, ayrıca start_date
+ *  eklemek tekrar/duplicate'e yol açar. dates[] boşsa (mevcut turların
+ *  tamamı) tek seçenek olarak start_date/end_date kullanılır. */
 export function getAllTourDateRanges(tour: Pick<Tour, 'start_date' | 'end_date' | 'dates'>): TourDateRange[] {
-  const extra = (tour.dates ?? []).map((d) => ({ date: d.date, end_date: d.end_date }));
-  if (tour.start_date) {
-    return [{ date: tour.start_date, end_date: tour.end_date }, ...extra];
+  if (tour.dates && tour.dates.length > 0) {
+    return tour.dates.map((d) => ({ date: d.date, end_date: d.end_date }));
   }
-  return extra;
+  if (tour.start_date) {
+    return [{ date: tour.start_date, end_date: tour.end_date }];
+  }
+  return [];
 }

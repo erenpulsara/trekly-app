@@ -21,9 +21,9 @@ import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { DifficultyBadge } from '../../components/common/DifficultyBadge';
 import { toursService, CategoryItem } from '../../services/api';
 import { Tour } from '../../types';
-import { formatDate, formatShortDate, formatPrice } from '../../utils/formatting';
+import { formatDateRange, formatPrice } from '../../utils/formatting';
 import { splitCategories, sortByStartDate } from '../../utils/category';
-import { isUpcomingTour } from '../../utils/tour-utils';
+import { isUpcomingTour, getAllTourDateRanges } from '../../utils/tour-utils';
 import { REWARDS_ENABLED } from '../../config/features';
 import { useLanguage } from '../../context/LanguageContext';
 import { displayCategory, localeUpper } from '../../i18n/categories';
@@ -51,11 +51,7 @@ function tourMonth(tour: Tour): number | null {
 
 function TourEventCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
   const { t, lang } = useLanguage();
-  const startStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
-  const endStr = tour.end_date ?? tour.dates?.[0]?.end_date ?? null;
-  // tour.dates, dolu olduğunda başlangıç tarihini de içerir (bkz. backend
-  // ensurePrimaryTourDate) — o yüzden fazladan seçenek sayısı length - 1.
-  const extraDatesCount = tour.dates && tour.dates.length > 1 ? tour.dates.length - 1 : 0;
+  const dateRanges = getAllTourDateRanges(tour);
   const hasPrice = tour.price != null && Number(tour.price) > 0;
   const colorIdx = tour.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 4;
   const bgColor = ['#2D4A3A', '#3A4A2D', '#4A2D3A', '#2D3A4A'][colorIdx];
@@ -83,15 +79,14 @@ function TourEventCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
       <View style={styles.eventContent}>
         <Text style={styles.eventName} numberOfLines={2}>{tour.name}</Text>
         <View style={styles.eventMeta}>
-          {startStr && (
-            <View style={styles.eventMetaRow}>
-              <Ionicons name="calendar-outline" size={13} color="#6B7280" />
-              <Text style={styles.eventMetaText}>
-                {endStr
-                  ? `${formatShortDate(startStr, lang)} – ${formatShortDate(endStr, lang)}`
-                  : formatDate(startStr, lang)}
-                {extraDatesCount > 0 ? ` · +${extraDatesCount}` : ''}
-              </Text>
+          {dateRanges.length > 0 && (
+            <View style={[styles.eventMetaRow, { alignItems: 'flex-start' }]}>
+              <Ionicons name="calendar-outline" size={13} color="#6B7280" style={{ marginTop: 2 }} />
+              <View style={{ flex: 1 }}>
+                {dateRanges.map((r, i) => (
+                  <Text key={i} style={styles.eventMetaText}>{formatDateRange(r.date, r.end_date, lang)}</Text>
+                ))}
+              </View>
             </View>
           )}
           <View style={styles.eventMetaRow}>

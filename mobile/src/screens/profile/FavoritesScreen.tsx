@@ -19,10 +19,10 @@ import { Tour } from '../../types';
 import { DifficultyBadge } from '../../components/common/DifficultyBadge';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
-import { formatShortDate } from '../../utils/formatting';
+import { formatDateRange } from '../../utils/formatting';
 import { splitCategories } from '../../utils/category';
 import { displayCategory, localeUpper } from '../../i18n/categories';
-import { isUpcomingTour } from '../../utils/tour-utils';
+import { isUpcomingTour, getAllTourDateRanges } from '../../utils/tour-utils';
 
 type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'Favorites'>;
@@ -108,10 +108,7 @@ export function FavoritesScreen({ navigation }: Props) {
             <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#FF5A1F" />
           }
           renderItem={({ item }) => {
-            const dateStr = item.start_date ?? item.dates?.[0]?.date ?? null;
-            // item.dates, dolu olduğunda başlangıç tarihini de içerir (bkz.
-            // backend ensurePrimaryTourDate) — fazladan seçenek length - 1.
-            const extraDatesCount = item.dates && item.dates.length > 1 ? item.dates.length - 1 : 0;
+            const dateRanges = getAllTourDateRanges(item);
             const cats = splitCategories(item.category);
             return (
               <TouchableOpacity
@@ -148,16 +145,17 @@ export function FavoritesScreen({ navigation }: Props) {
                   <View style={styles.cardMetaRow}>
                     <Ionicons name="location-outline" size={13} color="#6B7280" />
                     <Text style={styles.cardMetaText} numberOfLines={1}>{item.location_name}</Text>
-                    {dateStr && (
-                      <>
-                        <Ionicons name="calendar-outline" size={13} color="#6B7280" style={{ marginLeft: 8 }} />
-                        <Text style={styles.cardMetaText}>
-                          {formatShortDate(dateStr, lang)}
-                          {extraDatesCount > 0 ? ` · +${extraDatesCount}` : ''}
-                        </Text>
-                      </>
-                    )}
                   </View>
+                  {dateRanges.length > 0 && (
+                    <View style={[styles.cardMetaRow, { alignItems: 'flex-start' }]}>
+                      <Ionicons name="calendar-outline" size={13} color="#6B7280" style={{ marginTop: 2 }} />
+                      <View style={{ flex: 1 }}>
+                        {dateRanges.map((r, i) => (
+                          <Text key={i} style={styles.cardMetaText}>{formatDateRange(r.date, r.end_date, lang)}</Text>
+                        ))}
+                      </View>
+                    </View>
+                  )}
                 </View>
               </TouchableOpacity>
             );

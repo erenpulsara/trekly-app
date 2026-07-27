@@ -417,24 +417,44 @@ export function TourDetailScreen({ navigation, route }: Props) {
                 </View>
               </TouchableOpacity>
             ) : null}
-            {tour.start_date ? (
+            {/* Birden fazla tarih seçeneği varsa hepsi tek bir listede alt
+                alta gösterilir (web'deki "Tarih Seçenekleri" ile aynı
+                mantık); tek tarihli turlarda eskisi gibi Başlangıç/Bitiş
+                Tarihi ayrı ayrı gösterilir. */}
+            {tour.dates.length > 1 ? (
               <View style={styles.organizerRow}>
                 <Ionicons name="calendar-outline" size={18} color="#6B7280" />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.startDate, lang)}</Text>
-                  <Text style={styles.organizerValue}>{formatDateWithDay(tour.start_date, lang)}</Text>
+                  <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.dateOptionsLabel, lang)}</Text>
+                  {tour.dates.map((d) => (
+                    <Text key={d.id} style={styles.organizerValue}>
+                      {formatDateRange(d.date, d.end_date, lang)}
+                    </Text>
+                  ))}
                 </View>
               </View>
-            ) : null}
-            {tour.end_date ? (
-              <View style={styles.organizerRow}>
-                <Ionicons name="calendar-outline" size={18} color="#6B7280" />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.endDate, lang)}</Text>
-                  <Text style={styles.organizerValue}>{formatDateWithDay(tour.end_date, lang)}</Text>
-                </View>
-              </View>
-            ) : null}
+            ) : (
+              <>
+                {tour.start_date ? (
+                  <View style={styles.organizerRow}>
+                    <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.startDate, lang)}</Text>
+                      <Text style={styles.organizerValue}>{formatDateWithDay(tour.start_date, lang)}</Text>
+                    </View>
+                  </View>
+                ) : null}
+                {tour.end_date ? (
+                  <View style={styles.organizerRow}>
+                    <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.endDate, lang)}</Text>
+                      <Text style={styles.organizerValue}>{formatDateWithDay(tour.end_date, lang)}</Text>
+                    </View>
+                  </View>
+                ) : null}
+              </>
+            )}
             {tour.meeting_points ? (
               <View style={styles.organizerRow}>
                 <Ionicons name="location-outline" size={18} color="#6B7280" />
@@ -548,9 +568,9 @@ export function TourDetailScreen({ navigation, route }: Props) {
                         </Text>
                       </View>
                       <View style={{ alignItems: 'flex-end', gap: 4 }}>
-                        <Text style={[styles.dateChipSlots, dFull && { color: '#EF4444' }]}>
-                          {dFull ? t.tourDetail.full : `${d.available_slots} yer`}
-                        </Text>
+                        {dFull && (
+                          <Text style={[styles.dateChipSlots, { color: '#EF4444' }]}>{t.tourDetail.full}</Text>
+                        )}
                         {active && <Ionicons name="checkmark-circle" size={20} color="#FF5A1F" />}
                       </View>
                     </TouchableOpacity>

@@ -11,9 +11,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Tour } from '../../types';
 import { DifficultyBadge } from './DifficultyBadge';
-import { formatShortDate, formatPoints } from '../../utils/formatting';
+import { formatDateRange, formatPoints } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
 import { useLanguage } from '../../context/LanguageContext';
+import { getAllTourDateRanges } from '../../utils/tour-utils';
 
 const { width } = Dimensions.get('window');
 
@@ -28,10 +29,7 @@ interface TourCardProps {
 
 export function TourCard({ tour, onPress, variant = 'full', style }: TourCardProps) {
   const { lang } = useLanguage();
-  const dateStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
-  // tour.dates, dolu olduğunda başlangıç tarihini de içerir (bkz. backend
-  // ensurePrimaryTourDate) — o yüzden fazladan seçenek sayısı length - 1.
-  const extraDatesCount = tour.dates && tour.dates.length > 1 ? tour.dates.length - 1 : 0;
+  const dateRanges = getAllTourDateRanges(tour);
 
   if (variant === 'compact') {
     return (
@@ -77,13 +75,16 @@ export function TourCard({ tour, onPress, variant = 'full', style }: TourCardPro
           <Ionicons name="location-outline" size={13} color="#6B7280" />
           <Text style={styles.locationText}>{tour.location_name}</Text>
         </View>
-        {dateStr && (
+        {dateRanges.length > 0 && (
           <View style={styles.dateRow}>
-            <Ionicons name="calendar-outline" size={13} color="#6B7280" />
-            <Text style={styles.dateText} numberOfLines={1}>
-              {formatShortDate(dateStr, lang)}
-              {extraDatesCount > 0 ? ` · +${extraDatesCount}` : ''}
-            </Text>
+            <Ionicons name="calendar-outline" size={13} color="#6B7280" style={{ marginTop: 2 }} />
+            <View style={{ flex: 1 }}>
+              {dateRanges.map((r, i) => (
+                <Text key={i} style={styles.dateText} numberOfLines={1}>
+                  {formatDateRange(r.date, r.end_date, lang)}
+                </Text>
+              ))}
+            </View>
             {REWARDS_ENABLED && <Text style={styles.pointsBadge}>{formatPoints(tour.points)}</Text>}
           </View>
         )}

@@ -10,9 +10,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Tour } from '../../types';
 import { DifficultyBadge } from '../common/DifficultyBadge';
-import { formatShortDate } from '../../utils/formatting';
+import { formatDateRange } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
 import { useLanguage } from '../../context/LanguageContext';
+import { getAllTourDateRanges } from '../../utils/tour-utils';
 
 const { width } = Dimensions.get('window');
 
@@ -24,11 +25,7 @@ interface FeaturedTourCardProps {
 
 export function FeaturedTourCard({ tour, onPress, onBook }: FeaturedTourCardProps) {
   const { lang } = useLanguage();
-  const startStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
-  const endStr = tour.end_date ?? tour.dates?.[0]?.end_date ?? null;
-  // tour.dates, dolu olduğunda başlangıç tarihini de içerir (bkz. backend
-  // ensurePrimaryTourDate) — o yüzden fazladan seçenek sayısı length - 1.
-  const extraDatesCount = tour.dates && tour.dates.length > 1 ? tour.dates.length - 1 : 0;
+  const dateRanges = getAllTourDateRanges(tour);
 
   return (
     <TouchableOpacity
@@ -59,15 +56,14 @@ export function FeaturedTourCard({ tour, onPress, onBook }: FeaturedTourCardProp
           <Ionicons name="location-outline" size={14} color="#6B7280" />
           <Text style={styles.infoText}>{tour.location_name}</Text>
         </View>
-        {(startStr || endStr) && (
-          <View style={styles.infoRow}>
-            <Ionicons name="calendar-outline" size={14} color="#6B7280" />
-            <Text style={styles.infoText}>
-              {startStr ? formatShortDate(startStr, lang) : ''}
-              {startStr && endStr ? ' – ' : ''}
-              {endStr ? formatShortDate(endStr, lang) : ''}
-              {extraDatesCount > 0 ? ` · +${extraDatesCount}` : ''}
-            </Text>
+        {dateRanges.length > 0 && (
+          <View style={[styles.infoRow, { alignItems: 'flex-start' }]}>
+            <Ionicons name="calendar-outline" size={14} color="#6B7280" style={{ marginTop: 2 }} />
+            <View style={{ flex: 1 }}>
+              {dateRanges.map((r, i) => (
+                <Text key={i} style={styles.infoText}>{formatDateRange(r.date, r.end_date, lang)}</Text>
+              ))}
+            </View>
           </View>
         )}
         <View style={styles.footer}>

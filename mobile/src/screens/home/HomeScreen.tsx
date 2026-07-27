@@ -22,10 +22,10 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { toursService, CategoryItem } from '../../services/api';
 import { Tour } from '../../types';
-import { formatShortDate, formatPrice } from '../../utils/formatting';
+import { formatDateRange, formatPrice } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
 import { splitCategories, sortByStartDate } from '../../utils/category';
-import { isUpcomingTour } from '../../utils/tour-utils';
+import { isUpcomingTour, getAllTourDateRanges } from '../../utils/tour-utils';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { displayCategory, localeUpper } from '../../i18n/categories';
@@ -146,11 +146,7 @@ function HeroCarousel() {
 // location / date range / price rows, "Detayları Gör" button.
 function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
   const { t, lang } = useLanguage();
-  const startStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
-  const endStr = tour.end_date ?? tour.dates?.[0]?.end_date ?? null;
-  // tour.dates, dolu olduğunda başlangıç tarihini de içerir (bkz. backend
-  // ensurePrimaryTourDate) — o yüzden fazladan seçenek sayısı length - 1.
-  const extraDatesCount = tour.dates && tour.dates.length > 1 ? tour.dates.length - 1 : 0;
+  const dateRanges = getAllTourDateRanges(tour);
   const cats = splitCategories(tour.category);
   const hasPrice = tour.price != null && Number(tour.price) > 0;
 
@@ -186,16 +182,14 @@ function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }
           </View>
         </View>
 
-        {startStr && (
+        {dateRanges.length > 0 && (
           <View style={styles.upCardInfoRow}>
             <Ionicons name="calendar-outline" size={14} color="#9CA3AF" />
             <View style={{ flex: 1 }}>
               <Text style={styles.upCardInfoLabel}>{t.home.dateLabel}</Text>
-              <Text style={styles.upCardInfoValue}>
-                {formatShortDate(startStr, lang)}
-                {endStr ? ` – ${formatShortDate(endStr, lang)}` : ''}
-                {extraDatesCount > 0 ? ` · +${extraDatesCount}` : ''}
-              </Text>
+              {dateRanges.map((r, i) => (
+                <Text key={i} style={styles.upCardInfoValue}>{formatDateRange(r.date, r.end_date, lang)}</Text>
+              ))}
             </View>
           </View>
         )}
