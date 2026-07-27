@@ -319,17 +319,21 @@ export function TourDetailScreen({ navigation, route }: Props) {
 
           {/* Info grid */}
           <View style={styles.infoGrid}>
-            <View style={styles.infoCell}>
-              <Ionicons name="calendar-outline" size={20} color="#FF5A1F" />
-              <Text style={styles.infoCellLabel}>{localeUpper(t.tourDetail.date, lang)}</Text>
-              <Text style={styles.infoCellValue}>
-                {tour.start_date
-                  ? formatDateRange(tour.start_date, tour.end_date, lang)
-                  : tour.dates?.[0]
-                    ? formatDateRange(tour.dates[0].date, tour.dates[0].end_date, lang)
-                    : t.tourDetail.undefined}
-              </Text>
-            </View>
+            {/* Birden fazla tarih seçeneği varsa bu tekli hücre yerine
+                aşağıdaki "Tarih Seçin" kutuları gösterilir. */}
+            {tour.dates.length <= 1 && (
+              <View style={styles.infoCell}>
+                <Ionicons name="calendar-outline" size={20} color="#FF5A1F" />
+                <Text style={styles.infoCellLabel}>{localeUpper(t.tourDetail.date, lang)}</Text>
+                <Text style={styles.infoCellValue}>
+                  {tour.start_date
+                    ? formatDateRange(tour.start_date, tour.end_date, lang)
+                    : tour.dates?.[0]
+                      ? formatDateRange(tour.dates[0].date, tour.dates[0].end_date, lang)
+                      : t.tourDetail.undefined}
+                </Text>
+              </View>
+            )}
             <View style={styles.infoCell}>
               <Ionicons name="bar-chart-outline" size={20} color="#FF5A1F" />
               <Text style={styles.infoCellLabel}>{localeUpper(t.tourDetail.difficulty, lang)}</Text>
@@ -485,29 +489,43 @@ export function TourDetailScreen({ navigation, route }: Props) {
             </View>
           </View>
 
-          {/* Date selector — always show when dates exist */}
-          {tour.dates.length > 0 && (
+          {/* Date selector — birden fazla tarih seçeneği olan turlarda, her
+              seçenek info-grid kutularıyla aynı görsel dilde, tıklanabilir
+              bir kart olarak alt alta gösterilir. */}
+          {tour.dates.length > 1 && (
             <View style={styles.dateSelector}>
               <Text style={styles.dateSelectorLabel}>{t.tourDetail.selectDate}</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dateSelectorList}>
-                {tour.dates.map((d) => (
-                  <TouchableOpacity
-                    key={d.id}
-                    style={[
-                      styles.dateChip,
-                      selectedDateId === d.id && styles.dateChipActive,
-                    ]}
-                    onPress={() => setSelectedDateId(d.id)}
-                  >
-                    <Text style={[styles.dateChipText, selectedDateId === d.id && styles.dateChipTextActive]}>
-                      {formatDateRange(d.date, d.end_date, lang)}
-                    </Text>
-                    <Text style={[styles.dateChipSlots, selectedDateId === d.id && styles.dateChipTextActive]}>
-                      {d.available_slots} yer
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              <View style={{ gap: 10 }}>
+                {tour.dates.map((d) => {
+                  const active = selectedDateId === d.id;
+                  const dFull = d.available_slots <= 0;
+                  return (
+                    <TouchableOpacity
+                      key={d.id}
+                      style={[styles.dateOptionCard, active && styles.dateOptionCardActive, dFull && styles.dateOptionCardDisabled]}
+                      onPress={() => !dFull && setSelectedDateId(d.id)}
+                      activeOpacity={dFull ? 1 : 0.75}
+                      disabled={dFull}
+                    >
+                      <View style={[styles.dateOptionIconWrap, active && styles.dateOptionIconWrapActive]}>
+                        <Ionicons name="calendar-outline" size={20} color={active ? '#FFFFFF' : '#FF5A1F'} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.infoCellLabel}>{localeUpper(t.tourDetail.date, lang)}</Text>
+                        <Text style={[styles.infoCellValue, active && { color: '#FF5A1F' }]}>
+                          {formatDateRange(d.date, d.end_date, lang)}
+                        </Text>
+                      </View>
+                      <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                        <Text style={[styles.dateChipSlots, dFull && { color: '#EF4444' }]}>
+                          {dFull ? t.tourDetail.full : `${d.available_slots} yer`}
+                        </Text>
+                        {active && <Ionicons name="checkmark-circle" size={20} color="#FF5A1F" />}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
           )}
 
@@ -875,34 +893,43 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     marginBottom: 10,
   },
-  dateSelectorList: {
-    gap: 8,
-  },
-  dateChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#E5E5E5',
+  dateOptionCard: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  dateChipActive: {
+  dateOptionCardActive: {
     borderColor: '#FF5A1F',
-    backgroundColor: '#FFF3EE',
+    backgroundColor: '#FFF8F6',
   },
-  dateChipText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#374151',
+  dateOptionCardDisabled: {
+    opacity: 0.5,
+  },
+  dateOptionIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#FFF3EE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dateOptionIconWrapActive: {
+    backgroundColor: '#FF5A1F',
   },
   dateChipSlots: {
     fontSize: 11,
     color: '#9CA3AF',
     marginTop: 2,
-  },
-  dateChipTextActive: {
-    color: '#FF5A1F',
   },
   tabsRow: {
     gap: 8,
