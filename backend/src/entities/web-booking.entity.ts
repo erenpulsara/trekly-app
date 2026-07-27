@@ -7,6 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Tour } from './tour.entity';
+import { TourDate } from './tour-date.entity';
 
 export type WebBookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
@@ -21,6 +22,15 @@ export class WebBooking {
   @ManyToOne(() => Tour)
   @JoinColumn({ name: 'tour_id' })
   tour!: Tour;
+
+  // Turun birden fazla tarih aralığı varsa hangisinin seçildiğini tutar.
+  // Null olabilir: tek tarihli (dates[] kullanmayan) turlar için hâlâ geçerli.
+  @Column({ type: 'uuid', nullable: true })
+  tour_date_id!: string | null;
+
+  @ManyToOne(() => TourDate, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'tour_date_id' })
+  tour_date!: TourDate | null;
 
   @Column({ type: 'varchar' })
   full_name!: string;

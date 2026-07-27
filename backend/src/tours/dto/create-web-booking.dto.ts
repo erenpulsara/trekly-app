@@ -1,4 +1,4 @@
-import { IsEmail, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsEmail, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateWebBookingDto {
@@ -10,6 +10,11 @@ export class CreateWebBookingDto {
 
   @IsString()
   phone!: string;
+
+  // Tur birden fazla tarih aralığı sunuyorsa, ziyaretçinin seçtiği tarih.
+  @IsOptional()
+  @IsUUID()
+  tour_date_id?: string;
 
   @IsOptional()
   @IsInt()

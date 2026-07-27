@@ -176,32 +176,49 @@ export class ToursService {
     const tour = await this.tourRepo.findOne({ where: { id: tourId, status: 'published' } });
     if (!tour) throw new NotFoundException('Tour not found');
 
-    const [mobileCount, webCountRow] = await Promise.all([
-      this.bookingRepo
-        .createQueryBuilder('b')
-        .select('COALESCE(SUM(b.participant_count), 0)', 'total')
-        .where('b.tour_id = :id', { id: tourId })
-        .andWhere("b.status != 'cancelled'")
-        .getRawOne<{ total: string }>(),
-      this.webBookingRepo
-        .createQueryBuilder('wb')
-        .select('COALESCE(SUM(wb.participant_count), 0)', 'total')
-        .where('wb.tour_id = :id', { id: tourId })
-        .andWhere("wb.status != 'cancelled'")
-        .getRawOne<{ total: string }>(),
-    ]);
-
-    const booked =
-      parseInt(mobileCount?.total ?? '0', 10) +
-      parseInt(webCountRow?.total ?? '0', 10);
     const requested = dto.participant_count ?? 1;
 
-    if (booked + requested > tour.max_participants) {
-      throw new BadRequestException('Kontenjan yetersiz');
+    // Tur birden fazla tarih aralığı sunuyorsa (dates[] kullanıyorsa) ve ziyaretçi
+    // bir tarih seçtiyse, kontenjan o tarihe özel available_slots'a göre kontrol
+    // edilir — mobil uygulamadaki (native) rezervasyon akışıyla aynı mantık.
+    // Seçilen tarih yoksa (mevcut turların tamamı) eski davranış aynen korunur:
+    // tüm turun toplam kontenjanına göre kontrol edilir.
+    if (dto.tour_date_id) {
+      const tourDate = await this.tourDateRepo.findOne({
+        where: { id: dto.tour_date_id, tour_id: tourId },
+      });
+      if (!tourDate) throw new NotFoundException('Tour date not found');
+      if (tourDate.available_slots < requested) {
+        throw new BadRequestException('Kontenjan yetersiz');
+      }
+    } else {
+      const [mobileCount, webCountRow] = await Promise.all([
+        this.bookingRepo
+          .createQueryBuilder('b')
+          .select('COALESCE(SUM(b.participant_count), 0)', 'total')
+          .where('b.tour_id = :id', { id: tourId })
+          .andWhere("b.status != 'cancelled'")
+          .getRawOne<{ total: string }>(),
+        this.webBookingRepo
+          .createQueryBuilder('wb')
+          .select('COALESCE(SUM(wb.participant_count), 0)', 'total')
+          .where('wb.tour_id = :id', { id: tourId })
+          .andWhere("wb.status != 'cancelled'")
+          .getRawOne<{ total: string }>(),
+      ]);
+
+      const booked =
+        parseInt(mobileCount?.total ?? '0', 10) +
+        parseInt(webCountRow?.total ?? '0', 10);
+
+      if (booked + requested > tour.max_participants) {
+        throw new BadRequestException('Kontenjan yetersiz');
+      }
     }
 
     const booking = this.webBookingRepo.create({
       tour_id: tourId,
+      tour_date_id: dto.tour_date_id ?? null,
       full_name: dto.full_name,
       email: dto.email,
       phone: dto.phone,
@@ -340,9 +357,14 @@ export class ToursService {
   ): Promise<TourDate> {
     await this.findOwnedTour(agencyId, tourId);
 
+    if (dto.end_date && dto.end_date < dto.date) {
+      throw new BadRequestException('Bitiş tarihi başlangıç tarihinden önce olamaz');
+    }
+
     const tourDate = this.tourDateRepo.create({
       tour_id: tourId,
       date: dto.date,
+      end_date: dto.end_date ?? null,
       available_slots: dto.available_slots,
     });
 
