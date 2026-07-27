@@ -44,6 +44,7 @@ export interface TourDate {
   id: string;
   tour_id: string;
   date: string;
+  end_date?: string | null;
   available_slots: number;
   created_at: string;
 }
@@ -125,6 +126,7 @@ export type UpdateTourPayload = Partial<CreateTourPayload>;
 
 export interface CreateTourDatePayload {
   date: string;
+  end_date?: string;
   available_slots: number;
 }
 

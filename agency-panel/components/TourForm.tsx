@@ -160,6 +160,7 @@ export default function TourForm({ mode, tour }: TourFormProps) {
   // ── Multi-date state (edit mode) ─────────────────────────────
   const [dates,        setDates]        = useState<TourDate[]>(tour?.dates ?? []);
   const [newDateValue, setNewDateValue] = useState('');
+  const [newDateEnd,   setNewDateEnd]   = useState('');
   const [newDateSlots, setNewDateSlots] = useState('');
   const [dateLoading,  setDateLoading]  = useState(false);
 
@@ -237,14 +238,20 @@ export default function TourForm({ mode, tour }: TourFormProps) {
   // ── Date helpers ─────────────────────────────────────────────
   async function handleAddDate() {
     if (!newDateValue || !tour?.id) return;
+    if (newDateEnd && newDateEnd < newDateValue) {
+      alert('Bitiş tarihi başlangıç tarihinden önce olamaz.');
+      return;
+    }
     setDateLoading(true);
     try {
       const added = await addTourDate(tour.id, {
         date: newDateValue,
+        end_date: newDateEnd || undefined,
         available_slots: parseInt(newDateSlots) || tour.max_participants,
       }) as TourDate;
       setDates(prev => [...prev, added]);
       setNewDateValue('');
+      setNewDateEnd('');
       setNewDateSlots('');
     } finally {
       setDateLoading(false);
@@ -578,6 +585,9 @@ export default function TourForm({ mode, tour }: TourFormProps) {
                     }}>
                       <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>
                         {new Date(d.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        {d.end_date && (
+                          <> – {new Date(d.end_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</>
+                        )}
                         <span style={{ marginLeft: '12px', fontSize: '0.75rem', color: '#9CA3AF', fontWeight: 400 }}>
                           {d.available_slots} kontenjan
                         </span>
@@ -592,8 +602,13 @@ export default function TourForm({ mode, tour }: TourFormProps) {
               )}
               <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: '#6B7280', marginBottom: '4px' }}>Tarih</label>
+                  <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: '#6B7280', marginBottom: '4px' }}>Başlangıç</label>
                   <input type="date" value={newDateValue} onChange={(e) => setNewDateValue(e.target.value)}
+                    style={{ height: '36px', padding: '0 10px', borderRadius: '8px', border: '1px solid #E5E7EB', fontSize: '0.82rem', outline: 'none' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: '#6B7280', marginBottom: '4px' }}>Bitiş (opsiyonel)</label>
+                  <input type="date" value={newDateEnd} min={newDateValue || undefined} onChange={(e) => setNewDateEnd(e.target.value)}
                     style={{ height: '36px', padding: '0 10px', borderRadius: '8px', border: '1px solid #E5E7EB', fontSize: '0.82rem', outline: 'none' }} />
                 </div>
                 <div>
