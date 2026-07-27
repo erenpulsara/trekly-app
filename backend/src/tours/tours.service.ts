@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,7 +26,7 @@ import { MediaService } from '../media/media.service';
 import { EmailService } from '../email/email.service';
 
 @Injectable()
-export class ToursService {
+export class ToursService implements OnModuleInit {
   constructor(
     @InjectRepository(Tour)
     private tourRepo: Repository<Tour>,
@@ -44,6 +45,29 @@ export class ToursService {
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
   ) {}
+
+  // Uygulama her başladığında çalışır, ama idempotent: "Tur Tarihleri"
+  // özelliği eklenmeden önce ek tarih girilmiş turlarda zorunlu
+  // start_date/end_date henüz gerçek bir TourDate kaydı değildi — bu
+  // geriye dönük olarak tamamlıyor. Zaten tamamsa hiçbir şey yapmaz,
+  // sadece dates[] dolu olan (hâlâ çok az sayıdaki) turları tarar.
+  async onModuleInit(): Promise<void> {
+    try {
+      const toursWithExtraDates: Tour[] = await this.tourRepo
+        .createQueryBuilder('tour')
+        .innerJoin('tour.dates', 'd')
+        .where('tour.start_date IS NOT NULL')
+        .distinct(true)
+        .getMany();
+      for (const tour of toursWithExtraDates) {
+        await this.ensurePrimaryTourDate(tour);
+      }
+    } catch (err) {
+      // Başlangıçta uygulamanın çökmesine sebep olmamalı — sadece logla.
+      // eslint-disable-next-line no-console
+      console.error('[ToursService] Primary tour date backfill failed:', err);
+    }
+  }
 
   // ── Public ───────────────────────────────────────────────────────────────
 
@@ -355,11 +379,18 @@ export class ToursService {
     tourId: string,
     dto: CreateTourDateDto,
   ): Promise<TourDate> {
-    await this.findOwnedTour(agencyId, tourId);
+    const tour = await this.findOwnedTour(agencyId, tourId);
 
     if (dto.end_date && dto.end_date < dto.date) {
       throw new BadRequestException('Bitiş tarihi başlangıç tarihinden önce olamaz');
     }
+
+    // Bu turun ilk ek tarihi ekleniyorsa, zorunlu Başlangıç/Bitiş Tarihi de
+    // gerçek bir TourDate kaydı olarak eklenir — mobil uygulamanın native
+    // rezervasyon akışı (Booking.tour_date_id NOT NULL) o tarihi de
+    // seçilebilir/rezerve edilebilir kılabilsin diye. Turun tek tarihi
+    // varken (dates boşken) hiçbir şey değişmez.
+    await this.ensurePrimaryTourDate(tour);
 
     const tourDate = this.tourDateRepo.create({
       tour_id: tourId,
@@ -369,6 +400,26 @@ export class ToursService {
     });
 
     return this.tourDateRepo.save(tourDate);
+  }
+
+  // Turun start_date'ine karşılık gelen bir TourDate kaydı yoksa oluşturur.
+  // Bilerek idempotent: zaten varsa hiçbir şey yapmaz. Sadece turun MEVCUT
+  // ek tarihi varsa (ya da az sonra eklenecekse) çağrılır — start_date'i
+  // hiç dates[] kullanmayan turlarda tek başına asla bir TourDate'e
+  // dönüştürmez.
+  private async ensurePrimaryTourDate(tour: Tour): Promise<void> {
+    if (!tour.start_date) return;
+    const existing = await this.tourDateRepo.findOne({
+      where: { tour_id: tour.id, date: tour.start_date },
+    });
+    if (existing) return;
+    const primary = this.tourDateRepo.create({
+      tour_id: tour.id,
+      date: tour.start_date,
+      end_date: tour.end_date ?? null,
+      available_slots: tour.max_participants,
+    });
+    await this.tourDateRepo.save(primary);
   }
 
   async removeDate(
