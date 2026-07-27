@@ -23,7 +23,7 @@ import { PhotoLightbox } from '../../components/common/PhotoLightbox';
 import { TourCard } from '../../components/common/TourCard';
 import { toursService, favoritesService } from '../../services/api';
 import { Tour, Difficulty } from '../../types';
-import { formatDate, formatDateRange, formatDateWithDay, formatDistance, formatPrice } from '../../utils/formatting';
+import { formatDateRange, formatDateWithDay, formatDistance, formatPrice } from '../../utils/formatting';
 import { isUpcomingTour } from '../../utils/tour-utils';
 import { REWARDS_ENABLED } from '../../config/features';
 import { splitCategories } from '../../utils/category';
@@ -326,7 +326,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
                 {tour.start_date
                   ? formatDateRange(tour.start_date, tour.end_date, lang)
                   : tour.dates?.[0]
-                    ? formatDate(tour.dates[0].date, lang)
+                    ? formatDateRange(tour.dates[0].date, tour.dates[0].end_date, lang)
                     : t.tourDetail.undefined}
               </Text>
             </View>
@@ -500,7 +500,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
                     onPress={() => setSelectedDateId(d.id)}
                   >
                     <Text style={[styles.dateChipText, selectedDateId === d.id && styles.dateChipTextActive]}>
-                      {formatDate(d.date, lang)}
+                      {formatDateRange(d.date, d.end_date, lang)}
                     </Text>
                     <Text style={[styles.dateChipSlots, selectedDateId === d.id && styles.dateChipTextActive]}>
                       {d.available_slots} yer
