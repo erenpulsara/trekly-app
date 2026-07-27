@@ -68,6 +68,7 @@ jobs:
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
+            --min-instances=1 \
             --add-cloudsql-instances treklyapp:europe-west1:trekly-db \
             --env-vars-file /tmp/env.yaml
 
@@ -109,6 +110,7 @@ jobs:
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
+            --min-instances=1 \
             --set-env-vars "NEXT_PUBLIC_API_URL=https://trekly-api-835377577547.europe-west1.run.app"
 
   deploy-landing:
@@ -151,6 +153,7 @@ jobs:
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
+            --min-instances=1 \
             --set-env-vars "\
           API_URL=https://trekly-api-835377577547.europe-west1.run.app,\
           NEXT_PUBLIC_AGENCY_URL=https://acenta.treklyapp.com"
