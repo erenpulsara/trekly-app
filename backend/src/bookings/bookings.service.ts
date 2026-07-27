@@ -8,6 +8,7 @@ import { DataSource, Repository } from 'typeorm';
 import { Booking } from '../entities/booking.entity';
 import { Tour } from '../entities/tour.entity';
 import { TourDate } from '../entities/tour-date.entity';
+import { WebBooking } from '../entities/web-booking.entity';
 import { User } from '../entities/user.entity';
 import { UserPointsLog } from '../entities/user-points-log.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -22,6 +23,8 @@ export class BookingsService {
     private tourRepo: Repository<Tour>,
     @InjectRepository(TourDate)
     private tourDateRepo: Repository<TourDate>,
+    @InjectRepository(WebBooking)
+    private webBookingRepo: Repository<WebBooking>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
     @InjectRepository(UserPointsLog)
@@ -44,7 +47,13 @@ export class BookingsService {
     if (!tourDate) throw new NotFoundException('Tour date not found');
 
     const participantCount = dto.participant_count ?? 1;
-    if (tourDate.available_slots < participantCount) {
+    // available_slots o tarihin TOPLAM kontenjanı, rezervasyon geldikçe
+    // azalmaz — gerçek kalan yeri bulmak için o tarihe (tour_date_id) daha
+    // önce yapılmış rezervasyonlar ayrıca toplanıp düşülür. Aksi halde aynı
+    // tarihe art arda rezervasyon yapılabilir (overbooking) çünkü kontenjan
+    // hiç dolmuyormuş gibi görünür.
+    const alreadyBooked = await this.getBookedCountForDate(dto.tour_date_id);
+    if (alreadyBooked + participantCount > tourDate.available_slots) {
       throw new BadRequestException('Not enough available slots');
     }
 
@@ -62,6 +71,28 @@ export class BookingsService {
     });
 
     return this.bookingRepo.save(booking);
+  }
+
+  // Belirli bir tarih seçeneğine (tour_date_id) yapılmış, iptal edilmemiş tüm
+  // rezervasyonların (native Booking + web WebBooking) katılımcı sayısı toplamı.
+  private async getBookedCountForDate(tourDateId: string): Promise<number> {
+    const [mobileRow, webRow] = await Promise.all([
+      this.bookingRepo
+        .createQueryBuilder('b')
+        .select('COALESCE(SUM(b.participant_count), 0)', 'total')
+        .where('b.tour_date_id = :tourDateId', { tourDateId })
+        .andWhere("b.status != 'cancelled'")
+        .getRawOne<{ total: string }>(),
+      this.webBookingRepo
+        .createQueryBuilder('wb')
+        .select('COALESCE(SUM(wb.participant_count), 0)', 'total')
+        .where('wb.tour_date_id = :tourDateId', { tourDateId })
+        .andWhere("wb.status != 'cancelled'")
+        .getRawOne<{ total: string }>(),
+    ]);
+    return (
+      parseInt(mobileRow?.total ?? '0', 10) + parseInt(webRow?.total ?? '0', 10)
+    );
   }
 
   async findById(bookingId: string, userId: string): Promise<Booking> {

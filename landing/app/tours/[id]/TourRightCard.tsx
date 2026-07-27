@@ -19,6 +19,14 @@ interface TourDateOption {
   date: string;
   end_date?: string | null;
   available_slots: number;
+  booked_count?: number;
+}
+
+// available_slots o tarihin TOPLAM kontenjanıdır, rezervasyon geldikçe
+// azalmaz — backend bu yüzden ayrıca booked_count döner. Gerçek kalan yer
+// bunun farkı alınarak hesaplanır.
+function remainingSlots(d: TourDateOption): number {
+  return Math.max(0, d.available_slots - (d.booked_count ?? 0));
 }
 
 interface TourData {
@@ -112,7 +120,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
   const hasDateOptions = allOptions.length > 0;
   const [selectedDateId, setSelectedDateId] = useState<string>(() => (hasDateOptions ? allOptions[0].id : ''));
   const selectedDate = allOptions.find((d) => d.id === selectedDateId) ?? null;
-  const maxCount = selectedDate ? selectedDate.available_slots : tour.max_participants;
+  const maxCount = selectedDate ? remainingSlots(selectedDate) : tour.max_participants;
 
   const hasPrice = tour.price != null && tour.price > 0;
   const totalPrice = hasPrice ? (tour.price as number) * count : null;
@@ -227,7 +235,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {allOptions.map((d) => {
                   const isSelected = d.id === selectedDateId;
-                  const dFull = d.available_slots <= 0;
+                  const dFull = remainingSlots(d) <= 0;
                   return (
                     <button
                       key={d.id}
@@ -246,9 +254,11 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
                       <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1A1A1A' }}>
                         {fmtDateRange(d, lang === 'en' ? 'en-US' : 'tr-TR')}
                       </span>
-                      <span style={{ fontSize: '0.72rem', color: dFull ? '#EF4444' : '#9A9A9A', fontWeight: 600, flexShrink: 0, marginLeft: '10px' }}>
-                        {dFull ? tt.full : tt.spotsLeft(d.available_slots)}
-                      </span>
+                      {dFull && (
+                        <span style={{ fontSize: '0.72rem', color: '#EF4444', fontWeight: 600, flexShrink: 0, marginLeft: '10px' }}>
+                          {tt.full}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -402,8 +412,16 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
               gibi tek bir genel kontenjan satırı gösterilir. */}
           {hasDateOptions ? (
             allOptions.map((d) => {
-              const dRemaining = d.available_slots;
+              const dRemaining = remainingSlots(d);
               const dIsFull = dRemaining <= 0;
+              // Çubuk, o tarihin KENDİ toplam kontenjanına (available_slots)
+              // göre doluluk oranını gösterir — turun genel max_participants'ı
+              // farklı bir tarihin kapasitesiyle alakasızdır ve kullanılırsa
+              // çubuk yanlışlıkla %100'e sabitlenip "dolu" gibi görünebilir.
+              const dPct = Math.min(
+                100,
+                ((d.available_slots - dRemaining) / Math.max(1, d.available_slots)) * 100,
+              );
               return (
                 <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '11px 0' }}>
                   <div style={{ width: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>{iconClock}</div>
@@ -415,7 +433,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
                       <div style={{
                         height: '100%', borderRadius: '3px',
                         background: dIsFull ? '#EF4444' : '#FF5533',
-                        width: `${Math.min(100, (dRemaining / Math.max(1, tour.max_participants)) * 100)}%`,
+                        width: `${dPct}%`,
                       }} />
                     </div>
                     <span style={{ color: dIsFull ? '#EF4444' : '#FF5533', fontWeight: 700, fontSize: '0.88rem' }}>

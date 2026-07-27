@@ -1,4 +1,4 @@
-import { Tour } from '../types';
+import { Tour, TourDate } from '../types';
 
 /** Turun "yaklaşan" sayılıp sayılmayacağını kontrol eder — bir tur başladığı gün
  *  (00:00'dan itibaren, bitiş tarihi ileride olsa bile) artık "yaklaşan etkinlik"
@@ -20,6 +20,13 @@ export function isUpcomingTour(tour: Tour): boolean {
 export interface TourDateRange {
   date: string;
   end_date?: string | null;
+}
+
+/** d.available_slots o tarihin TOPLAM kontenjanıdır, rezervasyon geldikçe
+ *  azalmaz — backend bu yüzden ayrıca booked_count döner. Gerçek kalan yer
+ *  bunun farkı alınarak hesaplanır. Web'deki TourRightCard.tsx ile aynı mantık. */
+export function remainingSlots(d: Pick<TourDate, 'available_slots' | 'booked_count'>): number {
+  return Math.max(0, d.available_slots - (d.booked_count ?? 0));
 }
 
 /** Turun tüm tarih seçeneklerini döner. Backend, bir tura ilk ek tarih

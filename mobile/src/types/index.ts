@@ -19,6 +19,7 @@ export interface TourDate {
   date: string;
   end_date?: string | null;
   available_slots: number;
+  booked_count?: number;
 }
 
 export interface Tour {

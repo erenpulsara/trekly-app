@@ -24,7 +24,7 @@ import { TourCard } from '../../components/common/TourCard';
 import { toursService, favoritesService } from '../../services/api';
 import { Tour, Difficulty } from '../../types';
 import { formatDateRange, formatDateWithDay, formatDistance, formatPrice } from '../../utils/formatting';
-import { isUpcomingTour } from '../../utils/tour-utils';
+import { isUpcomingTour, remainingSlots } from '../../utils/tour-utils';
 import { REWARDS_ENABLED } from '../../config/features';
 import { splitCategories } from '../../utils/category';
 import { displayCategory, localeUpper } from '../../i18n/categories';
@@ -493,9 +493,16 @@ export function TourDetailScreen({ navigation, route }: Props) {
                 gibi tek bir genel kontenjan satırı gösterilir. */}
             {tour.dates.length > 1 ? (
               tour.dates.map((d) => {
-                const remaining = d.available_slots;
+                const remaining = remainingSlots(d);
                 const isFull = remaining <= 0;
-                const pct = Math.min(100, (remaining / Math.max(1, tour.max_participants)) * 100);
+                // Çubuk, o tarihin KENDİ toplam kontenjanına (available_slots)
+                // göre doluluk oranını gösterir — turun genel max_participants'ı
+                // farklı bir tarihin kapasitesiyle alakasızdır ve kullanılırsa
+                // çubuk yanlışlıkla %100'e sabitlenip "dolu" gibi görünebilir.
+                const pct = Math.min(
+                  100,
+                  ((d.available_slots - remaining) / Math.max(1, d.available_slots)) * 100,
+                );
                 return (
                   <View key={d.id} style={styles.organizerRow}>
                     <Ionicons name="time-outline" size={18} color="#6B7280" />
@@ -549,7 +556,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
               <View style={{ gap: 10 }}>
                 {tour.dates.map((d) => {
                   const active = selectedDateId === d.id;
-                  const dFull = d.available_slots <= 0;
+                  const dFull = remainingSlots(d) <= 0;
                   return (
                     <TouchableOpacity
                       key={d.id}

@@ -190,10 +190,45 @@ export class ToursService implements OnModuleInit {
       parseInt(mobileCount?.total ?? '0', 10) +
       parseInt(webCountRow?.total ?? '0', 10);
 
+    // Her tarih seçeneğinin available_slots'u o tarihin TOPLAM kontenjanıdır,
+    // rezervasyon geldikçe azalmaz — o yüzden gerçek kalan yeri hesaplamak için
+    // o tarihe (tour_date_id) yapılmış rezervasyonlar ayrıca toplanıp
+    // booked_count olarak eklenir. Client kalan = available_slots - booked_count.
+    if (tour.dates && tour.dates.length > 0) {
+      await Promise.all(
+        tour.dates.map(async (d) => {
+          (d as TourDate & { booked_count: number }).booked_count =
+            await this.getBookedCountForDate(d.id);
+        }),
+      );
+    }
+
     const result = this.withProxyUrls(tour) as Tour & { booking_count: number; agency_name: string | null };
     result.booking_count = booking_count;
     result.agency_name = (tour.agency as any)?.name ?? null;
     return result;
+  }
+
+  // Belirli bir tarih seçeneğine (tour_date_id) yapılmış, iptal edilmemiş tüm
+  // rezervasyonların (native Booking + web WebBooking) katılımcı sayısı toplamı.
+  private async getBookedCountForDate(tourDateId: string): Promise<number> {
+    const [mobileRow, webRow] = await Promise.all([
+      this.bookingRepo
+        .createQueryBuilder('b')
+        .select('COALESCE(SUM(b.participant_count), 0)', 'total')
+        .where('b.tour_date_id = :tourDateId', { tourDateId })
+        .andWhere("b.status != 'cancelled'")
+        .getRawOne<{ total: string }>(),
+      this.webBookingRepo
+        .createQueryBuilder('wb')
+        .select('COALESCE(SUM(wb.participant_count), 0)', 'total')
+        .where('wb.tour_date_id = :tourDateId', { tourDateId })
+        .andWhere("wb.status != 'cancelled'")
+        .getRawOne<{ total: string }>(),
+    ]);
+    return (
+      parseInt(mobileRow?.total ?? '0', 10) + parseInt(webRow?.total ?? '0', 10)
+    );
   }
 
   async createWebBooking(tourId: string, dto: CreateWebBookingDto): Promise<WebBooking> {
@@ -212,7 +247,12 @@ export class ToursService implements OnModuleInit {
         where: { id: dto.tour_date_id, tour_id: tourId },
       });
       if (!tourDate) throw new NotFoundException('Tour date not found');
-      if (tourDate.available_slots < requested) {
+      // available_slots o tarihin TOPLAM kontenjanı — o tarihe daha önce
+      // yapılmış rezervasyonlar düşülmeden sadece bununla karşılaştırmak
+      // kontenjanı hiç azalmıyormuş gibi göstererek fazla rezervasyona
+      // (overbooking) izin verirdi.
+      const alreadyBooked = await this.getBookedCountForDate(dto.tour_date_id);
+      if (alreadyBooked + requested > tourDate.available_slots) {
         throw new BadRequestException('Kontenjan yetersiz');
       }
     } else {
