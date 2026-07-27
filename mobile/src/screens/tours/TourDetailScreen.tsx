@@ -341,11 +341,15 @@ export function TourDetailScreen({ navigation, route }: Props) {
                 {t.tourDetail.diff[tour.difficulty] ?? t.tourDetail.diff.easy}
               </Text>
             </View>
-            <View style={styles.infoCell}>
-              <Ionicons name="people-outline" size={20} color="#FF5A1F" />
-              <Text style={styles.infoCellLabel}>{localeUpper(t.tourDetail.capacity, lang)}</Text>
-              <Text style={styles.infoCellValue}>{tour.max_participants} {t.tourDetail.people}</Text>
-            </View>
+            {/* Birden fazla tarih seçeneği varsa bu tekli hücre yerine
+                aşağıdaki Kontenjan satırı seçili tarihe göre gösterilir. */}
+            {tour.dates.length <= 1 && (
+              <View style={styles.infoCell}>
+                <Ionicons name="people-outline" size={20} color="#FF5A1F" />
+                <Text style={styles.infoCellLabel}>{localeUpper(t.tourDetail.capacity, lang)}</Text>
+                <Text style={styles.infoCellValue}>{tour.max_participants} {t.tourDetail.people}</Text>
+              </View>
+            )}
             {tour.price != null && Number(tour.price) > 0 ? (
               <View style={styles.infoCell}>
                 <Ionicons name="card-outline" size={20} color="#FF5A1F" />
@@ -463,18 +467,40 @@ export function TourDetailScreen({ navigation, route }: Props) {
               </TouchableOpacity>
             ) : null}
 
-            {/* Kontenjan bar — same as the web card */}
+            {/* Kontenjan bar — birden fazla tarih seçeneği varsa seçili
+                (veya ilk) tarihin kendi kontenjanına göre, etikette hangi
+                tarihe ait olduğu belirtilerek gösterilir. Tek tarihli
+                turlarda eskisi gibi turun genel kontenjanı gösterilir. */}
             <View style={styles.organizerRow}>
               <Ionicons name="time-outline" size={18} color="#6B7280" />
               <View style={{ flex: 1 }}>
-                <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.quota, lang)}</Text>
                 {(() => {
+                  const quotaDate = tour.dates.length > 1 ? (selectedDate ?? tour.dates[0]) : null;
+                  if (quotaDate) {
+                    const remaining = quotaDate.available_slots;
+                    const isFull = remaining <= 0;
+                    const pct = Math.min(100, (remaining / Math.max(1, tour.max_participants)) * 100);
+                    return (
+                      <>
+                        <Text style={styles.organizerLabel}>
+                          {localeUpper(t.tourDetail.quota, lang)} · {formatDateRange(quotaDate.date, quotaDate.end_date, lang)}
+                        </Text>
+                        <View style={styles.quotaBarBg}>
+                          <View style={[styles.quotaBarFill, { width: `${pct}%` }, isFull && { backgroundColor: '#EF4444' }]} />
+                        </View>
+                        <Text style={[styles.quotaText, isFull && { color: '#EF4444' }]}>
+                          {isFull ? t.tourDetail.full : `${remaining} ${t.tourDetail.spotsLeft}`}
+                        </Text>
+                      </>
+                    );
+                  }
                   const booked = tour.booking_count ?? 0;
                   const remaining = Math.max(0, tour.max_participants - booked);
                   const isFull = remaining === 0;
                   const pct = Math.min(100, (booked / Math.max(1, tour.max_participants)) * 100);
                   return (
                     <>
+                      <Text style={styles.organizerLabel}>{localeUpper(t.tourDetail.quota, lang)}</Text>
                       <View style={styles.quotaBarBg}>
                         <View style={[styles.quotaBarFill, { width: `${pct}%` }, isFull && { backgroundColor: '#EF4444' }]} />
                       </View>
