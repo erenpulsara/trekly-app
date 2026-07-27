@@ -76,7 +76,7 @@ function RelatedTourCard({ tour, lang }: { tour: Tour; lang: 'tr' | 'en' }) {
   const isFull = tour.max_participants <= (tour.booking_count ?? 0);
 
   return (
-    <Link href={`/tours/${tour.slug ?? tour.id}`} className="related-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', borderRadius: '16px', border: '1px solid #EFEFEF', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+    <Link href={`/tours/${tour.slug ?? tour.id}`} prefetch={false} className="related-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', borderRadius: '16px', border: '1px solid #EFEFEF', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
       <div style={{ position: 'relative', height: '200px', background: PH_GRADIENT[tour.difficulty] ?? PH_GRADIENT.easy, overflow: 'hidden' }}>
         {photos[0] && (
           <Image src={photos[0]} alt={tour.name} fill style={{ objectFit: 'cover' }} sizes="320px" />

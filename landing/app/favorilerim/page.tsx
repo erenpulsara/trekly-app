@@ -87,6 +87,7 @@ export default function FavorilerimPage() {
                 <Link
                   key={tour.id}
                   href={`/tours/${tour.slug ?? tour.id}`}
+                  prefetch={false}
                   style={{
                     borderRadius: '16px', overflow: 'hidden', background: 'white',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.07)', textDecoration: 'none', color: 'inherit',
