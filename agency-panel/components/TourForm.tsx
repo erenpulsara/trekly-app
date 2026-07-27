@@ -236,18 +236,38 @@ export default function TourForm({ mode, tour }: TourFormProps) {
   }
 
   // ── Date helpers ─────────────────────────────────────────────
+  // Yeni tur oluşturulurken henüz bir tour.id yok, o yüzden tarihler API'ye
+  // hemen gönderilemiyor — geçici (temp-) bir id ile sadece yerel state'te
+  // tutuluyor, tur kaydedilirken hepsi birlikte gönderiliyor (bkz. handleSubmit).
   async function handleAddDate() {
-    if (!newDateValue || !tour?.id) return;
+    if (!newDateValue) return;
     if (newDateEnd && newDateEnd < newDateValue) {
       alert('Bitiş tarihi başlangıç tarihinden önce olamaz.');
       return;
     }
+    const available_slots = parseInt(newDateSlots) || parseInt(values.max_participants) || 1;
+
+    if (!tour?.id) {
+      setDates(prev => [...prev, {
+        id: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        tour_id: '',
+        date: newDateValue,
+        end_date: newDateEnd || null,
+        available_slots,
+        created_at: new Date().toISOString(),
+      }]);
+      setNewDateValue('');
+      setNewDateEnd('');
+      setNewDateSlots('');
+      return;
+    }
+
     setDateLoading(true);
     try {
       const added = await addTourDate(tour.id, {
         date: newDateValue,
         end_date: newDateEnd || undefined,
-        available_slots: parseInt(newDateSlots) || tour.max_participants,
+        available_slots,
       }) as TourDate;
       setDates(prev => [...prev, added]);
       setNewDateValue('');
@@ -258,7 +278,10 @@ export default function TourForm({ mode, tour }: TourFormProps) {
     }
   }
   async function handleRemoveDate(dateId: string) {
-    if (!tour?.id) return;
+    if (dateId.startsWith('temp-') || !tour?.id) {
+      setDates(prev => prev.filter(d => d.id !== dateId));
+      return;
+    }
     setDateLoading(true);
     try {
       await deleteTourDate(tour.id, dateId);
@@ -304,7 +327,17 @@ export default function TourForm({ mode, tour }: TourFormProps) {
         tags:              values.tags.length > 0 ? values.tags : undefined,
       };
       if (mode === "create") {
-        await createTour(payload);
+        const created = await createTour(payload);
+        // Oluşturma sırasında eklenen tarihler (temp- id'li) yerel state'te
+        // bekletiliyordu — tur artık gerçek bir id'ye sahip, şimdi tek tek kaydediliyor.
+        const staged = dates.filter(d => d.id.startsWith('temp-'));
+        for (const d of staged) {
+          await addTourDate(created.id, {
+            date: d.date,
+            end_date: d.end_date || undefined,
+            available_slots: d.available_slots,
+          });
+        }
       } else {
         await updateTour(tour!.id, payload);
       }
@@ -570,12 +603,7 @@ export default function TourForm({ mode, tour }: TourFormProps) {
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#374151', marginBottom: '4px' }}>{tx.tourDates}</label>
           <p style={{ fontSize: '0.72rem', color: '#9CA3AF', margin: '0 0 10px' }}>{tx.tourDatesHint}</p>
-          {mode === 'create' ? (
-            <p style={{ fontSize: '0.78rem', color: '#6B7280', background: '#F9FAFB', padding: '10px 14px', borderRadius: '10px', margin: 0 }}>
-              {tx.tourDatesCreateHint}
-            </p>
-          ) : (
-            <>
+          <>
               {dates.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
                   {dates.map(d => (
@@ -629,7 +657,6 @@ export default function TourForm({ mode, tour }: TourFormProps) {
                 </button>
               </div>
             </>
-          )}
         </div>
 
         <Input label="Düzenleyen" value={values.organizer} onChange={set("organizer")} placeholder="örn. Trekly Outdoor, Ali Yılmaz" hint={tx.optional} />
