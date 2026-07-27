@@ -147,7 +147,10 @@ function HeroCarousel() {
 function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
   const { t, lang } = useLanguage();
   const startStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
-  const endStr = tour.end_date ?? null;
+  const endStr = tour.end_date ?? tour.dates?.[0]?.end_date ?? null;
+  // tour.dates, dolu olduğunda başlangıç tarihini de içerir (bkz. backend
+  // ensurePrimaryTourDate) — o yüzden fazladan seçenek sayısı length - 1.
+  const extraDatesCount = tour.dates && tour.dates.length > 1 ? tour.dates.length - 1 : 0;
   const cats = splitCategories(tour.category);
   const hasPrice = tour.price != null && Number(tour.price) > 0;
 
@@ -191,6 +194,7 @@ function UpcomingTourCard({ tour, onPress }: { tour: Tour; onPress: () => void }
               <Text style={styles.upCardInfoValue}>
                 {formatShortDate(startStr, lang)}
                 {endStr ? ` – ${formatShortDate(endStr, lang)}` : ''}
+                {extraDatesCount > 0 ? ` · +${extraDatesCount}` : ''}
               </Text>
             </View>
           </View>

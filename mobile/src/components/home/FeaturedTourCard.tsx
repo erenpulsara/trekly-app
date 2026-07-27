@@ -25,7 +25,10 @@ interface FeaturedTourCardProps {
 export function FeaturedTourCard({ tour, onPress, onBook }: FeaturedTourCardProps) {
   const { lang } = useLanguage();
   const startStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
-  const endStr = tour.end_date ?? tour.dates?.[1]?.date ?? null;
+  const endStr = tour.end_date ?? tour.dates?.[0]?.end_date ?? null;
+  // tour.dates, dolu olduğunda başlangıç tarihini de içerir (bkz. backend
+  // ensurePrimaryTourDate) — o yüzden fazladan seçenek sayısı length - 1.
+  const extraDatesCount = tour.dates && tour.dates.length > 1 ? tour.dates.length - 1 : 0;
 
   return (
     <TouchableOpacity
@@ -63,6 +66,7 @@ export function FeaturedTourCard({ tour, onPress, onBook }: FeaturedTourCardProp
               {startStr ? formatShortDate(startStr, lang) : ''}
               {startStr && endStr ? ' – ' : ''}
               {endStr ? formatShortDate(endStr, lang) : ''}
+              {extraDatesCount > 0 ? ` · +${extraDatesCount}` : ''}
             </Text>
           </View>
         )}

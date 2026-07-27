@@ -109,6 +109,9 @@ export function FavoritesScreen({ navigation }: Props) {
           }
           renderItem={({ item }) => {
             const dateStr = item.start_date ?? item.dates?.[0]?.date ?? null;
+            // item.dates, dolu olduğunda başlangıç tarihini de içerir (bkz.
+            // backend ensurePrimaryTourDate) — fazladan seçenek length - 1.
+            const extraDatesCount = item.dates && item.dates.length > 1 ? item.dates.length - 1 : 0;
             const cats = splitCategories(item.category);
             return (
               <TouchableOpacity
@@ -148,7 +151,10 @@ export function FavoritesScreen({ navigation }: Props) {
                     {dateStr && (
                       <>
                         <Ionicons name="calendar-outline" size={13} color="#6B7280" style={{ marginLeft: 8 }} />
-                        <Text style={styles.cardMetaText}>{formatShortDate(dateStr, lang)}</Text>
+                        <Text style={styles.cardMetaText}>
+                          {formatShortDate(dateStr, lang)}
+                          {extraDatesCount > 0 ? ` · +${extraDatesCount}` : ''}
+                        </Text>
                       </>
                     )}
                   </View>

@@ -52,7 +52,10 @@ function tourMonth(tour: Tour): number | null {
 function TourEventCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
   const { t, lang } = useLanguage();
   const startStr = tour.start_date ?? tour.dates?.[0]?.date ?? null;
-  const endStr = tour.end_date ?? null;
+  const endStr = tour.end_date ?? tour.dates?.[0]?.end_date ?? null;
+  // tour.dates, dolu olduğunda başlangıç tarihini de içerir (bkz. backend
+  // ensurePrimaryTourDate) — o yüzden fazladan seçenek sayısı length - 1.
+  const extraDatesCount = tour.dates && tour.dates.length > 1 ? tour.dates.length - 1 : 0;
   const hasPrice = tour.price != null && Number(tour.price) > 0;
   const colorIdx = tour.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 4;
   const bgColor = ['#2D4A3A', '#3A4A2D', '#4A2D3A', '#2D3A4A'][colorIdx];
@@ -87,6 +90,7 @@ function TourEventCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
                 {endStr
                   ? `${formatShortDate(startStr, lang)} – ${formatShortDate(endStr, lang)}`
                   : formatDate(startStr, lang)}
+                {extraDatesCount > 0 ? ` · +${extraDatesCount}` : ''}
               </Text>
             </View>
           )}
