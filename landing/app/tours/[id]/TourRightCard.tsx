@@ -53,6 +53,14 @@ function fmtDateRange(d: TourDateOption, locale = 'tr-TR') {
   return d.end_date ? `${start} – ${fmtDateShort(d.end_date, locale)}` : start;
 }
 
+// Zorunlu Başlangıç/Bitiş Tarihi alanları, "Tur Tarihleri" bölümünde ayrıca
+// eklenen tarihlerden bağımsız bir kayıt (TourDate) değil — turun kendi
+// alanı. Ama kullanıcı için bunlar da seçilebilecek bir "tarih" olmalı,
+// o yüzden burada listeye sanal bir seçenek olarak ekleniyor. Bu seçenek
+// seçildiğinde tour_date_id gönderilmez (mevcut/eski davranış: turun genel
+// kontenjanına göre kontrol edilir).
+const PRIMARY_DATE_ID = '__primary__';
+
 interface Props {
   tour: TourData;
   isFull: boolean;
@@ -102,9 +110,21 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
   const [phone, setPhone]           = useState('');
   const [count, setCount]           = useState(1);
   const [notes, setNotes]           = useState('');
-  const hasDateOptions = !!tour.dates && tour.dates.length > 0;
-  const [selectedDateId, setSelectedDateId] = useState<string>(() => (hasDateOptions ? tour.dates![0].id : ''));
-  const selectedDate = tour.dates?.find((d) => d.id === selectedDateId) ?? null;
+
+  const extraDates = tour.dates ?? [];
+  const primaryOption: TourDateOption | null = tour.start_date
+    ? { id: PRIMARY_DATE_ID, date: tour.start_date, end_date: tour.end_date, available_slots: remaining }
+    : null;
+  // Seçilecek gerçek bir tercih ancak "Tur Tarihleri"nde en az bir ek tarih
+  // varsa oluşur — o zaman zorunlu tarih de listeye dahil edilir. Hiç ek
+  // tarih yoksa (mevcut turların tamamı) eski davranış aynen korunur: tek
+  // tarih gösterimi, seçici yok, tour_date_id hiç gönderilmez.
+  const hasDateOptions = extraDates.length > 0;
+  const allOptions: TourDateOption[] = hasDateOptions
+    ? [...(primaryOption ? [primaryOption] : []), ...extraDates]
+    : [];
+  const [selectedDateId, setSelectedDateId] = useState<string>(() => (hasDateOptions ? allOptions[0].id : ''));
+  const selectedDate = allOptions.find((d) => d.id === selectedDateId) ?? null;
   const maxCount = selectedDate ? selectedDate.available_slots : tour.max_participants;
 
   const hasPrice = tour.price != null && tour.price > 0;
@@ -128,7 +148,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
           phone: phone.trim(),
           participant_count: count,
           notes: notes.trim() || undefined,
-          tour_date_id: hasDateOptions ? selectedDateId : undefined,
+          tour_date_id: hasDateOptions && selectedDateId !== PRIMARY_DATE_ID ? selectedDateId : undefined,
         }),
       });
       if (!res.ok) {
@@ -218,7 +238,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
             <div style={{ marginBottom: '20px' }}>
               <label style={labelStyle}>{tt.selectDateLabel} *</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {tour.dates!.map((d) => {
+                {allOptions.map((d) => {
                   const isSelected = d.id === selectedDateId;
                   const dFull = d.available_slots <= 0;
                   return (
@@ -346,7 +366,7 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
             <InfoRow
               icon={iconCal}
               label={tt.dateOptionsLabel}
-              value={tour.dates!.map((d) => fmtDateRange(d, lang === 'en' ? 'en-US' : 'tr-TR')).join(' · ')}
+              value={allOptions.map((d) => fmtDateRange(d, lang === 'en' ? 'en-US' : 'tr-TR')).join(' · ')}
             />
           ) : (
             <>
