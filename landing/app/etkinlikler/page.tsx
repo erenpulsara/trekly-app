@@ -13,7 +13,7 @@ import { REWARDS_ENABLED } from '@/lib/features';
 import TurlarSidebar from '../turlar/TurlarSidebar';
 import MobileFilterBar from '../turlar/MobileFilterBar';
 import { formatPrice } from '@/lib/price';
-import { isUpcomingTour } from '@/lib/tour-utils';
+import { isUpcomingTour, getAllTourDateRanges } from '@/lib/tour-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -316,16 +316,23 @@ export default async function EtkinliklerPage({
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
                               <InfoRow icon="📍" label={tt.location} value={tour.location_name} />
-                              {(tour.start_date || tour.end_date) && (
-                                <InfoRow
-                                  icon="📅"
-                                  label={tt.dateRange}
-                                  value={[
-                                    tour.start_date ? fmtDate(tour.start_date, tt.locale) : null,
-                                    tour.end_date   ? fmtDate(tour.end_date,   tt.locale) : null,
-                                  ].filter(Boolean).join(' – ')}
-                                />
-                              )}
+                              {(() => {
+                                const ranges = getAllTourDateRanges(tour);
+                                if (ranges.length === 0) return null;
+                                return (
+                                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '5px' }}>
+                                    <span style={{ fontSize: '0.75rem', flexShrink: 0, marginTop: '1px' }}>📅</span>
+                                    <div>
+                                      <span style={{ display: 'block', fontSize: '0.58rem', fontWeight: 700, color: '#AAAAAA', letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1 }}>{tt.dateRange}</span>
+                                      {ranges.map((r, i) => (
+                                        <span key={i} style={{ display: 'block', fontSize: '0.76rem', fontWeight: 500, color: '#1A1A1A', lineHeight: 1.4 }}>
+                                          {[r.date ? fmtDate(r.date, tt.locale) : null, r.end_date ? fmtDate(r.end_date, tt.locale) : null].filter(Boolean).join(' – ')}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
                               {tour.price !== undefined && tour.price !== null && (
                                 <InfoRow icon="💰" label={tt.price} value={fmtPrice(tour.price, tt.free, tour.price_currency)} orange />
                               )}

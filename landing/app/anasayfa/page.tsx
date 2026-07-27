@@ -8,7 +8,7 @@ import Link from 'next/link';
 import TourCardImage from '../turlar/TourCardImage';
 import type { Tour } from '@/lib/types';
 import { formatPrice } from '@/lib/price';
-import { isUpcomingTour } from '@/lib/tour-utils';
+import { isUpcomingTour, getAllTourDateRanges } from '@/lib/tour-utils';
 import { T, type Lang } from '@/lib/i18n';
 import { splitCategories } from '@/lib/category-utils';
 import { displayCategory } from '@/lib/category-i18n';
@@ -269,16 +269,23 @@ export default async function AnasayfaPage() {
                           {tour.distance_km != null && (
                             <InfoRow icon="📏" label={tt.distance} value={`${Number(tour.distance_km).toFixed(1)} km`} />
                           )}
-                          {(tour.start_date || tour.end_date) && (
-                            <InfoRow
-                              icon="📅"
-                              label={tt.dateRange}
-                              value={[
-                                tour.start_date ? fmtDate(tour.start_date, tt.locale) : null,
-                                tour.end_date   ? fmtDate(tour.end_date,   tt.locale) : null,
-                              ].filter(Boolean).join(' – ')}
-                            />
-                          )}
+                          {(() => {
+                            const ranges = getAllTourDateRanges(tour);
+                            if (ranges.length === 0) return null;
+                            return (
+                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '5px' }}>
+                                <span style={{ fontSize: '0.75rem', flexShrink: 0, marginTop: '1px' }}>📅</span>
+                                <div>
+                                  <span style={{ display: 'block', fontSize: '0.58rem', fontWeight: 700, color: '#AAAAAA', letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1 }}>{tt.dateRange}</span>
+                                  {ranges.map((r, i) => (
+                                    <span key={i} style={{ display: 'block', fontSize: '0.76rem', fontWeight: 500, color: '#1A1A1A', lineHeight: 1.4 }}>
+                                      {[r.date ? fmtDate(r.date, tt.locale) : null, r.end_date ? fmtDate(r.end_date, tt.locale) : null].filter(Boolean).join(' – ')}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })()}
                           {tour.max_participants != null && (
                             <InfoRow icon="👥" label={tt.quota} value={String(tour.max_participants)} />
                           )}

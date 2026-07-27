@@ -363,11 +363,19 @@ export default function TourRightCard({ tour, isFull, remaining }: Props) {
           )}
           <InfoRow icon={iconCap} label={tt.capacity} value={`${tour.max_participants} ${tt.people}`} />
           {hasDateOptions ? (
-            <InfoRow
-              icon={iconCal}
-              label={tt.dateOptionsLabel}
-              value={allOptions.map((d) => fmtDateRange(d, lang === 'en' ? 'en-US' : 'tr-TR')).join(' · ')}
-            />
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', padding: '11px 0', borderBottom: '1px solid #F5F5F5' }}>
+              <div style={{ width: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>{iconCal}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.6rem', color: '#BBBBBB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>{tt.dateOptionsLabel}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  {allOptions.map((d) => (
+                    <span key={d.id} style={{ color: '#FF5533', fontWeight: 700, fontSize: '0.92rem' }}>
+                      {fmtDateRange(d, lang === 'en' ? 'en-US' : 'tr-TR')}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
           ) : (
             <>
               {tour.start_date && <InfoRow icon={iconCal} label={tt.startDate} value={fmtDate(tour.start_date, lang === 'en' ? 'en-US' : 'tr-TR')} />}
