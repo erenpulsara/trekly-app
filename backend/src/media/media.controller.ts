@@ -37,7 +37,7 @@ export class MediaController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
-      limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+      limits: { fileSize: 25 * 1024 * 1024 }, // 25 MB
       // Yalnızca görsel dosyalarına izin ver — yürütülebilir/diğer tipleri reddet
       fileFilter: (_req, file, cb) => {
         const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];

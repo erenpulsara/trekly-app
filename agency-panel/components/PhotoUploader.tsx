@@ -111,7 +111,7 @@ export default function PhotoUploader({
                 <span className="text-brand-orange">göz atın</span>
               </p>
               <p className="text-xs font-body text-text-muted mt-1">
-                PNG, JPG, WEBP — maks. 10 MB · {value.length}/{maxFiles} yüklendi
+                PNG, JPG, WEBP — maks. 25 MB · {value.length}/{maxFiles} yüklendi
               </p>
             </div>
           </>
