@@ -17,6 +17,7 @@ export default function TourCardImage({ src, fallbackSrc, alt, className }: Prop
     <img
       src={imgSrc}
       alt={alt}
+      loading="lazy"
       className={className}
       onError={() => setImgSrc(fallbackSrc)}
       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
