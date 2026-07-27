@@ -14,6 +14,7 @@ import { formatDateRange } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
 import { useLanguage } from '../../context/LanguageContext';
 import { getAllTourDateRanges } from '../../utils/tour-utils';
+import { sizedImageUrl } from '../../utils/img';
 
 const { width } = Dimensions.get('window');
 
@@ -36,7 +37,7 @@ export function FeaturedTourCard({ tour, onPress, onBook }: FeaturedTourCardProp
       <View style={[styles.imageContainer, { backgroundColor: '#1a3a2a' }]}>
         {tour.photo_urls?.[0] ? (
           <Image
-            source={{ uri: tour.photo_urls[0] }}
+            source={{ uri: sizedImageUrl(tour.photo_urls[0], 800) }}
             style={StyleSheet.absoluteFill}
             resizeMode="cover"
           />

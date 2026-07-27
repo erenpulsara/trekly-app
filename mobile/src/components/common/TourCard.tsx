@@ -15,6 +15,7 @@ import { formatDateRange, formatPoints } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
 import { useLanguage } from '../../context/LanguageContext';
 import { getAllTourDateRanges } from '../../utils/tour-utils';
+import { sizedImageUrl } from '../../utils/img';
 
 const { width } = Dimensions.get('window');
 
@@ -36,7 +37,7 @@ export function TourCard({ tour, onPress, variant = 'full', style }: TourCardPro
       <TouchableOpacity style={[styles.compactCard, style]} onPress={onPress} activeOpacity={0.85}>
         <View style={[styles.compactImage, { backgroundColor: PLACEHOLDER_COLOR }]}>
           {tour.photo_urls?.[0] ? (
-            <Image source={{ uri: tour.photo_urls[0] }} style={StyleSheet.absoluteFill} />
+            <Image source={{ uri: sizedImageUrl(tour.photo_urls[0], 300) }} style={StyleSheet.absoluteFill} />
           ) : null}
           <View style={styles.compactRating}>
             <Ionicons name="star" size={10} color="#FFD700" />
@@ -59,7 +60,7 @@ export function TourCard({ tour, onPress, variant = 'full', style }: TourCardPro
     <TouchableOpacity style={[styles.card, style]} onPress={onPress} activeOpacity={0.85}>
       <View style={[styles.imageContainer, { backgroundColor: PLACEHOLDER_COLOR }]}>
         {tour.photo_urls?.[0] ? (
-          <Image source={{ uri: tour.photo_urls[0] }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          <Image source={{ uri: sizedImageUrl(tour.photo_urls[0], 700) }} style={StyleSheet.absoluteFill} resizeMode="cover" />
         ) : null}
         <View style={styles.imageBadges}>
           <DifficultyBadge difficulty={tour.difficulty} />

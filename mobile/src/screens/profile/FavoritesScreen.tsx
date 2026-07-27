@@ -23,6 +23,7 @@ import { formatDateRange } from '../../utils/formatting';
 import { splitCategories } from '../../utils/category';
 import { displayCategory, localeUpper } from '../../i18n/categories';
 import { isUpcomingTour, getAllTourDateRanges } from '../../utils/tour-utils';
+import { sizedImageUrl } from '../../utils/img';
 
 type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'Favorites'>;
@@ -118,7 +119,7 @@ export function FavoritesScreen({ navigation }: Props) {
               >
                 <View style={styles.cardImage}>
                   {item.photo_urls?.[0] ? (
-                    <Image source={{ uri: item.photo_urls[0] }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+                    <Image source={{ uri: sizedImageUrl(item.photo_urls[0], 700) }} style={StyleSheet.absoluteFill} resizeMode="cover" />
                   ) : null}
                   <View style={styles.cardBadge}>
                     <DifficultyBadge difficulty={item.difficulty} />

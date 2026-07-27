@@ -20,6 +20,7 @@ import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { formatDate } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
 import { useLanguage } from '../../context/LanguageContext';
+import { sizedImageUrl } from '../../utils/img';
 
 const STATUS_ORDER: Record<string, number> = {
   confirmed: 0,
@@ -141,7 +142,7 @@ export function MyBookingsScreen({ navigation }: Props) {
                 activeOpacity={0.85}
               >
                 {tour && tour.photo_urls.length > 0 ? (
-                  <Image source={{ uri: tour.photo_urls[0] }} style={styles.cardImage} />
+                  <Image source={{ uri: sizedImageUrl(tour.photo_urls[0], 300) }} style={styles.cardImage} />
                 ) : (
                   <View style={[styles.cardImage, styles.imagePlaceholder]}>
                     <Ionicons name="image-outline" size={32} color="#D1D5DB" />

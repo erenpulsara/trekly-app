@@ -25,6 +25,7 @@ import { toursService, favoritesService } from '../../services/api';
 import { Tour, Difficulty } from '../../types';
 import { formatDateRange, formatDateWithDay, formatDistance, formatPrice } from '../../utils/formatting';
 import { isUpcomingTour, remainingSlots } from '../../utils/tour-utils';
+import { sizedImageUrl } from '../../utils/img';
 import { REWARDS_ENABLED } from '../../config/features';
 import { splitCategories } from '../../utils/category';
 import { displayCategory, localeUpper } from '../../i18n/categories';
@@ -236,7 +237,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
                     activeOpacity={0.85}
                   >
                     <Image
-                      source={{ uri: url }}
+                      source={{ uri: sizedImageUrl(url, 400) }}
                       style={styles.galleryItem}
                       resizeMode="cover"
                     />
@@ -262,7 +263,7 @@ export function TourDetailScreen({ navigation, route }: Props) {
               activeOpacity={0.95}
               onPress={() => setLightboxIndex(0)}
             >
-              <Image source={{ uri: tour.photo_urls[0] }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+              <Image source={{ uri: sizedImageUrl(tour.photo_urls[0], 900) }} style={StyleSheet.absoluteFill} resizeMode="cover" />
             </TouchableOpacity>
           ) : null}
           <View style={styles.heroOverlay} pointerEvents="none" />

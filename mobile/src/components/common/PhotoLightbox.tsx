@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { sizedImageUrl } from '../../utils/img';
 
 const { width } = Dimensions.get('window');
 
@@ -59,7 +60,7 @@ export function PhotoLightbox({ photos, initialIndex, visible, onClose }: Props)
             }}
             renderItem={({ item }) => (
               <View style={styles.slide}>
-                <Image source={{ uri: item }} style={styles.photo} resizeMode="contain" />
+                <Image source={{ uri: sizedImageUrl(item, 1400) }} style={styles.photo} resizeMode="contain" />
               </View>
             )}
           />

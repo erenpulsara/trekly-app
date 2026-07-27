@@ -19,6 +19,7 @@ import { DifficultyBadge } from '../../components/common/DifficultyBadge';
 import { formatShortDate } from '../../utils/formatting';
 import { REWARDS_ENABLED } from '../../config/features';
 import { useLanguage } from '../../context/LanguageContext';
+import { sizedImageUrl } from '../../utils/img';
 
 type Props = {
   navigation: StackNavigationProp<MainStackParamList, 'BookingSuccess'>;
@@ -117,7 +118,7 @@ export function BookingSuccessScreen({ navigation, route }: Props) {
           <View style={styles.tourCard}>
             {cardTour.photo_urls.length > 0 ? (
               <Image
-                source={{ uri: cardTour.photo_urls[0] }}
+                source={{ uri: sizedImageUrl(cardTour.photo_urls[0], 700) }}
                 style={styles.tourImage}
               />
             ) : (

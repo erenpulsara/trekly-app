@@ -24,6 +24,7 @@ import { Tour } from '../../types';
 import { formatDateRange, formatPrice } from '../../utils/formatting';
 import { splitCategories, sortByStartDate } from '../../utils/category';
 import { isUpcomingTour, getAllTourDateRanges } from '../../utils/tour-utils';
+import { sizedImageUrl } from '../../utils/img';
 import { REWARDS_ENABLED } from '../../config/features';
 import { useLanguage } from '../../context/LanguageContext';
 import { displayCategory, localeUpper } from '../../i18n/categories';
@@ -60,7 +61,7 @@ function TourEventCard({ tour, onPress }: { tour: Tour; onPress: () => void }) {
     <TouchableOpacity style={styles.eventCard} onPress={onPress} activeOpacity={0.88}>
       <View style={[styles.eventImage, { backgroundColor: bgColor }]}>
         {tour.photo_urls?.[0] ? (
-          <Image source={{ uri: tour.photo_urls[0] }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          <Image source={{ uri: sizedImageUrl(tour.photo_urls[0], 700) }} style={StyleSheet.absoluteFill} resizeMode="cover" />
         ) : null}
         <View style={styles.eventImageOverlay} />
         <View style={styles.eventBadgeContainer}>

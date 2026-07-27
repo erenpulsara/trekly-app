@@ -17,6 +17,7 @@ import { Tour } from '../../types';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { isUpcomingTour } from '../../utils/tour-utils';
+import { sizedImageUrl } from '../../utils/img';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 16 * 3) / 2;
@@ -109,7 +110,7 @@ export function PopularToursScreen({ navigation }: Props) {
               >
                 {item.photo_urls.length > 0 ? (
                   <Image
-                    source={{ uri: item.photo_urls[0] }}
+                    source={{ uri: sizedImageUrl(item.photo_urls[0], 500) }}
                     style={StyleSheet.absoluteFill}
                     resizeMode="cover"
                   />
